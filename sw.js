@@ -1,5 +1,5 @@
-const CACHE="chama-v7";
-const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js"];
+const CACHE="chama-v8";
+const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 function injectExtras(html){
@@ -9,6 +9,7 @@ function injectExtras(html){
   if(!html.includes('src="./public-profile.js"')&&!html.includes("src='./public-profile.js'")) html=html.replace("</body>",'<script type="module" src="./public-profile.js"></script></body>');
   if(!html.includes('src="./brand-brazil.js"')&&!html.includes("src='./brand-brazil.js'")) html=html.replace("</body>",'<script src="./brand-brazil.js"></script></body>');
   if(!html.includes('src="./contact-open-chat.js"')&&!html.includes("src='./contact-open-chat.js'")) html=html.replace("</body>",'<script src="./contact-open-chat.js"></script></body>');
+  if(!html.includes('src="./forgot-password.js"')&&!html.includes("src='./forgot-password.js'")) html=html.replace("</body>",'<script type="module" src="./forgot-password.js"></script></body>');
   return html;
 }
 self.addEventListener("fetch",e=>{
