@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b7a53" />
+  <title>Chama</title>
+  <style>
+    :root{--green:#0b7a53;--green2:#0f9d6a;--bg:#f3f5f4;--card:#fff;--line:#e6e9e7;--text:#14221c;--muted:#6a756f}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    button,input{font:inherit}.hidden{display:none!important}
+    .shell{min-height:100dvh;max-width:900px;margin:auto;background:#fff}
+    .auth{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#e9fff6,#f7faf8)}
+    .auth-card{width:min(430px,100%);background:#fff;padding:28px;border-radius:24px;box-shadow:0 18px 60px #0b7a5322}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.logo{width:52px;height:52px;border-radius:17px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800}
+    h1{margin:0;font-size:30px}.sub{color:var(--muted);margin:4px 0 22px}.field{display:grid;gap:7px;margin:13px 0}.field label{font-size:14px;font-weight:650}
+    .field input{border:1px solid #ccd4d0;border-radius:14px;padding:14px 15px;outline:none}.field input:focus{border-color:var(--green)}
+    .primary{width:100%;border:0;background:var(--green);color:#fff;padding:14px 16px;border-radius:14px;font-weight:750;cursor:pointer}
+    .secondary{width:100%;border:1px solid #c9d4cf;background:#fff;color:var(--green);padding:13px 16px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:9px}
+    .msg{min-height:22px;margin-top:10px;font-size:14px;color:#b42318}
+    .topbar{height:66px;background:var(--green);color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:5}
+    .topbar h2{margin:0;font-size:21px;flex:1}.iconbtn{border:0;background:#ffffff18;color:#fff;border-radius:12px;padding:10px 12px;cursor:pointer}
+    .layout{display:grid;grid-template-columns:330px 1fr;min-height:calc(100dvh - 66px)}
+    .sidebar{border-right:1px solid var(--line);background:#fff}.me{padding:16px;border-bottom:1px solid var(--line)}.me small{color:var(--muted)}
+    .section-title{font-size:13px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:14px 16px 8px}
+    .user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f2f1;cursor:pointer}.user:hover{background:#f6faf8}
+    .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800}
+    .user-main{min-width:0}.user-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat{display:flex;flex-direction:column;background:#eef2ef;min-width:0}.empty{margin:auto;text-align:center;color:var(--muted);padding:30px}
+    .chat-head{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 14px}.chat-head strong{display:block}.chat-head small{color:var(--muted)}
+    .messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:8px;background-image:radial-gradient(#dfe7e2 1px,transparent 1px);background-size:20px 20px}
+    .bubble{max-width:min(78%,520px);padding:10px 12px;border-radius:16px;box-shadow:0 1px 1px #0000000b;word-break:break-word}.mine{align-self:flex-end;background:#d7f7e7;border-bottom-right-radius:5px}.theirs{align-self:flex-start;background:#fff;border-bottom-left-radius:5px}
+    .time{display:block;text-align:right;font-size:10px;color:#6d7772;margin-top:4px}
+    .composer{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom))}
+    .composer input{flex:1;border:1px solid #d5ddd9;border-radius:999px;padding:12px 16px;outline:none}.send{border:0;background:var(--green);color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px}
+    .install{background:#fff;color:var(--green);border:1px solid #ffffff80}
+    @media(max-width:700px){
+      .layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}
+    }
+    .back{display:none}
+  </style>
+</head>
+<body>
+  <div id="authView" class="auth">
+    <div class="auth-card">
+      <div class="brand"><div class="logo">C</div><div><h1>Chama</h1><div class="sub">Converse em tempo real.</div></div></div>
+      <div class="field"><label>Nome</label><input id="name" placeholder="Seu nome" autocomplete="name"></div>
+      <div class="field"><label>E-mail</label><input id="email" type="email" placeholder="voce@email.com" autocomplete="email"></div>
+      <div class="field"><label>Senha</label><input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="current-password"></div>
+      <button id="loginBtn" class="primary">Entrar</button>
+      <button id="signupBtn" class="secondary">Criar minha conta</button>
+      <div id="authMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <div id="appView" class="shell hidden">
+    <header class="topbar">
+      <h2>Chama</h2>
+      <button id="installBtn" class="iconbtn install hidden">Instalar app</button>
+      <button id="logoutBtn" class="iconbtn">Sair</button>
+    </header>
+    <main class="layout">
+      <aside class="sidebar">
+        <div class="me"><strong id="meName">Você</strong><br><small id="meEmail"></small></div>
+        <div class="section-title">Pessoas</div>
+        <div id="usersList"></div>
+      </aside>
+      <section id="chatPanel" class="chat hidden-mobile">
+        <div id="emptyState" class="empty"><h3>Escolha uma pessoa</h3><p>Toque em um contato para começar a conversar.</p></div>
+        <div id="activeChat" class="hidden" style="display:flex;flex-direction:column;min-height:calc(100dvh - 66px)">
+          <div class="chat-head">
+            <button id="backBtn" class="iconbtn back" style="background:#eef4f1;color:#0b7a53">←</button>
+            <div class="avatar" id="chatAvatar">C</div>
+            <div><strong id="chatName"></strong><small id="chatEmail"></small></div>
+          </div>
+          <div id="messages" class="messages"></div>
+          <form id="composer" class="composer">
+            <input id="messageInput" maxlength="1500" placeholder="Digite uma mensagem..." autocomplete="off">
+            <button class="send" type="submit">➤</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, addDoc, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",
+    authDomain: "chama-cfc28.firebaseapp.com",
+    projectId: "chama-cfc28",
+    storageBucket: "chama-cfc28.firebasestorage.app",
+    messagingSenderId: "680045231088",
+    appId: "1:680045231088:web:8db35684e4b56a320ebb35"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const $ = (id) => document.getElementById(id);
+  const authView=$("authView"), appView=$("appView"), authMsg=$("authMsg");
+  let me=null, activeUser=null, stopMessages=null, installPrompt=null;
+
+  function friendlyError(e){
+    const c=e?.code||"";
+    if(c.includes("invalid-credential")) return "E-mail ou senha incorretos.";
+    if(c.includes("email-already-in-use")) return "Este e-mail já está cadastrado.";
+    if(c.includes("weak-password")) return "Use uma senha com pelo menos 6 caracteres.";
+    if(c.includes("invalid-email")) return "Digite um e-mail válido.";
+    return e?.message || "Não foi possível concluir.";
+  }
+
+  async function ensureProfile(user, requestedName=""){
+    const ref=doc(db,"users",user.uid);
+    const snap=await getDoc(ref);
+    const fallback=(requestedName || user.displayName || user.email?.split("@")[0] || "Usuário").trim();
+    if(!snap.exists()){
+      await setDoc(ref,{uid:user.uid,nome:fallback,email:user.email||"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+    } else if(!snap.data().uid || !snap.data().email){
+      await setDoc(ref,{uid:user.uid,nome:snap.data().nome||fallback,email:user.email||"",updatedAt:serverTimestamp()},{merge:true});
+    }
+  }
+
+  $("signupBtn").onclick=async()=>{
+    authMsg.textContent="";
+    try{
+      const nome=$("name").value.trim();
+      if(!nome) throw new Error("Digite seu nome.");
+      const cred=await createUserWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+      await updateProfile(cred.user,{displayName:nome});
+      await ensureProfile(cred.user,nome);
+    }catch(e){authMsg.textContent=friendlyError(e)}
+  };
+
+  $("loginBtn").onclick=async()=>{
+    authMsg.textContent="";
+    try{
+      const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
+      await ensureProfile(cred.user,$("name").value.trim());
+    }catch(e){authMsg.textContent=friendlyError(e)}
+  };
+
+  $("logoutBtn").onclick=()=>signOut(auth);
+  $("backBtn").onclick=()=> $("chatPanel").classList.add("hidden-mobile");
+
+  onAuthStateChanged(auth, async user=>{
+    if(!user){
+      me=null; activeUser=null;
+      if(stopMessages){stopMessages();stopMessages=null}
+      authView.classList.remove("hidden"); appView.classList.add("hidden"); return;
+    }
+    me=user;
+    try{ await ensureProfile(user); }catch(e){ console.error(e); }
+    $("meName").textContent=user.displayName || user.email?.split("@")[0] || "Você";
+    $("meEmail").textContent=user.email||"";
+    authView.classList.add("hidden"); appView.classList.remove("hidden");
+    listenUsers();
+  });
+
+  function listenUsers(){
+    const q=query(collection(db,"users"));
+    onSnapshot(q,snap=>{
+      const list=$("usersList"); list.innerHTML="";
+      snap.forEach(d=>{
+        const u=d.data();
+        if(!u.uid || u.uid===me.uid) return;
+        const row=document.createElement("div"); row.className="user";
+        const initial=(u.nome||u.email||"U").trim().charAt(0).toUpperCase();
+        row.innerHTML=`<div class="avatar">${escapeHtml(initial)}</div><div class="user-main"><div class="user-name">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;
+        row.onclick=()=>openChat(u);
+        list.appendChild(row);
+      });
+      if(!list.children.length) list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhum outro usuário ainda.</div>';
+    },e=>console.error(e));
+  }
+
+  async function openChat(u){
+    activeUser=u;
+    $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||"";
+    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();
+    $("emptyState").classList.add("hidden"); $("activeChat").classList.remove("hidden"); $("chatPanel").classList.remove("hidden-mobile");
+
+    const ids=[me.uid,u.uid].sort();
+    const chatId=ids.join("_");
+    await setDoc(doc(db,"chats",chatId),{participants:ids,updatedAt:serverTimestamp()},{merge:true});
+
+    if(stopMessages) stopMessages();
+    const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","asc"),limit(300));
+    stopMessages=onSnapshot(mq,snap=>{
+      const box=$("messages"); box.innerHTML="";
+      snap.forEach(d=>{
+        const m=d.data(), mine=m.senderId===me.uid;
+        const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs");
+        const t=m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "";
+        b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`;
+        box.appendChild(b);
+      });
+      box.scrollTop=box.scrollHeight;
+    });
+  }
+
+  $("composer").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const text=$("messageInput").value.trim();
+    if(!text || !activeUser) return;
+    $("messageInput").value="";
+    const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
+    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
+    await setDoc(doc(db,"chats",chatId),{participants:ids,lastMessage:text,updatedAt:serverTimestamp()},{merge:true});
+  });
+
+  function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]))}
+
+  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});
+  $("installBtn").onclick=async()=>{ if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")} };
+</script>
+</body>
+</html>
