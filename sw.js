@@ -1,10 +1,11 @@
-const CACHE="chama-v3";
-const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js"];
+const CACHE="chama-v4";
+const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 function injectExtras(html){
   if(!html.includes('src="./search.js"')&&!html.includes("src='./search.js'")) html=html.replace("</body>",'<script src="./search.js"></script></body>');
   if(!html.includes('src="./auth-persistence.js"')&&!html.includes("src='./auth-persistence.js'")) html=html.replace("</body>",'<script type="module" src="./auth-persistence.js"></script></body>');
+  if(!html.includes('src="./share.js"')&&!html.includes("src='./share.js'")) html=html.replace("</body>",'<script src="./share.js"></script></body>');
   return html;
 }
 self.addEventListener("fetch",e=>{
