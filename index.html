@@ -1,220 +1,32 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0b7a53" />
-  <title>Chama</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <style>
-    :root{--green:#0b7a53;--green2:#0f9d6a;--bg:#f3f5f4;--card:#fff;--line:#e6e9e7;--text:#14221c;--muted:#6a756f}
-    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    button,input,textarea{font:inherit}.hidden{display:none!important}
-    .shell{min-height:100dvh;max-width:900px;margin:auto;background:#fff}
-    .auth{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#e9fff6,#f7faf8)}
-    .auth-card{width:min(430px,100%);background:#fff;padding:28px;border-radius:24px;box-shadow:0 18px 60px #0b7a5322}
-    .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.logo{width:52px;height:52px;border-radius:17px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800}
-    h1{margin:0;font-size:30px}.sub{color:var(--muted);margin:4px 0 22px}.field{display:grid;gap:7px;margin:13px 0}.field label{font-size:14px;font-weight:650}
-    .field input,.field textarea{border:1px solid #ccd4d0;border-radius:14px;padding:14px 15px;outline:none;width:100%}.field input:focus,.field textarea:focus{border-color:var(--green)}.field textarea{min-height:110px;resize:vertical}
-    .primary{width:100%;border:0;background:var(--green);color:#fff;padding:14px 16px;border-radius:14px;font-weight:750;cursor:pointer}
-    .secondary{width:100%;border:1px solid #c9d4cf;background:#fff;color:var(--green);padding:13px 16px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:9px}
-    .msg{min-height:22px;margin-top:10px;font-size:14px;color:#b42318}
-    .topbar{height:66px;background:var(--green);color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:5}
-    .topbar h2{margin:0;font-size:21px;flex:1}.iconbtn{border:0;background:#ffffff18;color:#fff;border-radius:12px;padding:10px 12px;cursor:pointer}
-    .layout{display:grid;grid-template-columns:330px 1fr;min-height:calc(100dvh - 66px)}
-    .sidebar{border-right:1px solid var(--line);background:#fff}.me{padding:16px;border-bottom:1px solid var(--line)}.me small{color:var(--muted)}
-    .section-title{font-size:13px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:14px 16px 8px}
-    .user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f2f1;cursor:pointer}.user:hover{background:#f6faf8}
-    .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.me-profile{display:flex;align-items:center;gap:12px}.me-avatar{width:52px;height:52px;flex:0 0 52px;cursor:pointer;border:2px solid #dff4ea}.photo-btn{margin-top:8px;border:0;background:none;color:var(--green);font-size:12px;font-weight:750;padding:0;cursor:pointer}.profile-link{cursor:pointer;text-decoration:underline;text-decoration-color:#c9d4cf;text-underline-offset:3px}
-    .user-main{min-width:0}.user-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .chat{display:flex;flex-direction:column;background:#eef2ef;min-width:0}.empty{margin:auto;text-align:center;color:var(--muted);padding:30px}
-    .chat-head{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 14px}.chat-head strong{display:block}.chat-head small{color:var(--muted)}
-    .messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:8px;background-image:radial-gradient(#dfe7e2 1px,transparent 1px);background-size:20px 20px}
-    .bubble{max-width:min(78%,520px);padding:10px 12px;border-radius:16px;box-shadow:0 1px 1px #0000000b;word-break:break-word}.mine{align-self:flex-end;background:#d7f7e7;border-bottom-right-radius:5px}.theirs{align-self:flex-start;background:#fff;border-bottom-left-radius:5px}
-    .time{display:block;text-align:right;font-size:10px;color:#6d7772;margin-top:4px}
-    .composer{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom))}
-    .composer input{flex:1;border:1px solid #d5ddd9;border-radius:999px;padding:12px 16px;outline:none}.send{border:0;background:var(--green);color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px}
-    .install{background:#fff;color:var(--green);border:1px solid #ffffff80}
-    .modal{position:fixed;inset:0;background:#0008;z-index:20;display:grid;place-items:center;padding:18px}.modal-card{width:min(460px,100%);max-height:90dvh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 20px 70px #0004}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.modal-head h3{margin:0;font-size:22px}.closebtn{border:0;background:#eef4f1;color:var(--green);width:38px;height:38px;border-radius:50%;font-size:22px}.profile-hero{text-align:center;padding:8px 0 12px}.profile-avatar{width:92px;height:92px;margin:0 auto 10px;font-size:30px;border:3px solid #dff4ea}.profile-name{font-size:22px;font-weight:800}.profile-email{font-size:13px;color:var(--muted)}.profile-info{display:grid;gap:12px;margin-top:16px}.info-item{padding:12px 14px;background:#f7faf8;border-radius:14px;word-break:break-word}.info-label{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:4px}.info-item a{color:var(--green);font-weight:700}.profile-actions{display:flex;gap:8px;margin-top:16px}.profile-actions button{flex:1}.save-msg{font-size:13px;color:var(--green);min-height:18px;margin-top:8px}
-    @media(max-width:700px){
-      .layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}
-    }
-    .back{display:none}
-  </style>
-</head>
-<body>
-  <div id="authView" class="auth">
-    <div class="auth-card">
-      <div class="brand"><div class="logo">C</div><div><h1>Chama</h1><div class="sub">Converse em tempo real.</div></div></div>
-      <div class="field"><label>Nome</label><input id="name" placeholder="Seu nome" autocomplete="name"></div>
-      <div class="field"><label>E-mail</label><input id="email" type="email" placeholder="voce@email.com" autocomplete="email"></div>
-      <div class="field"><label>Senha</label><input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="current-password"></div>
-      <button id="loginBtn" class="primary">Entrar</button>
-      <button id="signupBtn" class="secondary">Criar minha conta</button>
-      <div id="authMsg" class="msg"></div>
-    </div>
-  </div>
-
-  <div id="appView" class="shell hidden">
-    <header class="topbar">
-      <h2>Chama</h2>
-      <button id="installBtn" class="iconbtn install hidden">Instalar app</button>
-      <button id="logoutBtn" class="iconbtn">Sair</button>
-    </header>
-    <main class="layout">
-      <aside class="sidebar">
-        <div class="me"><div class="me-profile"><div id="meAvatar" class="avatar me-avatar" title="Trocar foto">V</div><div><strong id="meName" class="profile-link">Você</strong><br><small id="meEmail"></small><br><button id="photoBtn" class="photo-btn" type="button">Alterar foto</button></div></div><input id="photoInput" type="file" accept="image/*" class="hidden"></div>
-        <div class="section-title">Pessoas</div>
-        <div id="usersList"></div>
-      </aside>
-      <section id="chatPanel" class="chat hidden-mobile">
-        <div id="emptyState" class="empty"><h3>Escolha uma pessoa</h3><p>Toque em um contato para começar a conversar.</p></div>
-        <div id="activeChat" class="hidden" style="display:flex;flex-direction:column;min-height:calc(100dvh - 66px)">
-          <div class="chat-head">
-            <button id="backBtn" class="iconbtn back" style="background:#eef4f1;color:#0b7a53">←</button>
-            <div class="avatar" id="chatAvatar">C</div>
-            <div><strong id="chatName" class="profile-link"></strong><small id="chatEmail"></small></div>
-          </div>
-          <div id="messages" class="messages"></div>
-          <form id="composer" class="composer">
-            <input id="messageInput" maxlength="1500" placeholder="Digite uma mensagem..." autocomplete="off">
-            <button class="send" type="submit">➤</button>
-          </form>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div id="profileModal" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-head"><h3>Perfil</h3><button id="closeProfile" class="closebtn" type="button">×</button></div>
-      <div id="profileView">
-        <div class="profile-hero"><div id="profileAvatar" class="avatar profile-avatar">U</div><div id="profileName" class="profile-name"></div><div id="profileEmail" class="profile-email"></div></div>
-        <div class="profile-info">
-          <div class="info-item"><span class="info-label">WhatsApp</span><div id="profileWhatsapp">Não informado</div></div>
-          <div class="info-item"><span class="info-label">Site</span><div id="profileSite">Não informado</div></div>
-          <div class="info-item"><span class="info-label">Descrição</span><div id="profileBio">Sem descrição.</div></div>
-        </div>
-        <div id="profileActions" class="profile-actions"></div>
-      </div>
-      <div id="profileEdit" class="hidden">
-        <div class="field"><label>Nome</label><input id="editName" maxlength="80" placeholder="Seu nome"></div>
-        <div class="field"><label>WhatsApp</label><input id="editWhatsapp" inputmode="tel" maxlength="25" placeholder="Ex.: 11999999999"></div>
-        <div class="field"><label>Link do site</label><input id="editSite" inputmode="url" maxlength="250" placeholder="Ex.: https://meusite.com.br"></div>
-        <div class="field"><label>Descrição do perfil</label><textarea id="editBio" maxlength="500" placeholder="Conte um pouco sobre você..."></textarea></div>
-        <button id="saveProfile" class="primary" type="button">Salvar perfil</button>
-        <button id="cancelEdit" class="secondary" type="button">Cancelar</button>
-        <div id="profileSaveMsg" class="save-msg"></div>
-      </div>
-    </div>
-  </div>
-
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b7a53"><title>Chama</title><link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--green:#0b7a53;--bg:#f3f5f4;--line:#e6e9e7;--text:#14221c;--muted:#6a756f}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}button,input,textarea,select{font:inherit}.hidden{display:none!important}.shell{min-height:100dvh;max-width:900px;margin:auto;background:#fff}.auth{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#e9fff6,#f7faf8)}.auth-card{width:min(430px,100%);background:#fff;padding:28px;border-radius:24px;box-shadow:0 18px 60px #0b7a5322}.brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.logo{width:52px;height:52px;border-radius:17px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800}h1{margin:0;font-size:30px}.sub{color:var(--muted);margin:4px 0 22px}.field{display:grid;gap:7px;margin:13px 0}.field label{font-size:14px;font-weight:650}.field input,.field textarea,.field select{border:1px solid #ccd4d0;border-radius:14px;padding:13px 14px;outline:none;width:100%;background:#fff}.field textarea{min-height:100px;resize:vertical}.primary{width:100%;border:0;background:var(--green);color:#fff;padding:14px 16px;border-radius:14px;font-weight:750;cursor:pointer}.secondary{width:100%;border:1px solid #c9d4cf;background:#fff;color:var(--green);padding:13px 16px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:9px}.msg{min-height:22px;margin-top:10px;font-size:14px;color:#b42318}.topbar{height:66px;background:var(--green);color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:5}.topbar h2{margin:0;font-size:21px;flex:1}.iconbtn{border:0;background:#ffffff18;color:#fff;border-radius:12px;padding:10px 12px;cursor:pointer}.layout{display:grid;grid-template-columns:330px 1fr;min-height:calc(100dvh - 66px)}.sidebar{border-right:1px solid var(--line);background:#fff}.me{padding:16px;border-bottom:1px solid var(--line)}.me small{color:var(--muted)}.section-title{font-size:13px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:14px 16px 8px}.user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f2f1;cursor:pointer}.user:hover{background:#f6faf8}.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.me-profile{display:flex;align-items:center;gap:12px}.me-avatar{width:52px;height:52px;flex:0 0 52px;cursor:pointer;border:2px solid #dff4ea}.photo-btn{margin-top:7px;border:0;background:none;color:var(--green);font-size:12px;font-weight:750;padding:0;cursor:pointer}.profile-link{cursor:pointer;text-decoration:underline;text-decoration-color:#c9d4cf;text-underline-offset:3px}.user-main{min-width:0}.user-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chat{display:flex;flex-direction:column;background:#eef2ef;min-width:0}.empty{margin:auto;text-align:center;color:var(--muted);padding:30px}.chat-head{min-height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:9px 12px}.chat-head .who{min-width:0;flex:1}.chat-head strong{display:block}.chat-head small{color:var(--muted)}.catalog-head-btn{border:0;background:#e6f5ee;color:var(--green);padding:9px 10px;border-radius:11px;font-weight:800;cursor:pointer;white-space:nowrap}.messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:8px;background-image:radial-gradient(#dfe7e2 1px,transparent 1px);background-size:20px 20px}.bubble{max-width:min(78%,520px);padding:10px 12px;border-radius:16px;box-shadow:0 1px 1px #0000000b;word-break:break-word}.mine{align-self:flex-end;background:#d7f7e7;border-bottom-right-radius:5px}.theirs{align-self:flex-start;background:#fff;border-bottom-left-radius:5px}.time{display:block;text-align:right;font-size:10px;color:#6d7772;margin-top:4px}.composer{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom))}.composer input{flex:1;border:1px solid #d5ddd9;border-radius:999px;padding:12px 16px;outline:none}.send{border:0;background:var(--green);color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px}.install{background:#fff;color:var(--green);border:1px solid #ffffff80}.modal{position:fixed;inset:0;background:#0008;z-index:20;display:grid;place-items:center;padding:16px}.modal-card{width:min(500px,100%);max-height:92dvh;overflow:auto;background:#fff;border-radius:22px;padding:20px;box-shadow:0 20px 70px #0004}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.modal-head h3{margin:0;font-size:22px}.closebtn{border:0;background:#eef4f1;color:var(--green);width:38px;height:38px;border-radius:50%;font-size:22px}.profile-hero{text-align:center;padding:8px 0 12px}.profile-avatar{width:92px;height:92px;margin:0 auto 10px;font-size:30px;border:3px solid #dff4ea}.profile-name{font-size:22px;font-weight:800}.profile-email{font-size:13px;color:var(--muted)}.profile-info{display:grid;gap:12px;margin-top:16px}.info-item{padding:12px 14px;background:#f7faf8;border-radius:14px;word-break:break-word}.info-label{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:4px}.info-item a{color:var(--green);font-weight:700}.profile-actions{display:grid;gap:8px;margin-top:16px}.save-msg{font-size:13px;color:var(--green);min-height:18px;margin-top:8px}.catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.product{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}.product-img{aspect-ratio:1/1;background:#f4f6f5;display:grid;place-items:center;color:var(--muted);font-size:12px}.product-img img{width:100%;height:100%;object-fit:cover}.product-body{padding:10px}.badge{display:inline-block;font-size:10px;font-weight:850;text-transform:uppercase;background:#eef4f1;color:var(--green);padding:4px 7px;border-radius:99px}.product-title{font-weight:750;font-size:14px;margin:7px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.product-price{font-size:18px;font-weight:850;color:var(--green);margin-bottom:8px}.buy{display:block;text-align:center;text-decoration:none;background:var(--green);color:#fff;padding:10px;border-radius:10px;font-weight:800;font-size:13px}.catalog-note{font-size:13px;color:var(--muted);margin:5px 0 12px}.product-edit{border:1px solid var(--line);border-radius:15px;padding:12px;margin:10px 0;background:#fafcfb}.product-edit-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.remove{border:0;background:#fff0f0;color:#b42318;border-radius:9px;padding:7px 9px}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:700px){.layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}.catalog-grid{grid-template-columns:1fr 1fr}.catalog-head-btn{font-size:12px;padding:8px}.chat-head{gap:8px}}.back{display:none}
+</style></head><body>
+<div id="authView" class="auth"><div class="auth-card"><div class="brand"><div class="logo">C</div><div><h1>Chama</h1><div class="sub">Converse em tempo real.</div></div></div><div class="field"><label>Nome</label><input id="name" placeholder="Seu nome" autocomplete="name"></div><div class="field"><label>E-mail</label><input id="email" type="email" placeholder="voce@email.com" autocomplete="email"></div><div class="field"><label>Senha</label><input id="password" type="password" placeholder="Mínimo 6 caracteres"></div><button id="loginBtn" class="primary">Entrar</button><button id="signupBtn" class="secondary">Criar minha conta</button><div id="authMsg" class="msg"></div></div></div>
+<div id="appView" class="shell hidden"><header class="topbar"><h2>Chama</h2><button id="installBtn" class="iconbtn install hidden">Instalar app</button><button id="logoutBtn" class="iconbtn">Sair</button></header><main class="layout"><aside class="sidebar"><div class="me"><div class="me-profile"><div id="meAvatar" class="avatar me-avatar" title="Trocar foto">V</div><div><strong id="meName" class="profile-link">Você</strong><br><small id="meEmail"></small><br><button id="photoBtn" class="photo-btn">Alterar foto</button></div></div><input id="photoInput" type="file" accept="image/*" class="hidden"></div><div class="section-title">Pessoas</div><div id="usersList"></div></aside><section id="chatPanel" class="chat hidden-mobile"><div id="emptyState" class="empty"><h3>Escolha uma pessoa</h3><p>Toque em um contato para conversar.</p></div><div id="activeChat" class="hidden" style="display:flex;flex-direction:column;min-height:calc(100dvh - 66px)"><div class="chat-head"><button id="backBtn" class="iconbtn back" style="background:#eef4f1;color:#0b7a53">←</button><div class="avatar" id="chatAvatar">C</div><div class="who"><strong id="chatName" class="profile-link"></strong><small id="chatEmail"></small></div><button id="chatCatalogBtn" class="catalog-head-btn">🛍️ Catálogo</button></div><div id="messages" class="messages"></div><form id="composer" class="composer"><input id="messageInput" maxlength="1500" placeholder="Digite uma mensagem..." autocomplete="off"><button class="send" type="submit">➤</button></form></div></section></main></div>
+<div id="profileModal" class="modal hidden"><div class="modal-card"><div class="modal-head"><h3>Perfil</h3><button id="closeProfile" class="closebtn">×</button></div><div id="profileView"><div class="profile-hero"><div id="profileAvatar" class="avatar profile-avatar">U</div><div id="profileName" class="profile-name"></div><div id="profileEmail" class="profile-email"></div></div><div class="profile-info"><div class="info-item"><span class="info-label">WhatsApp</span><div id="profileWhatsapp">Não informado</div></div><div class="info-item"><span class="info-label">Site</span><div id="profileSite">Não informado</div></div><div class="info-item"><span class="info-label">Descrição</span><div id="profileBio">Sem descrição.</div></div></div><div id="profileActions" class="profile-actions"></div></div><div id="profileEdit" class="hidden"><div class="field"><label>Nome</label><input id="editName" maxlength="80"></div><div class="field"><label>WhatsApp</label><input id="editWhatsapp" inputmode="tel" maxlength="25" placeholder="11999999999"></div><div class="field"><label>Link do site</label><input id="editSite" inputmode="url" maxlength="250" placeholder="https://meusite.com.br"></div><div class="field"><label>Descrição do perfil</label><textarea id="editBio" maxlength="500" placeholder="Conte um pouco sobre você..."></textarea></div><button id="saveProfile" class="primary">Salvar perfil</button><button id="cancelEdit" class="secondary">Cancelar</button><div id="profileSaveMsg" class="save-msg"></div></div></div></div>
+<div id="catalogModal" class="modal hidden"><div class="modal-card"><div class="modal-head"><h3 id="catalogTitle">Catálogo</h3><button id="closeCatalog" class="closebtn">×</button></div><div id="catalogView"><div id="catalogNote" class="catalog-note"></div><div id="catalogGrid" class="catalog-grid"></div><div id="catalogOwnerActions"></div></div><div id="catalogEdit" class="hidden"><div class="catalog-note">Cadastre até 30 produtos, somando Mercado Livre e Shopee. Use o seu link de afiliado.</div><div id="catalogEditor"></div><button id="addProduct" class="secondary">+ Adicionar produto</button><button id="saveCatalog" class="primary" style="margin-top:10px">Salvar catálogo</button><button id="cancelCatalogEdit" class="secondary">Cancelar</button><div id="catalogSaveMsg" class="save-msg"></div></div></div></div>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",
-    authDomain: "chama-cfc28.firebaseapp.com",
-    projectId: "chama-cfc28",
-    storageBucket: "chama-cfc28.firebasestorage.app",
-    messagingSenderId: "680045231088",
-    appId: "1:680045231088:web:8db35684e4b56a320ebb35"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const $ = (id) => document.getElementById(id);
-  const authView=$("authView"), appView=$("appView"), authMsg=$("authMsg");
-  let me=null, activeUser=null, stopMessages=null, installPrompt=null, myProfile=null;
-
-  function avatarHtml(u, fallback="U"){
-    if(u?.foto) return `<img src="${escapeHtml(u.foto)}" alt="Foto de perfil">`;
-    const initial=(u?.nome||u?.email||fallback).trim().charAt(0).toUpperCase(); return escapeHtml(initial||fallback);
-  }
-  function setAvatar(el,u,fallback="U"){ el.innerHTML=avatarHtml(u,fallback); }
-  function cleanUrl(v=""){ let s=v.trim(); if(!s) return ""; if(!/^https?:\/\//i.test(s)) s="https://"+s; try{ const u=new URL(s); return ["http:","https:"].includes(u.protocol)?u.href:""; }catch{return "";} }
-  function whatsappUrl(v=""){ const n=v.replace(/\D/g,""); if(!n) return ""; const full=n.startsWith("55")?n:"55"+n; return `https://wa.me/${full}`; }
-
-  async function compressPhoto(file){
-    const data=await new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
-    const img=await new Promise((resolve,reject)=>{ const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=data; });
-    const size=256, canvas=document.createElement("canvas"); canvas.width=size; canvas.height=size;
-    const ctx=canvas.getContext("2d"), scale=Math.max(size/img.width,size/img.height), w=img.width*scale,h=img.height*scale;
-    ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h); return canvas.toDataURL("image/jpeg",0.78);
-  }
-
-  $("photoBtn").onclick=()=>$("photoInput").click(); $("meAvatar").onclick=()=>$("photoInput").click();
-  $("photoInput").addEventListener("change",async()=>{
-    const file=$("photoInput").files?.[0]; if(!file||!me) return; if(!file.type.startsWith("image/")){ alert("Escolha uma imagem."); return; }
-    $("photoBtn").textContent="Salvando...";
-    try{ const foto=await compressPhoto(file); await setDoc(doc(db,"users",me.uid),{foto,updatedAt:serverTimestamp()},{merge:true}); myProfile={...(myProfile||{}),foto}; setAvatar($("meAvatar"),myProfile,"V"); }
-    catch(e){ console.error(e); alert("Não foi possível salvar a foto."); }
-    finally{$("photoBtn").textContent="Alterar foto";$ ("photoInput").value="";}
-  });
-
-  function friendlyError(e){ const c=e?.code||""; if(c.includes("invalid-credential")) return "E-mail ou senha incorretos."; if(c.includes("email-already-in-use")) return "Este e-mail já está cadastrado."; if(c.includes("weak-password")) return "Use uma senha com pelo menos 6 caracteres."; if(c.includes("invalid-email")) return "Digite um e-mail válido."; return e?.message || "Não foi possível concluir."; }
-
-  async function ensureProfile(user, requestedName=""){
-    const ref=doc(db,"users",user.uid), snap=await getDoc(ref), fallback=(requestedName || user.displayName || user.email?.split("@")[0] || "Usuário").trim();
-    if(!snap.exists()) await setDoc(ref,{uid:user.uid,nome:fallback,email:user.email||"",whatsapp:"",site:"",bio:"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-    else if(!snap.data().uid || !snap.data().email) await setDoc(ref,{uid:user.uid,nome:snap.data().nome||fallback,email:user.email||"",updatedAt:serverTimestamp()},{merge:true});
-  }
-
-  $("signupBtn").onclick=async()=>{ authMsg.textContent=""; try{ const nome=$("name").value.trim(); if(!nome) throw new Error("Digite seu nome."); const cred=await createUserWithEmailAndPassword(auth,$("email").value.trim(),$("password").value); await updateProfile(cred.user,{displayName:nome}); await ensureProfile(cred.user,nome); }catch(e){authMsg.textContent=friendlyError(e)} };
-  $("loginBtn").onclick=async()=>{ authMsg.textContent=""; try{ const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value); await ensureProfile(cred.user,$("name").value.trim()); }catch(e){authMsg.textContent=friendlyError(e)} };
-  $("logoutBtn").onclick=()=>signOut(auth); $("backBtn").onclick=()=> $("chatPanel").classList.add("hidden-mobile");
-
-  onAuthStateChanged(auth, async user=>{
-    if(!user){ me=null; activeUser=null; if(stopMessages){stopMessages();stopMessages=null} authView.classList.remove("hidden"); appView.classList.add("hidden"); return; }
-    me=user; try{ await ensureProfile(user); }catch(e){ console.error(e); }
-    try{ const ps=await getDoc(doc(db,"users",user.uid)); myProfile=ps.exists()?ps.data():null; }catch(e){ myProfile=null; }
-    setAvatar($("meAvatar"),myProfile||{nome:user.displayName,email:user.email},"V"); $("meName").textContent=myProfile?.nome || user.displayName || user.email?.split("@")[0] || "Você"; $("meEmail").textContent=user.email||"";
-    authView.classList.add("hidden"); appView.classList.remove("hidden"); listenUsers();
-  });
-
-  $("meName").onclick=()=>showProfile(myProfile||{uid:me?.uid,nome:me?.displayName,email:me?.email},true);
-  $("chatName").onclick=()=>{ if(activeUser) showProfile(activeUser,false); };
-
-  function listenUsers(){
-    const q=query(collection(db,"users")); onSnapshot(q,snap=>{ const list=$("usersList"); list.innerHTML="";
-      snap.forEach(d=>{ const u=d.data(); if(!u.uid || u.uid===me.uid) return; const row=document.createElement("div"); row.className="user";
-        row.innerHTML=`<div class="avatar">${avatarHtml(u)}</div><div class="user-main"><div class="user-name profile-link">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;
-        row.onclick=()=>openChat(u); row.querySelector(".user-name").onclick=(e)=>{e.stopPropagation();showProfile(u,false)}; row.querySelector(".avatar").onclick=(e)=>{e.stopPropagation();showProfile(u,false)}; list.appendChild(row);
-      }); if(!list.children.length) list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhum outro usuário ainda.</div>'; },e=>console.error(e));
-  }
-
-  function showProfile(u,isMine=false){
-    if(!u) return; setAvatar($("profileAvatar"),u); $("profileName").textContent=u.nome||"Usuário"; $("profileEmail").textContent=u.email||"";
-    const w=whatsappUrl(u.whatsapp||""); $("profileWhatsapp").innerHTML=w?`<a href="${escapeHtml(w)}" target="_blank" rel="noopener">${escapeHtml(u.whatsapp)}</a>`:"Não informado";
-    const site=cleanUrl(u.site||""); $("profileSite").innerHTML=site?`<a href="${escapeHtml(site)}" target="_blank" rel="noopener">${escapeHtml(u.site)}</a>`:"Não informado"; $("profileBio").textContent=u.bio||"Sem descrição.";
-    const actions=$("profileActions"); actions.innerHTML=""; if(isMine){ const b=document.createElement("button"); b.className="primary"; b.textContent="Editar meu perfil"; b.onclick=openProfileEdit; actions.appendChild(b); } else if(w){ const b=document.createElement("button"); b.className="primary"; b.textContent="Abrir WhatsApp"; b.onclick=()=>window.open(w,"_blank","noopener"); actions.appendChild(b); }
-    $("profileView").classList.remove("hidden"); $("profileEdit").classList.add("hidden"); $("profileModal").classList.remove("hidden");
-  }
-  function openProfileEdit(){ const u=myProfile||{}; $("editName").value=u.nome||me?.displayName||""; $("editWhatsapp").value=u.whatsapp||""; $("editSite").value=u.site||""; $("editBio").value=u.bio||""; $("profileSaveMsg").textContent=""; $("profileView").classList.add("hidden"); $("profileEdit").classList.remove("hidden"); }
-  $("cancelEdit").onclick=()=>showProfile(myProfile,true); $("closeProfile").onclick=()=>$("profileModal").classList.add("hidden"); $("profileModal").onclick=(e)=>{ if(e.target===$("profileModal")) $("profileModal").classList.add("hidden"); };
-
-  $("saveProfile").onclick=async()=>{
-    if(!me) return; const nome=$("editName").value.trim(), whatsapp=$("editWhatsapp").value.trim(), site=$("editSite").value.trim(), bio=$("editBio").value.trim();
-    if(!nome){$("profileSaveMsg").textContent="Digite seu nome.";return;} if(site && !cleanUrl(site)){$("profileSaveMsg").textContent="Digite um link de site válido.";return;}
-    $("saveProfile").textContent="Salvando..."; $("profileSaveMsg").textContent="";
-    try{ await setDoc(doc(db,"users",me.uid),{nome,whatsapp,site,bio,updatedAt:serverTimestamp()},{merge:true}); await updateProfile(me,{displayName:nome}); myProfile={...(myProfile||{}),uid:me.uid,email:me.email||"",nome,whatsapp,site,bio}; $("meName").textContent=nome; $("saveProfile").textContent="Salvar perfil"; showProfile(myProfile,true); }
-    catch(e){console.error(e);$("profileSaveMsg").textContent="Não foi possível salvar o perfil.";$("saveProfile").textContent="Salvar perfil";}
-  };
-
-  async function openChat(u){
-    activeUser=u; $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||""; setAvatar($("chatAvatar"),u); $("emptyState").classList.add("hidden"); $("activeChat").classList.remove("hidden"); $("chatPanel").classList.remove("hidden-mobile");
-    const ids=[me.uid,u.uid].sort(), chatId=ids.join("_"); await setDoc(doc(db,"chats",chatId),{participants:ids,updatedAt:serverTimestamp()},{merge:true}); if(stopMessages) stopMessages();
-    const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","asc"),limit(300)); stopMessages=onSnapshot(mq,snap=>{ const box=$("messages"); box.innerHTML=""; snap.forEach(d=>{ const m=d.data(), mine=m.senderId===me.uid, b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs"); const t=m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : ""; b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`; box.appendChild(b); }); box.scrollTop=box.scrollHeight; });
-  }
-
-  $("composer").addEventListener("submit", async e=>{ e.preventDefault(); const text=$("messageInput").value.trim(); if(!text || !activeUser) return; $("messageInput").value=""; const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_"); await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()}); await setDoc(doc(db,"chats",chatId),{participants:ids,lastMessage:text,updatedAt:serverTimestamp()},{merge:true}); });
-
-  function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]))}
-  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")}); $("installBtn").onclick=async()=>{ if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")} };
-  if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error))}
-</script>
-</body>
-</html>
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";import{getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,updateProfile}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";import{getFirestore,doc,setDoc,getDoc,collection,query,onSnapshot,serverTimestamp,addDoc,orderBy,limit}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",authDomain:"chama-cfc28.firebaseapp.com",projectId:"chama-cfc28",storageBucket:"chama-cfc28.firebasestorage.app",messagingSenderId:"680045231088",appId:"1:680045231088:web:8db35684e4b56a320ebb35"};const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);let me=null,activeUser=null,stopMessages=null,installPrompt=null,myProfile=null,currentProfile=null,currentCatalogUser=null;
+function esc(v=""){return String(v).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]))}function avatarHtml(u,f="U"){if(u?.foto)return`<img src="${esc(u.foto)}" alt="Foto">`;return esc((u?.nome||u?.email||f).trim().charAt(0).toUpperCase()||f)}function setAvatar(el,u,f="U"){el.innerHTML=avatarHtml(u,f)}function cleanUrl(v=""){let s=v.trim();if(!s)return"";if(!/^https?:\/\//i.test(s))s="https://"+s;try{let u=new URL(s);return["http:","https:"].includes(u.protocol)?u.href:""}catch{return""}}function wa(v=""){let n=v.replace(/\D/g,"");if(!n)return"";return`https://wa.me/${n.startsWith("55")?n:"55"+n}`}
+async function compressPhoto(file){const data=await new Promise((r,j)=>{let f=new FileReader;f.onload=()=>r(f.result);f.onerror=j;f.readAsDataURL(file)}),img=await new Promise((r,j)=>{let i=new Image;i.onload=()=>r(i);i.onerror=j;i.src=data}),size=256,c=document.createElement("canvas");c.width=c.height=size;let x=c.getContext("2d"),s=Math.max(size/img.width,size/img.height),w=img.width*s,h=img.height*s;x.drawImage(img,(size-w)/2,(size-h)/2,w,h);return c.toDataURL("image/jpeg",.78)}
+$("photoBtn").onclick=$("meAvatar").onclick=()=>$("photoInput").click();$("photoInput").onchange=async()=>{let file=$("photoInput").files?.[0];if(!file||!me)return;try{$("photoBtn").textContent="Salvando...";let foto=await compressPhoto(file);await setDoc(doc(db,"users",me.uid),{foto,updatedAt:serverTimestamp()},{merge:true});myProfile={...(myProfile||{}),foto};setAvatar($("meAvatar"),myProfile)}catch(e){alert("Não foi possível salvar a foto.")}finally{$("photoBtn").textContent="Alterar foto";$("photoInput").value=""}};
+function friendly(e){let c=e?.code||"";if(c.includes("invalid-credential"))return"E-mail ou senha incorretos.";if(c.includes("email-already-in-use"))return"Este e-mail já está cadastrado.";if(c.includes("weak-password"))return"Use uma senha com pelo menos 6 caracteres.";return e?.message||"Não foi possível concluir."}async function ensureProfile(u,n=""){let r=doc(db,"users",u.uid),s=await getDoc(r),nome=(n||u.displayName||u.email?.split("@")[0]||"Usuário").trim();if(!s.exists())await setDoc(r,{uid:u.uid,nome,email:u.email||"",whatsapp:"",site:"",bio:"",catalogo:[],createdAt:serverTimestamp(),updatedAt:serverTimestamp()});else await setDoc(r,{uid:u.uid,email:u.email||"",nome:s.data().nome||nome},{merge:true})}
+$("signupBtn").onclick=async()=>{try{$("authMsg").textContent="";let nome=$("name").value.trim();if(!nome)throw Error("Digite seu nome.");let c=await createUserWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);await updateProfile(c.user,{displayName:nome});await ensureProfile(c.user,nome)}catch(e){$("authMsg").textContent=friendly(e)}};$("loginBtn").onclick=async()=>{try{$("authMsg").textContent="";let c=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);await ensureProfile(c.user)}catch(e){$("authMsg").textContent=friendly(e)}};$("logoutBtn").onclick=()=>signOut(auth);$("backBtn").onclick=()=>$("chatPanel").classList.add("hidden-mobile");
+onAuthStateChanged(auth,async u=>{if(!u){me=null;activeUser=null;if(stopMessages)stopMessages();$("authView").classList.remove("hidden");$("appView").classList.add("hidden");return}me=u;await ensureProfile(u);let s=await getDoc(doc(db,"users",u.uid));myProfile=s.exists()?s.data():{};setAvatar($("meAvatar"),myProfile);$("meName").textContent=myProfile.nome||u.displayName||"Você";$("meEmail").textContent=u.email||"";$("authView").classList.add("hidden");$("appView").classList.remove("hidden");listenUsers()});
+function listenUsers(){onSnapshot(query(collection(db,"users")),s=>{let list=$("usersList");list.innerHTML="";s.forEach(d=>{let u=d.data();if(!u.uid||u.uid===me.uid)return;let row=document.createElement("div");row.className="user";row.innerHTML=`<div class="avatar">${avatarHtml(u)}</div><div class="user-main"><div class="user-name profile-link">${esc(u.nome||"Usuário")}</div><div class="user-email">${esc(u.email||"")}</div></div>`;row.onclick=()=>openChat(u);row.querySelector(".user-name").onclick=row.querySelector(".avatar").onclick=e=>{e.stopPropagation();showProfile(u,false)};list.appendChild(row)});if(!list.children.length)list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhum outro usuário ainda.</div>'})}
+function showProfile(u,mine=false){currentProfile=u;setAvatar($("profileAvatar"),u);$("profileName").textContent=u.nome||"Usuário";$("profileEmail").textContent=u.email||"";let w=wa(u.whatsapp||""),site=cleanUrl(u.site||"");$("profileWhatsapp").innerHTML=w?`<a href="${esc(w)}" target="_blank">${esc(u.whatsapp)}</a>`:"Não informado";$("profileSite").innerHTML=site?`<a href="${esc(site)}" target="_blank">${esc(u.site)}</a>`:"Não informado";$("profileBio").textContent=u.bio||"Sem descrição.";let a=$("profileActions");a.innerHTML="";let cat=document.createElement("button");cat.className="primary";cat.textContent=`🛍️ Ver catálogo (${(u.catalogo||[]).length})`;cat.onclick=()=>{closeProfile();showCatalog(u,mine)};a.appendChild(cat);if(mine){let b=document.createElement("button");b.className="secondary";b.textContent="Editar meu perfil";b.onclick=openProfileEdit;a.appendChild(b)}else if(w){let b=document.createElement("button");b.className="secondary";b.textContent="Abrir WhatsApp";b.onclick=()=>window.open(w,"_blank");a.appendChild(b)}$("profileView").classList.remove("hidden");$("profileEdit").classList.add("hidden");$("profileModal").classList.remove("hidden")}
+function closeProfile(){$("profileModal").classList.add("hidden")}function openProfileEdit(){let u=myProfile||{};$("editName").value=u.nome||"";$("editWhatsapp").value=u.whatsapp||"";$("editSite").value=u.site||"";$("editBio").value=u.bio||"";$("profileView").classList.add("hidden");$("profileEdit").classList.remove("hidden")}$("closeProfile").onclick=closeProfile;$("cancelEdit").onclick=()=>showProfile(myProfile,true);$("meName").onclick=()=>showProfile(myProfile,true);$("chatName").onclick=()=>activeUser&&showProfile(activeUser,false);
+$("saveProfile").onclick=async()=>{let nome=$("editName").value.trim(),whatsapp=$("editWhatsapp").value.trim(),site=$("editSite").value.trim(),bio=$("editBio").value.trim();if(!nome)return $("profileSaveMsg").textContent="Digite seu nome.";try{$("saveProfile").textContent="Salvando...";await setDoc(doc(db,"users",me.uid),{nome,whatsapp,site,bio,updatedAt:serverTimestamp()},{merge:true});await updateProfile(me,{displayName:nome});myProfile={...(myProfile||{}),nome,whatsapp,site,bio};$("meName").textContent=nome;showProfile(myProfile,true)}catch(e){$("profileSaveMsg").textContent="Não foi possível salvar o perfil."}finally{$("saveProfile").textContent="Salvar perfil"}};
+function money(v=""){let s=String(v).trim();return s?(/^R\$/i.test(s)?s:"R$ "+s):""}function showCatalog(u,mine=false){currentCatalogUser=u;$("catalogTitle").textContent=`Catálogo de ${u.nome||"Usuário"}`;let items=Array.isArray(u.catalogo)?u.catalogo:[];$("catalogNote").textContent=items.length?`${items.length} produto${items.length>1?"s":""} • Mercado Livre e Shopee`:"Este usuário ainda não cadastrou produtos.";let g=$("catalogGrid");g.innerHTML="";items.forEach(p=>{let link=cleanUrl(p.link||""),img=cleanUrl(p.imagem||"");let c=document.createElement("div");c.className="product";c.innerHTML=`<div class="product-img">${img?`<img src="${esc(img)}" loading="lazy" alt="${esc(p.titulo||"Produto")}">`:"Sem imagem"}</div><div class="product-body"><span class="badge">${esc(p.plataforma||"Produto")}</span><div class="product-title">${esc(p.titulo||"Produto")}</div><div class="product-price">${esc(money(p.preco))}</div>${link?`<a class="buy" href="${esc(link)}" target="_blank" rel="noopener sponsored">Ver produto</a>`:""}</div>`;g.appendChild(c)});let a=$("catalogOwnerActions");a.innerHTML="";if(mine){let b=document.createElement("button");b.className="secondary";b.textContent="Editar meu catálogo";b.onclick=openCatalogEdit;a.appendChild(b)}$("catalogView").classList.remove("hidden");$("catalogEdit").classList.add("hidden");$("catalogModal").classList.remove("hidden")}
+function productEditor(p={}){let d=document.createElement("div");d.className="product-edit";d.innerHTML=`<div class="product-edit-head"><strong>Produto</strong><button class="remove" type="button">Remover</button></div><div class="two"><div class="field"><label>Plataforma</label><select class="p-platform"><option${p.plataforma==="Mercado Livre"?" selected":""}>Mercado Livre</option><option${p.plataforma==="Shopee"?" selected":""}>Shopee</option></select></div><div class="field"><label>Preço</label><input class="p-price" value="${esc(p.preco||"")}" placeholder="99,90"></div></div><div class="field"><label>Título</label><input class="p-title" maxlength="160" value="${esc(p.titulo||"")}" placeholder="Nome do produto"></div><div class="field"><label>Link de afiliado</label><input class="p-link" value="${esc(p.link||"")}" placeholder="Cole seu link do Mercado Livre ou Shopee"></div><div class="field"><label>Link da imagem</label><input class="p-image" value="${esc(p.imagem||"")}" placeholder="https://...jpg"></div>`;d.querySelector(".remove").onclick=()=>d.remove();return d}function openCatalogEdit(){let ed=$("catalogEditor");ed.innerHTML="";(myProfile.catalogo||[]).forEach(p=>ed.appendChild(productEditor(p)));$("catalogView").classList.add("hidden");$("catalogEdit").classList.remove("hidden")}$("addProduct").onclick=()=>{let e=$("catalogEditor");if(e.children.length>=30)return alert("O limite é de 30 produtos.");e.appendChild(productEditor())};$("cancelCatalogEdit").onclick=()=>showCatalog(myProfile,true);$("closeCatalog").onclick=()=>$("catalogModal").classList.add("hidden");$("chatCatalogBtn").onclick=()=>activeUser&&showCatalog(activeUser,false);
+$("saveCatalog").onclick=async()=>{let rows=[...$("catalogEditor").children];if(rows.length>30)return;let catalogo=[];for(let r of rows){let plataforma=r.querySelector(".p-platform").value,titulo=r.querySelector(".p-title").value.trim(),preco=r.querySelector(".p-price").value.trim(),link=r.querySelector(".p-link").value.trim(),imagem=r.querySelector(".p-image").value.trim();if(!titulo&&!link&&!imagem)continue;if(!titulo||!link){$("catalogSaveMsg").textContent="Preencha título e link de afiliado em todos os produtos.";return}let url=cleanUrl(link);if(!url){$("catalogSaveMsg").textContent="Há um link de produto inválido.";return}catalogo.push({plataforma,titulo,preco,link:url,imagem:cleanUrl(imagem)})}try{$("saveCatalog").textContent="Salvando...";await setDoc(doc(db,"users",me.uid),{catalogo,updatedAt:serverTimestamp()},{merge:true});myProfile={...(myProfile||{}),catalogo};showCatalog(myProfile,true)}catch(e){console.error(e);$("catalogSaveMsg").textContent="Não foi possível salvar o catálogo."}finally{$("saveCatalog").textContent="Salvar catálogo"}};
+async function openChat(u){activeUser=u;$("chatName").textContent=u.nome||"Usuário";$("chatEmail").textContent=u.email||"";setAvatar($("chatAvatar"),u);$("emptyState").classList.add("hidden");$("activeChat").classList.remove("hidden");$("chatPanel").classList.remove("hidden-mobile");let ids=[me.uid,u.uid].sort(),chatId=ids.join("_");await setDoc(doc(db,"chats",chatId),{participants:ids,updatedAt:serverTimestamp()},{merge:true});if(stopMessages)stopMessages();stopMessages=onSnapshot(query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","asc"),limit(300)),s=>{let b=$("messages");b.innerHTML="";s.forEach(d=>{let m=d.data(),x=document.createElement("div");x.className="bubble "+(m.senderId===me.uid?"mine":"theirs");let t=m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"";x.innerHTML=`${esc(m.text||"")}<span class="time">${t}</span>`;b.appendChild(x)});b.scrollTop=b.scrollHeight})}
+$("composer").onsubmit=async e=>{e.preventDefault();let text=$("messageInput").value.trim();if(!text||!activeUser)return;$("messageInput").value="";let ids=[me.uid,activeUser.uid].sort(),id=ids.join("_");await addDoc(collection(db,"chats",id,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});await setDoc(doc(db,"chats",id),{participants:ids,lastMessage:text,updatedAt:serverTimestamp()},{merge:true})};
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});$("installBtn").onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null}};if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
+</script></body></html>
