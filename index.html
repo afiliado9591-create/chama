@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b7a53" />
   <title>Chama</title>
+  <link rel="manifest" href="manifest.webmanifest" />
   <style>
     :root{--green:#0b7a53;--green2:#0f9d6a;--bg:#f3f5f4;--card:#fff;--line:#e6e9e7;--text:#14221c;--muted:#6a756f}
     *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -217,6 +218,8 @@
 
   window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});
   $("installBtn").onclick=async()=>{ if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")} };
+
+  if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error))}
 </script>
 </body>
 </html>
