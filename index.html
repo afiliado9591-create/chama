@@ -9,13 +9,13 @@
   <style>
     :root{--green:#0b7a53;--green2:#0f9d6a;--bg:#f3f5f4;--card:#fff;--line:#e6e9e7;--text:#14221c;--muted:#6a756f}
     *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    button,input{font:inherit}.hidden{display:none!important}
+    button,input,textarea{font:inherit}.hidden{display:none!important}
     .shell{min-height:100dvh;max-width:900px;margin:auto;background:#fff}
     .auth{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#e9fff6,#f7faf8)}
     .auth-card{width:min(430px,100%);background:#fff;padding:28px;border-radius:24px;box-shadow:0 18px 60px #0b7a5322}
     .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.logo{width:52px;height:52px;border-radius:17px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800}
     h1{margin:0;font-size:30px}.sub{color:var(--muted);margin:4px 0 22px}.field{display:grid;gap:7px;margin:13px 0}.field label{font-size:14px;font-weight:650}
-    .field input{border:1px solid #ccd4d0;border-radius:14px;padding:14px 15px;outline:none}.field input:focus{border-color:var(--green)}
+    .field input,.field textarea{border:1px solid #ccd4d0;border-radius:14px;padding:14px 15px;outline:none;width:100%}.field input:focus,.field textarea:focus{border-color:var(--green)}.field textarea{min-height:110px;resize:vertical}
     .primary{width:100%;border:0;background:var(--green);color:#fff;padding:14px 16px;border-radius:14px;font-weight:750;cursor:pointer}
     .secondary{width:100%;border:1px solid #c9d4cf;background:#fff;color:var(--green);padding:13px 16px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:9px}
     .msg{min-height:22px;margin-top:10px;font-size:14px;color:#b42318}
@@ -25,7 +25,7 @@
     .sidebar{border-right:1px solid var(--line);background:#fff}.me{padding:16px;border-bottom:1px solid var(--line)}.me small{color:var(--muted)}
     .section-title{font-size:13px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:14px 16px 8px}
     .user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f2f1;cursor:pointer}.user:hover{background:#f6faf8}
-    .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.me-profile{display:flex;align-items:center;gap:12px}.me-avatar{width:52px;height:52px;flex:0 0 52px;cursor:pointer;border:2px solid #dff4ea}.photo-btn{margin-top:8px;border:0;background:none;color:var(--green);font-size:12px;font-weight:750;padding:0;cursor:pointer}
+    .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.me-profile{display:flex;align-items:center;gap:12px}.me-avatar{width:52px;height:52px;flex:0 0 52px;cursor:pointer;border:2px solid #dff4ea}.photo-btn{margin-top:8px;border:0;background:none;color:var(--green);font-size:12px;font-weight:750;padding:0;cursor:pointer}.profile-link{cursor:pointer;text-decoration:underline;text-decoration-color:#c9d4cf;text-underline-offset:3px}
     .user-main{min-width:0}.user-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .chat{display:flex;flex-direction:column;background:#eef2ef;min-width:0}.empty{margin:auto;text-align:center;color:var(--muted);padding:30px}
     .chat-head{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 14px}.chat-head strong{display:block}.chat-head small{color:var(--muted)}
@@ -35,6 +35,7 @@
     .composer{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom))}
     .composer input{flex:1;border:1px solid #d5ddd9;border-radius:999px;padding:12px 16px;outline:none}.send{border:0;background:var(--green);color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px}
     .install{background:#fff;color:var(--green);border:1px solid #ffffff80}
+    .modal{position:fixed;inset:0;background:#0008;z-index:20;display:grid;place-items:center;padding:18px}.modal-card{width:min(460px,100%);max-height:90dvh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 20px 70px #0004}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.modal-head h3{margin:0;font-size:22px}.closebtn{border:0;background:#eef4f1;color:var(--green);width:38px;height:38px;border-radius:50%;font-size:22px}.profile-hero{text-align:center;padding:8px 0 12px}.profile-avatar{width:92px;height:92px;margin:0 auto 10px;font-size:30px;border:3px solid #dff4ea}.profile-name{font-size:22px;font-weight:800}.profile-email{font-size:13px;color:var(--muted)}.profile-info{display:grid;gap:12px;margin-top:16px}.info-item{padding:12px 14px;background:#f7faf8;border-radius:14px;word-break:break-word}.info-label{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:4px}.info-item a{color:var(--green);font-weight:700}.profile-actions{display:flex;gap:8px;margin-top:16px}.profile-actions button{flex:1}.save-msg{font-size:13px;color:var(--green);min-height:18px;margin-top:8px}
     @media(max-width:700px){
       .layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}
     }
@@ -62,7 +63,7 @@
     </header>
     <main class="layout">
       <aside class="sidebar">
-        <div class="me"><div class="me-profile"><div id="meAvatar" class="avatar me-avatar" title="Trocar foto">V</div><div><strong id="meName">Você</strong><br><small id="meEmail"></small><br><button id="photoBtn" class="photo-btn" type="button">Alterar foto</button></div></div><input id="photoInput" type="file" accept="image/*" class="hidden"></div>
+        <div class="me"><div class="me-profile"><div id="meAvatar" class="avatar me-avatar" title="Trocar foto">V</div><div><strong id="meName" class="profile-link">Você</strong><br><small id="meEmail"></small><br><button id="photoBtn" class="photo-btn" type="button">Alterar foto</button></div></div><input id="photoInput" type="file" accept="image/*" class="hidden"></div>
         <div class="section-title">Pessoas</div>
         <div id="usersList"></div>
       </aside>
@@ -72,7 +73,7 @@
           <div class="chat-head">
             <button id="backBtn" class="iconbtn back" style="background:#eef4f1;color:#0b7a53">←</button>
             <div class="avatar" id="chatAvatar">C</div>
-            <div><strong id="chatName"></strong><small id="chatEmail"></small></div>
+            <div><strong id="chatName" class="profile-link"></strong><small id="chatEmail"></small></div>
           </div>
           <div id="messages" class="messages"></div>
           <form id="composer" class="composer">
@@ -84,10 +85,34 @@
     </main>
   </div>
 
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head"><h3>Perfil</h3><button id="closeProfile" class="closebtn" type="button">×</button></div>
+      <div id="profileView">
+        <div class="profile-hero"><div id="profileAvatar" class="avatar profile-avatar">U</div><div id="profileName" class="profile-name"></div><div id="profileEmail" class="profile-email"></div></div>
+        <div class="profile-info">
+          <div class="info-item"><span class="info-label">WhatsApp</span><div id="profileWhatsapp">Não informado</div></div>
+          <div class="info-item"><span class="info-label">Site</span><div id="profileSite">Não informado</div></div>
+          <div class="info-item"><span class="info-label">Descrição</span><div id="profileBio">Sem descrição.</div></div>
+        </div>
+        <div id="profileActions" class="profile-actions"></div>
+      </div>
+      <div id="profileEdit" class="hidden">
+        <div class="field"><label>Nome</label><input id="editName" maxlength="80" placeholder="Seu nome"></div>
+        <div class="field"><label>WhatsApp</label><input id="editWhatsapp" inputmode="tel" maxlength="25" placeholder="Ex.: 11999999999"></div>
+        <div class="field"><label>Link do site</label><input id="editSite" inputmode="url" maxlength="250" placeholder="Ex.: https://meusite.com.br"></div>
+        <div class="field"><label>Descrição do perfil</label><textarea id="editBio" maxlength="500" placeholder="Conte um pouco sobre você..."></textarea></div>
+        <button id="saveProfile" class="primary" type="button">Salvar perfil</button>
+        <button id="cancelEdit" class="secondary" type="button">Cancelar</button>
+        <div id="profileSaveMsg" class="save-msg"></div>
+      </div>
+    </div>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, addDoc, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",
@@ -101,169 +126,94 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
   const $ = (id) => document.getElementById(id);
   const authView=$("authView"), appView=$("appView"), authMsg=$("authMsg");
   let me=null, activeUser=null, stopMessages=null, installPrompt=null, myProfile=null;
 
-
   function avatarHtml(u, fallback="U"){
     if(u?.foto) return `<img src="${escapeHtml(u.foto)}" alt="Foto de perfil">`;
-    const initial=(u?.nome||u?.email||fallback).trim().charAt(0).toUpperCase();
-    return escapeHtml(initial||fallback);
+    const initial=(u?.nome||u?.email||fallback).trim().charAt(0).toUpperCase(); return escapeHtml(initial||fallback);
   }
-
-  function setAvatar(el,u,fallback="U"){
-    el.innerHTML=avatarHtml(u,fallback);
-  }
+  function setAvatar(el,u,fallback="U"){ el.innerHTML=avatarHtml(u,fallback); }
+  function cleanUrl(v=""){ let s=v.trim(); if(!s) return ""; if(!/^https?:\/\//i.test(s)) s="https://"+s; try{ const u=new URL(s); return ["http:","https:"].includes(u.protocol)?u.href:""; }catch{return "";} }
+  function whatsappUrl(v=""){ const n=v.replace(/\D/g,""); if(!n) return ""; const full=n.startsWith("55")?n:"55"+n; return `https://wa.me/${full}`; }
 
   async function compressPhoto(file){
-    const data=await new Promise((resolve,reject)=>{
-      const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file);
-    });
-    const img=await new Promise((resolve,reject)=>{
-      const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=data;
-    });
+    const data=await new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
+    const img=await new Promise((resolve,reject)=>{ const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=data; });
     const size=256, canvas=document.createElement("canvas"); canvas.width=size; canvas.height=size;
-    const ctx=canvas.getContext("2d");
-    const scale=Math.max(size/img.width,size/img.height);
-    const w=img.width*scale,h=img.height*scale;
-    ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
-    return canvas.toDataURL("image/jpeg",0.78);
+    const ctx=canvas.getContext("2d"), scale=Math.max(size/img.width,size/img.height), w=img.width*scale,h=img.height*scale;
+    ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h); return canvas.toDataURL("image/jpeg",0.78);
   }
 
-  $("photoBtn").onclick=()=>$("photoInput").click();
-  $("meAvatar").onclick=()=>$("photoInput").click();
+  $("photoBtn").onclick=()=>$("photoInput").click(); $("meAvatar").onclick=()=>$("photoInput").click();
   $("photoInput").addEventListener("change",async()=>{
-    const file=$("photoInput").files?.[0];
-    if(!file||!me) return;
-    if(!file.type.startsWith("image/")){ alert("Escolha uma imagem."); return; }
+    const file=$("photoInput").files?.[0]; if(!file||!me) return; if(!file.type.startsWith("image/")){ alert("Escolha uma imagem."); return; }
     $("photoBtn").textContent="Salvando...";
-    try{
-      const foto=await compressPhoto(file);
-      await setDoc(doc(db,"users",me.uid),{foto,updatedAt:serverTimestamp()},{merge:true});
-      myProfile={...(myProfile||{}),foto};
-      setAvatar($("meAvatar"),myProfile,"V");
-      $("photoBtn").textContent="Alterar foto";
-    }catch(e){
-      console.error(e); alert("Não foi possível salvar a foto."); $("photoBtn").textContent="Alterar foto";
-    }finally{$("photoInput").value="";}
+    try{ const foto=await compressPhoto(file); await setDoc(doc(db,"users",me.uid),{foto,updatedAt:serverTimestamp()},{merge:true}); myProfile={...(myProfile||{}),foto}; setAvatar($("meAvatar"),myProfile,"V"); }
+    catch(e){ console.error(e); alert("Não foi possível salvar a foto."); }
+    finally{$("photoBtn").textContent="Alterar foto";$ ("photoInput").value="";}
   });
 
-  function friendlyError(e){
-    const c=e?.code||"";
-    if(c.includes("invalid-credential")) return "E-mail ou senha incorretos.";
-    if(c.includes("email-already-in-use")) return "Este e-mail já está cadastrado.";
-    if(c.includes("weak-password")) return "Use uma senha com pelo menos 6 caracteres.";
-    if(c.includes("invalid-email")) return "Digite um e-mail válido.";
-    return e?.message || "Não foi possível concluir.";
-  }
+  function friendlyError(e){ const c=e?.code||""; if(c.includes("invalid-credential")) return "E-mail ou senha incorretos."; if(c.includes("email-already-in-use")) return "Este e-mail já está cadastrado."; if(c.includes("weak-password")) return "Use uma senha com pelo menos 6 caracteres."; if(c.includes("invalid-email")) return "Digite um e-mail válido."; return e?.message || "Não foi possível concluir."; }
 
   async function ensureProfile(user, requestedName=""){
-    const ref=doc(db,"users",user.uid);
-    const snap=await getDoc(ref);
-    const fallback=(requestedName || user.displayName || user.email?.split("@")[0] || "Usuário").trim();
-    if(!snap.exists()){
-      await setDoc(ref,{uid:user.uid,nome:fallback,email:user.email||"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-    } else if(!snap.data().uid || !snap.data().email){
-      await setDoc(ref,{uid:user.uid,nome:snap.data().nome||fallback,email:user.email||"",updatedAt:serverTimestamp()},{merge:true});
-    }
+    const ref=doc(db,"users",user.uid), snap=await getDoc(ref), fallback=(requestedName || user.displayName || user.email?.split("@")[0] || "Usuário").trim();
+    if(!snap.exists()) await setDoc(ref,{uid:user.uid,nome:fallback,email:user.email||"",whatsapp:"",site:"",bio:"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+    else if(!snap.data().uid || !snap.data().email) await setDoc(ref,{uid:user.uid,nome:snap.data().nome||fallback,email:user.email||"",updatedAt:serverTimestamp()},{merge:true});
   }
 
-  $("signupBtn").onclick=async()=>{
-    authMsg.textContent="";
-    try{
-      const nome=$("name").value.trim();
-      if(!nome) throw new Error("Digite seu nome.");
-      const cred=await createUserWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
-      await updateProfile(cred.user,{displayName:nome});
-      await ensureProfile(cred.user,nome);
-    }catch(e){authMsg.textContent=friendlyError(e)}
-  };
-
-  $("loginBtn").onclick=async()=>{
-    authMsg.textContent="";
-    try{
-      const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
-      await ensureProfile(cred.user,$("name").value.trim());
-    }catch(e){authMsg.textContent=friendlyError(e)}
-  };
-
-  $("logoutBtn").onclick=()=>signOut(auth);
-  $("backBtn").onclick=()=> $("chatPanel").classList.add("hidden-mobile");
+  $("signupBtn").onclick=async()=>{ authMsg.textContent=""; try{ const nome=$("name").value.trim(); if(!nome) throw new Error("Digite seu nome."); const cred=await createUserWithEmailAndPassword(auth,$("email").value.trim(),$("password").value); await updateProfile(cred.user,{displayName:nome}); await ensureProfile(cred.user,nome); }catch(e){authMsg.textContent=friendlyError(e)} };
+  $("loginBtn").onclick=async()=>{ authMsg.textContent=""; try{ const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value); await ensureProfile(cred.user,$("name").value.trim()); }catch(e){authMsg.textContent=friendlyError(e)} };
+  $("logoutBtn").onclick=()=>signOut(auth); $("backBtn").onclick=()=> $("chatPanel").classList.add("hidden-mobile");
 
   onAuthStateChanged(auth, async user=>{
-    if(!user){
-      me=null; activeUser=null;
-      if(stopMessages){stopMessages();stopMessages=null}
-      authView.classList.remove("hidden"); appView.classList.add("hidden"); return;
-    }
-    me=user;
-    try{ await ensureProfile(user); }catch(e){ console.error(e); }
+    if(!user){ me=null; activeUser=null; if(stopMessages){stopMessages();stopMessages=null} authView.classList.remove("hidden"); appView.classList.add("hidden"); return; }
+    me=user; try{ await ensureProfile(user); }catch(e){ console.error(e); }
     try{ const ps=await getDoc(doc(db,"users",user.uid)); myProfile=ps.exists()?ps.data():null; }catch(e){ myProfile=null; }
-    setAvatar($("meAvatar"),myProfile||{nome:user.displayName,email:user.email},"V");
-    $("meName").textContent=user.displayName || user.email?.split("@")[0] || "Você";
-    $("meEmail").textContent=user.email||"";
-    authView.classList.add("hidden"); appView.classList.remove("hidden");
-    listenUsers();
+    setAvatar($("meAvatar"),myProfile||{nome:user.displayName,email:user.email},"V"); $("meName").textContent=myProfile?.nome || user.displayName || user.email?.split("@")[0] || "Você"; $("meEmail").textContent=user.email||"";
+    authView.classList.add("hidden"); appView.classList.remove("hidden"); listenUsers();
   });
+
+  $("meName").onclick=()=>showProfile(myProfile||{uid:me?.uid,nome:me?.displayName,email:me?.email},true);
+  $("chatName").onclick=()=>{ if(activeUser) showProfile(activeUser,false); };
 
   function listenUsers(){
-    const q=query(collection(db,"users"));
-    onSnapshot(q,snap=>{
-      const list=$("usersList"); list.innerHTML="";
-      snap.forEach(d=>{
-        const u=d.data();
-        if(!u.uid || u.uid===me.uid) return;
-        const row=document.createElement("div"); row.className="user";
-        row.innerHTML=`<div class="avatar">${avatarHtml(u)}</div><div class="user-main"><div class="user-name">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;
-        row.onclick=()=>openChat(u);
-        list.appendChild(row);
-      });
-      if(!list.children.length) list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhum outro usuário ainda.</div>';
-    },e=>console.error(e));
+    const q=query(collection(db,"users")); onSnapshot(q,snap=>{ const list=$("usersList"); list.innerHTML="";
+      snap.forEach(d=>{ const u=d.data(); if(!u.uid || u.uid===me.uid) return; const row=document.createElement("div"); row.className="user";
+        row.innerHTML=`<div class="avatar">${avatarHtml(u)}</div><div class="user-main"><div class="user-name profile-link">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;
+        row.onclick=()=>openChat(u); row.querySelector(".user-name").onclick=(e)=>{e.stopPropagation();showProfile(u,false)}; row.querySelector(".avatar").onclick=(e)=>{e.stopPropagation();showProfile(u,false)}; list.appendChild(row);
+      }); if(!list.children.length) list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhum outro usuário ainda.</div>'; },e=>console.error(e));
   }
+
+  function showProfile(u,isMine=false){
+    if(!u) return; setAvatar($("profileAvatar"),u); $("profileName").textContent=u.nome||"Usuário"; $("profileEmail").textContent=u.email||"";
+    const w=whatsappUrl(u.whatsapp||""); $("profileWhatsapp").innerHTML=w?`<a href="${escapeHtml(w)}" target="_blank" rel="noopener">${escapeHtml(u.whatsapp)}</a>`:"Não informado";
+    const site=cleanUrl(u.site||""); $("profileSite").innerHTML=site?`<a href="${escapeHtml(site)}" target="_blank" rel="noopener">${escapeHtml(u.site)}</a>`:"Não informado"; $("profileBio").textContent=u.bio||"Sem descrição.";
+    const actions=$("profileActions"); actions.innerHTML=""; if(isMine){ const b=document.createElement("button"); b.className="primary"; b.textContent="Editar meu perfil"; b.onclick=openProfileEdit; actions.appendChild(b); } else if(w){ const b=document.createElement("button"); b.className="primary"; b.textContent="Abrir WhatsApp"; b.onclick=()=>window.open(w,"_blank","noopener"); actions.appendChild(b); }
+    $("profileView").classList.remove("hidden"); $("profileEdit").classList.add("hidden"); $("profileModal").classList.remove("hidden");
+  }
+  function openProfileEdit(){ const u=myProfile||{}; $("editName").value=u.nome||me?.displayName||""; $("editWhatsapp").value=u.whatsapp||""; $("editSite").value=u.site||""; $("editBio").value=u.bio||""; $("profileSaveMsg").textContent=""; $("profileView").classList.add("hidden"); $("profileEdit").classList.remove("hidden"); }
+  $("cancelEdit").onclick=()=>showProfile(myProfile,true); $("closeProfile").onclick=()=>$("profileModal").classList.add("hidden"); $("profileModal").onclick=(e)=>{ if(e.target===$("profileModal")) $("profileModal").classList.add("hidden"); };
+
+  $("saveProfile").onclick=async()=>{
+    if(!me) return; const nome=$("editName").value.trim(), whatsapp=$("editWhatsapp").value.trim(), site=$("editSite").value.trim(), bio=$("editBio").value.trim();
+    if(!nome){$("profileSaveMsg").textContent="Digite seu nome.";return;} if(site && !cleanUrl(site)){$("profileSaveMsg").textContent="Digite um link de site válido.";return;}
+    $("saveProfile").textContent="Salvando..."; $("profileSaveMsg").textContent="";
+    try{ await setDoc(doc(db,"users",me.uid),{nome,whatsapp,site,bio,updatedAt:serverTimestamp()},{merge:true}); await updateProfile(me,{displayName:nome}); myProfile={...(myProfile||{}),uid:me.uid,email:me.email||"",nome,whatsapp,site,bio}; $("meName").textContent=nome; $("saveProfile").textContent="Salvar perfil"; showProfile(myProfile,true); }
+    catch(e){console.error(e);$("profileSaveMsg").textContent="Não foi possível salvar o perfil.";$("saveProfile").textContent="Salvar perfil";}
+  };
 
   async function openChat(u){
-    activeUser=u;
-    $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||"";
-    setAvatar($("chatAvatar"),u);
-    $("emptyState").classList.add("hidden"); $("activeChat").classList.remove("hidden"); $("chatPanel").classList.remove("hidden-mobile");
-
-    const ids=[me.uid,u.uid].sort();
-    const chatId=ids.join("_");
-    await setDoc(doc(db,"chats",chatId),{participants:ids,updatedAt:serverTimestamp()},{merge:true});
-
-    if(stopMessages) stopMessages();
-    const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","asc"),limit(300));
-    stopMessages=onSnapshot(mq,snap=>{
-      const box=$("messages"); box.innerHTML="";
-      snap.forEach(d=>{
-        const m=d.data(), mine=m.senderId===me.uid;
-        const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs");
-        const t=m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "";
-        b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`;
-        box.appendChild(b);
-      });
-      box.scrollTop=box.scrollHeight;
-    });
+    activeUser=u; $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||""; setAvatar($("chatAvatar"),u); $("emptyState").classList.add("hidden"); $("activeChat").classList.remove("hidden"); $("chatPanel").classList.remove("hidden-mobile");
+    const ids=[me.uid,u.uid].sort(), chatId=ids.join("_"); await setDoc(doc(db,"chats",chatId),{participants:ids,updatedAt:serverTimestamp()},{merge:true}); if(stopMessages) stopMessages();
+    const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","asc"),limit(300)); stopMessages=onSnapshot(mq,snap=>{ const box=$("messages"); box.innerHTML=""; snap.forEach(d=>{ const m=d.data(), mine=m.senderId===me.uid, b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs"); const t=m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : ""; b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`; box.appendChild(b); }); box.scrollTop=box.scrollHeight; });
   }
 
-  $("composer").addEventListener("submit", async e=>{
-    e.preventDefault();
-    const text=$("messageInput").value.trim();
-    if(!text || !activeUser) return;
-    $("messageInput").value="";
-    const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
-    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
-    await setDoc(doc(db,"chats",chatId),{participants:ids,lastMessage:text,updatedAt:serverTimestamp()},{merge:true});
-  });
+  $("composer").addEventListener("submit", async e=>{ e.preventDefault(); const text=$("messageInput").value.trim(); if(!text || !activeUser) return; $("messageInput").value=""; const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_"); await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()}); await setDoc(doc(db,"chats",chatId),{participants:ids,lastMessage:text,updatedAt:serverTimestamp()},{merge:true}); });
 
   function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]))}
-
-  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});
-  $("installBtn").onclick=async()=>{ if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")} };
-
+  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")}); $("installBtn").onclick=async()=>{ if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")} };
   if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error))}
 </script>
 </body>
