@@ -30,6 +30,18 @@ async function contextUid(){
 }
 function profileName(){return text('profileName')||text('meName')||'usuário'}
 function catalogName(){return text('catalogTitle').replace(/^Catálogo\s*(de)?\s*/i,'').trim()||profileName()}
+function sendInsideChama(card,uid,i){
+  const input=document.getElementById('messageInput'),form=document.getElementById('composer');
+  const active=document.getElementById('activeChat');
+  if(!input||!form||!active||active.classList.contains('hidden'))return alert('Abra uma conversa no Chama antes de enviar o produto.');
+  const title=card.querySelector('.product-title')?.textContent?.trim()||'Produto';
+  const price=card.querySelector('.product-price')?.textContent?.trim()||'';
+  const link=`${BASE}?produto=${encodeURIComponent(uid+':'+i)}`;
+  input.value=`🛍️ ${title}${price?'\n💰 '+price:''}\n${link}`;
+  document.getElementById('catalogModal')?.classList.add('hidden');
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  if(form.requestSubmit)form.requestSubmit();else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+}
 
 function addProfileShare(){
   const actions=document.getElementById('profileActions');if(!actions||actions.querySelector('[data-share-profile]')||!visible('profileModal'))return;
@@ -41,10 +53,19 @@ function addCatalogShare(){
 }
 function addProductShares(){
   if(!visible('catalogModal'))return;
-  document.querySelectorAll('#catalogGrid .product').forEach((card,i)=>{if(card.querySelector('[data-share-product]'))return;const title=card.querySelector('.product-title')?.textContent?.trim()||'Produto';const b=btn('↗ Compartilhar produto',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este produto.');await nativeShare(title,`Veja este produto no Chama: ${title}`,`${BASE}?produto=${encodeURIComponent(uid+':'+i)}`)});b.dataset.shareProduct='1';(card.querySelector('.product-body')||card).appendChild(b)})
+  document.querySelectorAll('#catalogGrid .product').forEach((card,i)=>{
+    const body=card.querySelector('.product-body')||card;
+    if(!card.querySelector('[data-share-product]')){
+      const title=card.querySelector('.product-title')?.textContent?.trim()||'Produto';
+      const b=btn('↗ Compartilhar produto',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este produto.');await nativeShare(title,`Veja este produto no Chama: ${title}`,`${BASE}?produto=${encodeURIComponent(uid+':'+i)}`)});b.dataset.shareProduct='1';body.appendChild(b)
+    }
+    if(!card.querySelector('[data-send-chama]')){
+      const c=btn('💬 Enviar no Chama',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este produto.');sendInsideChama(card,uid,i)});c.dataset.sendChama='1';c.classList.add('send-chama-btn');body.appendChild(c)
+    }
+  })
 }
 function refresh(){addProfileShare();addCatalogShare();addProductShares()}
 new MutationObserver(refresh).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
 document.addEventListener('click',()=>setTimeout(refresh,50),true);
-const style=document.createElement('style');style.textContent='.share-btn{font-size:13px}.product .share-btn{padding:9px 8px;margin-top:8px}';document.head.appendChild(style);
+const style=document.createElement('style');style.textContent='.share-btn{font-size:13px}.product .share-btn{padding:9px 8px;margin-top:8px}.send-chama-btn{background:#e6f5ee!important;color:#0b7a53!important;border-color:#b9dfcc!important}';document.head.appendChild(style);
 refresh();
