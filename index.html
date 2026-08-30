@@ -25,7 +25,7 @@
     .sidebar{border-right:1px solid var(--line);background:#fff}.me{padding:16px;border-bottom:1px solid var(--line)}.me small{color:var(--muted)}
     .section-title{font-size:13px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:14px 16px 8px}
     .user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f2f1;cursor:pointer}.user:hover{background:#f6faf8}
-    .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800}
+    .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.me-profile{display:flex;align-items:center;gap:12px}.me-avatar{width:52px;height:52px;flex:0 0 52px;cursor:pointer;border:2px solid #dff4ea}.photo-btn{margin-top:8px;border:0;background:none;color:var(--green);font-size:12px;font-weight:750;padding:0;cursor:pointer}
     .user-main{min-width:0}.user-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .chat{display:flex;flex-direction:column;background:#eef2ef;min-width:0}.empty{margin:auto;text-align:center;color:var(--muted);padding:30px}
     .chat-head{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 14px}.chat-head strong{display:block}.chat-head small{color:var(--muted)}
@@ -62,7 +62,7 @@
     </header>
     <main class="layout">
       <aside class="sidebar">
-        <div class="me"><strong id="meName">Você</strong><br><small id="meEmail"></small></div>
+        <div class="me"><div class="me-profile"><div id="meAvatar" class="avatar me-avatar" title="Trocar foto">V</div><div><strong id="meName">Você</strong><br><small id="meEmail"></small><br><button id="photoBtn" class="photo-btn" type="button">Alterar foto</button></div></div><input id="photoInput" type="file" accept="image/*" class="hidden"></div>
         <div class="section-title">Pessoas</div>
         <div id="usersList"></div>
       </aside>
@@ -104,7 +104,51 @@
 
   const $ = (id) => document.getElementById(id);
   const authView=$("authView"), appView=$("appView"), authMsg=$("authMsg");
-  let me=null, activeUser=null, stopMessages=null, installPrompt=null;
+  let me=null, activeUser=null, stopMessages=null, installPrompt=null, myProfile=null;
+
+
+  function avatarHtml(u, fallback="U"){
+    if(u?.foto) return `<img src="${escapeHtml(u.foto)}" alt="Foto de perfil">`;
+    const initial=(u?.nome||u?.email||fallback).trim().charAt(0).toUpperCase();
+    return escapeHtml(initial||fallback);
+  }
+
+  function setAvatar(el,u,fallback="U"){
+    el.innerHTML=avatarHtml(u,fallback);
+  }
+
+  async function compressPhoto(file){
+    const data=await new Promise((resolve,reject)=>{
+      const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file);
+    });
+    const img=await new Promise((resolve,reject)=>{
+      const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=data;
+    });
+    const size=256, canvas=document.createElement("canvas"); canvas.width=size; canvas.height=size;
+    const ctx=canvas.getContext("2d");
+    const scale=Math.max(size/img.width,size/img.height);
+    const w=img.width*scale,h=img.height*scale;
+    ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+    return canvas.toDataURL("image/jpeg",0.78);
+  }
+
+  $("photoBtn").onclick=()=>$("photoInput").click();
+  $("meAvatar").onclick=()=>$("photoInput").click();
+  $("photoInput").addEventListener("change",async()=>{
+    const file=$("photoInput").files?.[0];
+    if(!file||!me) return;
+    if(!file.type.startsWith("image/")){ alert("Escolha uma imagem."); return; }
+    $("photoBtn").textContent="Salvando...";
+    try{
+      const foto=await compressPhoto(file);
+      await setDoc(doc(db,"users",me.uid),{foto,updatedAt:serverTimestamp()},{merge:true});
+      myProfile={...(myProfile||{}),foto};
+      setAvatar($("meAvatar"),myProfile,"V");
+      $("photoBtn").textContent="Alterar foto";
+    }catch(e){
+      console.error(e); alert("Não foi possível salvar a foto."); $("photoBtn").textContent="Alterar foto";
+    }finally{$("photoInput").value="";}
+  });
 
   function friendlyError(e){
     const c=e?.code||"";
@@ -156,6 +200,8 @@
     }
     me=user;
     try{ await ensureProfile(user); }catch(e){ console.error(e); }
+    try{ const ps=await getDoc(doc(db,"users",user.uid)); myProfile=ps.exists()?ps.data():null; }catch(e){ myProfile=null; }
+    setAvatar($("meAvatar"),myProfile||{nome:user.displayName,email:user.email},"V");
     $("meName").textContent=user.displayName || user.email?.split("@")[0] || "Você";
     $("meEmail").textContent=user.email||"";
     authView.classList.add("hidden"); appView.classList.remove("hidden");
@@ -170,8 +216,7 @@
         const u=d.data();
         if(!u.uid || u.uid===me.uid) return;
         const row=document.createElement("div"); row.className="user";
-        const initial=(u.nome||u.email||"U").trim().charAt(0).toUpperCase();
-        row.innerHTML=`<div class="avatar">${escapeHtml(initial)}</div><div class="user-main"><div class="user-name">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;
+        row.innerHTML=`<div class="avatar">${avatarHtml(u)}</div><div class="user-main"><div class="user-name">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;
         row.onclick=()=>openChat(u);
         list.appendChild(row);
       });
@@ -182,7 +227,7 @@
   async function openChat(u){
     activeUser=u;
     $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||"";
-    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();
+    setAvatar($("chatAvatar"),u);
     $("emptyState").classList.add("hidden"); $("activeChat").classList.remove("hidden"); $("chatPanel").classList.remove("hidden-mobile");
 
     const ids=[me.uid,u.uid].sort();
