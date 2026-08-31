@@ -77,5 +77,28 @@ service cloud.firestore {
         allow update: if false;
       }
     }
+
+    match /calls/{callId} {
+      allow create: if activeUser() &&
+        request.resource.data.callerId == request.auth.uid &&
+        request.resource.data.calleeId is string &&
+        request.resource.data.calleeId != request.auth.uid &&
+        !blockedEitherWay(request.resource.data.callerId, request.resource.data.calleeId);
+      allow read: if activeUser() &&
+        (request.auth.uid == resource.data.callerId || request.auth.uid == resource.data.calleeId);
+      allow update: if activeUser() &&
+        (request.auth.uid == resource.data.callerId || request.auth.uid == resource.data.calleeId) &&
+        request.resource.data.callerId == resource.data.callerId &&
+        request.resource.data.calleeId == resource.data.calleeId;
+      allow delete: if activeUser() &&
+        (request.auth.uid == resource.data.callerId || request.auth.uid == resource.data.calleeId);
+
+      match /{candidateCollection}/{candidateId} {
+        allow read, create, delete: if activeUser() &&
+          (request.auth.uid == get(/databases/$(database)/documents/calls/$(callId)).data.callerId ||
+           request.auth.uid == get(/databases/$(database)/documents/calls/$(callId)).data.calleeId);
+        allow update: if false;
+      }
+    }
   }
 }
