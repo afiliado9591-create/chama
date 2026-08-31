@@ -7,6 +7,15 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function userBlocked(userId, otherId) {
+      return ('bloqueados' in get(/databases/$(database)/documents/users/$(userId)).data) &&
+        (otherId in get(/databases/$(database)/documents/users/$(userId)).data.bloqueados);
+    }
+
+    function blockedEitherWay(senderId, receiverId) {
+      return userBlocked(senderId, receiverId) || userBlocked(receiverId, senderId);
+    }
+
     match /users/{userId} {
       allow read: if signedIn();
       allow create, update, delete: if signedIn() && request.auth.uid == userId;
@@ -29,7 +38,9 @@ service cloud.firestore {
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
         allow create: if signedIn() &&
           request.resource.data.senderId == request.auth.uid &&
-          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+          request.resource.data.receiverId is string &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+          !blockedEitherWay(request.resource.data.senderId, request.resource.data.receiverId);
         allow update, delete: if false;
       }
     }
