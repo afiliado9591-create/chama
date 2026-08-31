@@ -1,33 +1,33 @@
-const CACHE="chama-v41";
+const CACHE="chama-v42";
 const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./chat-safe-ui.js","./notifications.js","./delete-messages.js","./admin-panel.js","./profile-type.js","./referral.js","./professional-profile.js","./offers.js","./business-directory.js","./mobile-topbar-fix.js","./voice-call.js","./push-call.js","./call-push-trigger.js"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 function injectExtras(html){
   const inject=(tag,needle)=>{if(!html.includes(needle))html=html.replace("</body>",tag+"</body>")};
-  inject('<script src="./search.js?v=41"></script>','search.js?v=41');
-  inject('<script type="module" src="./auth-persistence.js?v=41"></script>','auth-persistence.js?v=41');
-  inject('<script type="module" src="./share.js?v=41"></script>','share.js?v=41');
-  inject('<script type="module" src="./public-profile.js?v=41"></script>','public-profile.js?v=41');
-  inject('<script src="./brand-brazil.js?v=41"></script>','brand-brazil.js?v=41');
-  inject('<script src="./contact-open-chat.js?v=41"></script>','contact-open-chat.js?v=41');
-  inject('<script type="module" src="./forgot-password.js?v=41"></script>','forgot-password.js?v=41');
-  inject('<script src="./clickable-links.js?v=41"></script>','clickable-links.js?v=41');
-  inject('<script type="module" src="./friends.js?v=41"></script>','friends.js?v=41');
-  inject('<script src="./media-render-safe.js?v=41"></script>','media-render-safe.js?v=41');
-  inject('<script type="module" src="./media-chat.js?v=41"></script>','media-chat.js?v=41');
-  inject('<script src="./chat-safe-ui.js?v=41"></script>','chat-safe-ui.js?v=41');
-  inject('<script type="module" src="./notifications.js?v=41"></script>','notifications.js?v=41');
-  inject('<script type="module" src="./delete-messages.js?v=41"></script>','delete-messages.js?v=41');
-  inject('<script type="module" src="./admin-panel.js?v=41"></script>','admin-panel.js?v=41');
-  inject('<script type="module" src="./profile-type.js?v=41"></script>','profile-type.js?v=41');
-  inject('<script type="module" src="./referral.js?v=41"></script>','referral.js?v=41');
-  inject('<script type="module" src="./professional-profile.js?v=41"></script>','professional-profile.js?v=41');
-  inject('<script type="module" src="./offers.js?v=41"></script>','offers.js?v=41');
-  inject('<script type="module" src="./business-directory.js?v=41"></script>','business-directory.js?v=41');
-  inject('<script src="./mobile-topbar-fix.js?v=41"></script>','mobile-topbar-fix.js?v=41');
-  inject('<script type="module" src="./push-call.js?v=41"></script>','push-call.js?v=41');
-  inject('<script type="module" src="./voice-call.js?v=41"></script>','voice-call.js?v=41');
-  inject('<script type="module" src="./call-push-trigger.js?v=41"></script>','call-push-trigger.js?v=41');
+  inject('<script src="./search.js?v=42"></script>','search.js?v=42');
+  inject('<script type="module" src="./auth-persistence.js?v=42"></script>','auth-persistence.js?v=42');
+  inject('<script type="module" src="./share.js?v=42"></script>','share.js?v=42');
+  inject('<script type="module" src="./public-profile.js?v=42"></script>','public-profile.js?v=42');
+  inject('<script src="./brand-brazil.js?v=42"></script>','brand-brazil.js?v=42');
+  inject('<script src="./contact-open-chat.js?v=42"></script>','contact-open-chat.js?v=42');
+  inject('<script type="module" src="./forgot-password.js?v=42"></script>','forgot-password.js?v=42');
+  inject('<script src="./clickable-links.js?v=42"></script>','clickable-links.js?v=42');
+  inject('<script type="module" src="./friends.js?v=42"></script>','friends.js?v=42');
+  inject('<script src="./media-render-safe.js?v=42"></script>','media-render-safe.js?v=42');
+  inject('<script type="module" src="./media-chat.js?v=42"></script>','media-chat.js?v=42');
+  inject('<script src="./chat-safe-ui.js?v=42"></script>','chat-safe-ui.js?v=42');
+  inject('<script type="module" src="./notifications.js?v=42"></script>','notifications.js?v=42');
+  inject('<script type="module" src="./delete-messages.js?v=42"></script>','delete-messages.js?v=42');
+  inject('<script type="module" src="./admin-panel.js?v=42"></script>','admin-panel.js?v=42');
+  inject('<script type="module" src="./profile-type.js?v=42"></script>','profile-type.js?v=42');
+  inject('<script type="module" src="./referral.js?v=42"></script>','referral.js?v=42');
+  inject('<script type="module" src="./professional-profile.js?v=42"></script>','professional-profile.js?v=42');
+  inject('<script type="module" src="./offers.js?v=42"></script>','offers.js?v=42');
+  inject('<script type="module" src="./business-directory.js?v=42"></script>','business-directory.js?v=42');
+  inject('<script src="./mobile-topbar-fix.js?v=42"></script>','mobile-topbar-fix.js?v=42');
+  inject('<script type="module" src="./push-call.js?v=42"></script>','push-call.js?v=42');
+  inject('<script type="module" src="./voice-call.js?v=42"></script>','voice-call.js?v=42');
+  inject('<script type="module" src="./call-push-trigger.js?v=42"></script>','call-push-trigger.js?v=42');
   return html;
 }
 self.addEventListener("push",e=>{
@@ -35,7 +35,7 @@ self.addEventListener("push",e=>{
   const d=p.data||p;
   if(d.type!=="chama_call")return;
   const name=d.callerName||"Alguém";
-  e.waitUntil(self.registration.showNotification("📞 Chamada no Chama",{body:`${name} está ligando para você`,icon:"./icon.svg",badge:"./icon.svg",tag:"chama-call-"+(d.callId||"nova"),renotify:true,requireInteraction:true,vibrate:[700,250,700,250,700],data:{type:"chama_call",callId:d.callId||""},actions:[{action:"open",title:"Atender"},{action:"dismiss",title:"Recusar"}]}));
+  e.waitUntil(self.registration.showNotification("📞 Chamada no Chama",{body:`${name} está ligando para você`,icon:"./icon.svg",badge:"./icon.svg",tag:"chama-call-"+(d.callId||"nova"),renotify:true,requireInteraction:true,silent:false,vibrate:[900,250,900,250,900,250,900],data:{type:"chama_call",callId:d.callId||""},actions:[{action:"open",title:"Atender"},{action:"dismiss",title:"Recusar"}]}));
 });
 self.addEventListener("notificationclick",e=>{
   const d=e.notification?.data||{};e.notification.close();if(e.action==="dismiss")return;
