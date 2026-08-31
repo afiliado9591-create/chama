@@ -1,25 +1,26 @@
-const CACHE="chama-v23";
-const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./chat-safe-ui.js","./notifications.js","./delete-messages.js","./admin-panel.js","./profile-type.js"];
+const CACHE="chama-v24";
+const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./chat-safe-ui.js","./notifications.js","./delete-messages.js","./admin-panel.js","./profile-type.js","./referral.js"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 function injectExtras(html){
   const inject=(tag,needle)=>{if(!html.includes(needle))html=html.replace("</body>",tag+"</body>")};
-  inject('<script src="./search.js?v=23"></script>','search.js?v=23');
-  inject('<script type="module" src="./auth-persistence.js?v=23"></script>','auth-persistence.js?v=23');
-  inject('<script type="module" src="./share.js?v=23"></script>','share.js?v=23');
-  inject('<script type="module" src="./public-profile.js?v=23"></script>','public-profile.js?v=23');
-  inject('<script src="./brand-brazil.js?v=23"></script>','brand-brazil.js?v=23');
-  inject('<script src="./contact-open-chat.js?v=23"></script>','contact-open-chat.js?v=23');
-  inject('<script type="module" src="./forgot-password.js?v=23"></script>','forgot-password.js?v=23');
-  inject('<script src="./clickable-links.js?v=23"></script>','clickable-links.js?v=23');
-  inject('<script type="module" src="./friends.js?v=23"></script>','friends.js?v=23');
-  inject('<script src="./media-render-safe.js?v=23"></script>','media-render-safe.js?v=23');
-  inject('<script type="module" src="./media-chat.js?v=23"></script>','media-chat.js?v=23');
-  inject('<script src="./chat-safe-ui.js?v=23"></script>','chat-safe-ui.js?v=23');
-  inject('<script type="module" src="./notifications.js?v=23"></script>','notifications.js?v=23');
-  inject('<script type="module" src="./delete-messages.js?v=23"></script>','delete-messages.js?v=23');
-  inject('<script type="module" src="./admin-panel.js?v=23"></script>','admin-panel.js?v=23');
-  inject('<script type="module" src="./profile-type.js?v=23"></script>','profile-type.js?v=23');
+  inject('<script src="./search.js?v=24"></script>','search.js?v=24');
+  inject('<script type="module" src="./auth-persistence.js?v=24"></script>','auth-persistence.js?v=24');
+  inject('<script type="module" src="./share.js?v=24"></script>','share.js?v=24');
+  inject('<script type="module" src="./public-profile.js?v=24"></script>','public-profile.js?v=24');
+  inject('<script src="./brand-brazil.js?v=24"></script>','brand-brazil.js?v=24');
+  inject('<script src="./contact-open-chat.js?v=24"></script>','contact-open-chat.js?v=24');
+  inject('<script type="module" src="./forgot-password.js?v=24"></script>','forgot-password.js?v=24');
+  inject('<script src="./clickable-links.js?v=24"></script>','clickable-links.js?v=24');
+  inject('<script type="module" src="./friends.js?v=24"></script>','friends.js?v=24');
+  inject('<script src="./media-render-safe.js?v=24"></script>','media-render-safe.js?v=24');
+  inject('<script type="module" src="./media-chat.js?v=24"></script>','media-chat.js?v=24');
+  inject('<script src="./chat-safe-ui.js?v=24"></script>','chat-safe-ui.js?v=24');
+  inject('<script type="module" src="./notifications.js?v=24"></script>','notifications.js?v=24');
+  inject('<script type="module" src="./delete-messages.js?v=24"></script>','delete-messages.js?v=24');
+  inject('<script type="module" src="./admin-panel.js?v=24"></script>','admin-panel.js?v=24');
+  inject('<script type="module" src="./profile-type.js?v=24"></script>','profile-type.js?v=24');
+  inject('<script type="module" src="./referral.js?v=24"></script>','referral.js?v=24');
   return html;
 }
 self.addEventListener("notificationclick",e=>{
