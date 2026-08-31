@@ -41,7 +41,10 @@ service cloud.firestore {
           request.resource.data.receiverId is string &&
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
           !blockedEitherWay(request.resource.data.senderId, request.resource.data.receiverId);
-        allow update, delete: if false;
+        allow delete: if signedIn() &&
+          resource.data.senderId == request.auth.uid &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if false;
       }
     }
   }
