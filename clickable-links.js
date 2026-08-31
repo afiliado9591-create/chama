@@ -4,8 +4,8 @@
   const trimEnd=url=>{let end="";while(/[.,!?;:)]$/.test(url)){end=url.slice(-1)+end;url=url.slice(0,-1)}return [url,end]};
   function linkifyBubble(bubble){
     if(!bubble||bubble.dataset.linksReady==="1")return;
-    const plain=(bubble.textContent||"").trim();
-    if(plain.startsWith(MEDIA_PREFIX)){bubble.dataset.linksReady="1";return;}
+    const raw=(bubble.textContent||"").trimStart();
+    if(raw.startsWith(MEDIA_PREFIX))return;
     const walker=document.createTreeWalker(bubble,NodeFilter.SHOW_TEXT);
     const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
     nodes.forEach(node=>{
@@ -17,8 +17,9 @@
     });
     bubble.dataset.linksReady="1";
   }
-  function scan(){document.querySelectorAll("#messages .bubble").forEach(linkifyBubble)}
-  const obs=new MutationObserver(scan);
-  function start(){scan();const messages=document.getElementById("messages");if(messages)obs.observe(messages,{childList:true,subtree:true})}
+  let scheduled=false;
+  function scan(){scheduled=false;document.querySelectorAll("#messages .bubble").forEach(linkifyBubble)}
+  function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(scan)}
+  function start(){scan();const messages=document.getElementById("messages");if(messages)new MutationObserver(schedule).observe(messages,{childList:true})}
   document.readyState==="loading"?document.addEventListener("DOMContentLoaded",start):start();
 })();
