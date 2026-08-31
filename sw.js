@@ -1,5 +1,5 @@
-const CACHE="chama-v14";
-const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js"];
+const CACHE="chama-v15";
+const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./chat-navigation-fix.js"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 function injectExtras(html){
@@ -13,6 +13,7 @@ function injectExtras(html){
   if(!html.includes('src="./clickable-links.js"')&&!html.includes("src='./clickable-links.js'")) html=html.replace("</body>",'<script src="./clickable-links.js"></script></body>');
   if(!html.includes('src="./friends.js"')&&!html.includes("src='./friends.js'")) html=html.replace("</body>",'<script type="module" src="./friends.js"></script></body>');
   if(!html.includes('src="./media-chat.js"')&&!html.includes("src='./media-chat.js'")) html=html.replace("</body>",'<script type="module" src="./media-chat.js"></script></body>');
+  if(!html.includes('src="./chat-navigation-fix.js"')&&!html.includes("src='./chat-navigation-fix.js'")) html=html.replace("</body>",'<script type="module" src="./chat-navigation-fix.js"></script></body>');
   return html;
 }
 self.addEventListener("fetch",e=>{
