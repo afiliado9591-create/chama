@@ -7,8 +7,29 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function banned(uid) {
+      return exists(/databases/$(database)/documents/bannedUsers/$(uid));
+    }
+
+    function activeUser() {
+      return signedIn() &&
+        !banned(request.auth.uid) &&
+        (!exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+          !(('suspended' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.suspended == true));
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+        !banned(request.auth.uid) &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        ('admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+    }
+
     function userBlocked(userId, otherId) {
-      return ('bloqueados' in get(/databases/$(database)/documents/users/$(userId)).data) &&
+      return exists(/databases/$(database)/documents/users/$(userId)) &&
+        ('bloqueados' in get(/databases/$(database)/documents/users/$(userId)).data) &&
         (otherId in get(/databases/$(database)/documents/users/$(userId)).data.bloqueados);
     }
 
@@ -17,31 +38,40 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if signedIn();
-      allow create, update, delete: if signedIn() && request.auth.uid == userId;
+      allow read: if activeUser() || isAdmin();
+      allow create: if signedIn() && request.auth.uid == userId && !banned(userId) &&
+        !request.resource.data.keys().hasAny(['admin','suspended','adminBanner','adminUpdatedAt']);
+      allow update: if isAdmin() ||
+        (activeUser() && request.auth.uid == userId &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['admin','suspended','adminBanner','adminUpdatedAt']));
+      allow delete: if isAdmin() || (activeUser() && request.auth.uid == userId);
+    }
+
+    match /bannedUsers/{userId} {
+      allow read, create, update, delete: if isAdmin();
     }
 
     match /publicProfiles/{userId} {
       allow read: if true;
-      allow create, update, delete: if signedIn() && request.auth.uid == userId;
+      allow create, update, delete: if isAdmin() || (activeUser() && request.auth.uid == userId);
     }
 
     match /chats/{chatId} {
-      allow read: if signedIn() && request.auth.uid in resource.data.participants;
-      allow create: if signedIn() && request.auth.uid in request.resource.data.participants;
-      allow update: if signedIn() &&
+      allow read: if activeUser() && request.auth.uid in resource.data.participants;
+      allow create: if activeUser() && request.auth.uid in request.resource.data.participants;
+      allow update: if activeUser() &&
         request.auth.uid in resource.data.participants &&
         request.resource.data.participants == resource.data.participants;
 
       match /messages/{messageId} {
-        allow read: if signedIn() &&
+        allow read: if activeUser() &&
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow create: if signedIn() &&
+        allow create: if activeUser() &&
           request.resource.data.senderId == request.auth.uid &&
           request.resource.data.receiverId is string &&
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
           !blockedEitherWay(request.resource.data.senderId, request.resource.data.receiverId);
-        allow delete: if signedIn() &&
+        allow delete: if activeUser() &&
           resource.data.senderId == request.auth.uid &&
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
         allow update: if false;
