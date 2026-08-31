@@ -1,23 +1,24 @@
-const CACHE="chama-v19";
-const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./chat-safe-ui.js","./notifications.js","./delete-messages.js"];
+const CACHE="chama-v20";
+const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./chat-safe-ui.js","./notifications.js","./delete-messages.js","./admin-panel.js"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 function injectExtras(html){
   const inject=(tag,needle)=>{if(!html.includes(needle))html=html.replace("</body>",tag+"</body>")};
-  inject('<script src="./search.js?v=19"></script>','search.js?v=19');
-  inject('<script type="module" src="./auth-persistence.js?v=19"></script>','auth-persistence.js?v=19');
-  inject('<script type="module" src="./share.js?v=19"></script>','share.js?v=19');
-  inject('<script type="module" src="./public-profile.js?v=19"></script>','public-profile.js?v=19');
-  inject('<script src="./brand-brazil.js?v=19"></script>','brand-brazil.js?v=19');
-  inject('<script src="./contact-open-chat.js?v=19"></script>','contact-open-chat.js?v=19');
-  inject('<script type="module" src="./forgot-password.js?v=19"></script>','forgot-password.js?v=19');
-  inject('<script src="./clickable-links.js?v=19"></script>','clickable-links.js?v=19');
-  inject('<script type="module" src="./friends.js?v=19"></script>','friends.js?v=19');
-  inject('<script src="./media-render-safe.js?v=19"></script>','media-render-safe.js?v=19');
-  inject('<script type="module" src="./media-chat.js?v=19"></script>','media-chat.js?v=19');
-  inject('<script src="./chat-safe-ui.js?v=19"></script>','chat-safe-ui.js?v=19');
-  inject('<script type="module" src="./notifications.js?v=19"></script>','notifications.js?v=19');
-  inject('<script type="module" src="./delete-messages.js?v=19"></script>','delete-messages.js?v=19');
+  inject('<script src="./search.js?v=20"></script>','search.js?v=20');
+  inject('<script type="module" src="./auth-persistence.js?v=20"></script>','auth-persistence.js?v=20');
+  inject('<script type="module" src="./share.js?v=20"></script>','share.js?v=20');
+  inject('<script type="module" src="./public-profile.js?v=20"></script>','public-profile.js?v=20');
+  inject('<script src="./brand-brazil.js?v=20"></script>','brand-brazil.js?v=20');
+  inject('<script src="./contact-open-chat.js?v=20"></script>','contact-open-chat.js?v=20');
+  inject('<script type="module" src="./forgot-password.js?v=20"></script>','forgot-password.js?v=20');
+  inject('<script src="./clickable-links.js?v=20"></script>','clickable-links.js?v=20');
+  inject('<script type="module" src="./friends.js?v=20"></script>','friends.js?v=20');
+  inject('<script src="./media-render-safe.js?v=20"></script>','media-render-safe.js?v=20');
+  inject('<script type="module" src="./media-chat.js?v=20"></script>','media-chat.js?v=20');
+  inject('<script src="./chat-safe-ui.js?v=20"></script>','chat-safe-ui.js?v=20');
+  inject('<script type="module" src="./notifications.js?v=20"></script>','notifications.js?v=20');
+  inject('<script type="module" src="./delete-messages.js?v=20"></script>','delete-messages.js?v=20');
+  inject('<script type="module" src="./admin-panel.js?v=20"></script>','admin-panel.js?v=20');
   return html;
 }
 self.addEventListener("notificationclick",e=>{
