@@ -7,22 +7,23 @@ if(app){
   const auth=getAuth(app),db=getFirestore(app);
   let stop=null;
   const sent=new Set();
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
   async function sendCall(id,data){
     if(!id||!data||sent.has(id)||data.status!=="ringing")return;
     const ms=data.createdAt?.toMillis?.()||0;
     if(ms&&Date.now()-ms>45000)return;
     sent.add(id);
-    try{
-      const ok=await window.ChamaCallPush?.notify(data.calleeId,id,data.callerName||"Alguém");
-      if(!ok){
-        sent.delete(id);
-        console.warn("Chama push chamada: envio não confirmado");
-      }
-    }catch(e){
-      sent.delete(id);
-      console.warn("Chama push chamada:",e);
+    let result=null;
+    for(let attempt=0;attempt<3;attempt++){
+      if(attempt)await wait(1200+attempt*900);
+      try{
+        result=await window.ChamaCallPush?.notify(data.calleeId,id,data.callerName||"Alguém");
+        if(result?.ok)return;
+      }catch(e){console.warn("Chama push chamada:",e)}
     }
+    sent.delete(id);
+    console.warn("Chama push chamada não entregue",result||{});
   }
 
   onAuthStateChanged(auth,u=>{
