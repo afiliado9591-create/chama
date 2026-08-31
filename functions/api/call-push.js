@@ -12,7 +12,7 @@ async function serviceToken(env){
   const sig=await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,enc.encode(head+'.'+body));
   const assertion=head+'.'+body+'.'+b64u(sig);
   const r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion})});
-  if(!r.ok)throw new Error('oauth '+r.status);
+  if(!r.ok)throw new Error('oauth '+r.status+' '+await r.text());
   return (await r.json()).access_token;
 }
 function field(v){
@@ -21,7 +21,7 @@ function field(v){
 async function firestoreGet(project,path,idToken){
   const u=`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents/${path}`;
   const r=await fetch(u,{headers:{authorization:'Bearer '+idToken}});
-  if(!r.ok)throw new Error('firestore '+r.status);
+  if(!r.ok)throw new Error('firestore '+r.status+' '+await r.text());
   return r.json();
 }
 export async function onRequestPost({request,env}){
@@ -35,14 +35,17 @@ export async function onRequestPost({request,env}){
     if(!callerId||storedCallee!==calleeId||status!=='ringing')return new Response('forbidden',{status:403});
     const user=await firestoreGet(project,'users/'+encodeURIComponent(calleeId),idToken);
     const tokens=field(user.fields?.pushTokens)||[];
-    if(!Array.isArray(tokens)||!tokens.length)return new Response(JSON.stringify({sent:0}),{headers:{'content-type':'application/json'}});
+    if(!Array.isArray(tokens)||!tokens.length)return new Response(JSON.stringify({sent:0,reason:'no_tokens'}),{headers:{'content-type':'application/json'}});
     if(!env.FIREBASE_CLIENT_EMAIL||!env.FIREBASE_PRIVATE_KEY)return new Response('push server not configured',{status:503});
     const access=await serviceToken(env),callerName=String(body.callerName||field(call.fields?.callerName)||'Alguém').slice(0,80);
-    let sent=0;
+    const origin=new URL(request.url).origin;
+    const link=origin+'/?call='+encodeURIComponent(callId);
+    let sent=0,errors=[];
     for(const token of [...new Set(tokens)].slice(0,8)){
-      const r=await fetch(`https://fcm.googleapis.com/v1/projects/${project}/messages:send`,{method:'POST',headers:{authorization:'Bearer '+access,'content-type':'application/json'},body:JSON.stringify({message:{token,data:{type:'chama_call',callId,callerId:String(callerId),callerName},webpush:{headers:{Urgency:'high'},fcm_options:{link:'/?call='+encodeURIComponent(callId)}}}})});
-      if(r.ok)sent++;
+      const payload={message:{token,data:{type:'chama_call',callId,callerId:String(callerId),callerName},webpush:{headers:{Urgency:'high',TTL:'60'},notification:{title:'📞 Chamada no Chama',body:callerName+' está ligando para você',icon:origin+'/icon.svg',badge:origin+'/icon.svg',tag:'chama-call-'+callId,renotify:true,requireInteraction:true,vibrate:[700,250,700,250,700],data:{type:'chama_call',callId}},fcm_options:{link}}}};
+      const r=await fetch(`https://fcm.googleapis.com/v1/projects/${project}/messages:send`,{method:'POST',headers:{authorization:'Bearer '+access,'content-type':'application/json'},body:JSON.stringify(payload)});
+      if(r.ok)sent++;else errors.push({status:r.status,body:(await r.text()).slice(0,500)});
     }
-    return new Response(JSON.stringify({sent}),{headers:{'content-type':'application/json;charset=utf-8','cache-control':'no-store'}});
-  }catch(e){console.error('call push',e);return new Response('push failed',{status:500})}
+    return new Response(JSON.stringify({sent,total:[...new Set(tokens)].slice(0,8).length,errors}),{status:sent?200:502,headers:{'content-type':'application/json;charset=utf-8','cache-control':'no-store'}});
+  }catch(e){console.error('call push',e);return new Response('push failed: '+(e?.message||'erro'),{status:500})}
 }
