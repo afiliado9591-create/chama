@@ -36,6 +36,19 @@ export async function onRequest(context){
     return new Response(request.method==="HEAD"?null:obj.body,{headers});
   }
 
+  if(request.method==="DELETE"){
+    const user=await verifyFirebase(request);
+    if(!user)return json({error:"Faça login novamente para apagar mídia."},401);
+    const key=url.searchParams.get("key")||"";
+    if(!safeKey(key))return json({error:"Arquivo inválido."},400);
+    if(!key.startsWith(user.uid+"/"))return json({error:"Você não pode apagar este arquivo."},403);
+    const obj=await env.MEDIA.head(key);
+    if(!obj)return json({ok:true,alreadyDeleted:true});
+    if(obj.customMetadata?.uid&&obj.customMetadata.uid!==user.uid)return json({error:"Você não pode apagar este arquivo."},403);
+    await env.MEDIA.delete(key);
+    return json({ok:true});
+  }
+
   if(request.method!=="POST")return json({error:"Método não permitido."},405);
   const user=await verifyFirebase(request);
   if(!user)return json({error:"Faça login novamente para enviar mídia."},401);
