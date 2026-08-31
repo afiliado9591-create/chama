@@ -8,26 +8,42 @@
     }
     return out.trim();
   }
+  function addStyle(){
+    if(document.getElementById('mediaSafeToggleStyle'))return;
+    const s=document.createElement('style');
+    s.id='mediaSafeToggleStyle';
+    s.textContent=`.media-image-wrap{display:grid;gap:7px}.media-close-btn{border:0;background:#eef4f1;color:#0b7a53;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}.chat-media.image{cursor:pointer;max-width:100%;border-radius:12px}`;
+    document.head.appendChild(s);
+  }
   function makePlaceholder(m){
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='media-placeholder';
     btn.textContent=m.kind==='image'?'📷 Ver imagem':m.kind==='audio'?'🎤 Ouvir áudio':'▶️ Reproduzir vídeo';
-    btn.addEventListener('click',()=>{
-      let el;
-      if(m.kind==='image'){
-        el=document.createElement('img'); el.className='chat-media image'; el.loading='lazy'; el.decoding='async'; el.alt=m.name||'Imagem';
-      }else if(m.kind==='audio'){
-        el=document.createElement('audio'); el.className='chat-media audio'; el.controls=true; el.preload='none';
-      }else if(m.kind==='video'){
-        el=document.createElement('video'); el.className='chat-media video'; el.controls=true; el.preload='none'; el.playsInline=true;
-      }
-      if(!el)return;
-      el.src=m.url;
-      el.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';el.replaceWith(d)};
-      btn.replaceWith(el);
-    },{once:true});
+    btn.addEventListener('click',()=>openMedia(btn,m));
     return btn;
+  }
+  function openMedia(btn,m){
+    if(m.kind==='image'){
+      const wrap=document.createElement('div');wrap.className='media-image-wrap';
+      const img=document.createElement('img');img.className='chat-media image';img.loading='lazy';img.decoding='async';img.alt=m.name||'Imagem';img.src=m.url;
+      const close=document.createElement('button');close.type='button';close.className='media-close-btn';close.textContent='✕ Fechar imagem';
+      const closeImage=()=>wrap.replaceWith(makePlaceholder(m));
+      close.onclick=closeImage;
+      img.onclick=closeImage;
+      img.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';wrap.replaceWith(d)};
+      wrap.append(img,close);btn.replaceWith(wrap);return;
+    }
+    let el;
+    if(m.kind==='audio'){
+      el=document.createElement('audio'); el.className='chat-media audio'; el.controls=true; el.preload='none';
+    }else if(m.kind==='video'){
+      el=document.createElement('video'); el.className='chat-media video'; el.controls=true; el.preload='none'; el.playsInline=true;
+    }
+    if(!el)return;
+    el.src=m.url;
+    el.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';el.replaceWith(d)};
+    btn.replaceWith(el);
   }
   function render(b){
     if(!b||b.dataset.mediaSafe==='1')return;
@@ -43,7 +59,7 @@
   }
   function scan(root=document){root.querySelectorAll?.('#messages .bubble').forEach(render)}
   function start(){
-    scan();
+    addStyle();scan();
     const messages=document.getElementById('messages');
     if(!messages)return;
     new MutationObserver(ms=>{
