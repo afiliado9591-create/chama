@@ -1,23 +1,31 @@
-const CACHE="chama-v17";
-const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./chat-safe-ui.js"];
+const CACHE="chama-v18";
+const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./chat-safe-ui.js","./notifications.js"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 function injectExtras(html){
   const inject=(tag,needle)=>{if(!html.includes(needle))html=html.replace("</body>",tag+"</body>")};
-  inject('<script src="./search.js?v=17"></script>','search.js?v=17');
-  inject('<script type="module" src="./auth-persistence.js?v=17"></script>','auth-persistence.js?v=17');
-  inject('<script type="module" src="./share.js?v=17"></script>','share.js?v=17');
-  inject('<script type="module" src="./public-profile.js?v=17"></script>','public-profile.js?v=17');
-  inject('<script src="./brand-brazil.js?v=17"></script>','brand-brazil.js?v=17');
-  inject('<script src="./contact-open-chat.js?v=17"></script>','contact-open-chat.js?v=17');
-  inject('<script type="module" src="./forgot-password.js?v=17"></script>','forgot-password.js?v=17');
-  inject('<script src="./clickable-links.js?v=17"></script>','clickable-links.js?v=17');
-  inject('<script type="module" src="./friends.js?v=17"></script>','friends.js?v=17');
-  inject('<script src="./media-render-safe.js?v=17"></script>','media-render-safe.js?v=17');
-  inject('<script type="module" src="./media-chat.js?v=17"></script>','media-chat.js?v=17');
-  inject('<script src="./chat-safe-ui.js?v=17"></script>','chat-safe-ui.js?v=17');
+  inject('<script src="./search.js?v=18"></script>','search.js?v=18');
+  inject('<script type="module" src="./auth-persistence.js?v=18"></script>','auth-persistence.js?v=18');
+  inject('<script type="module" src="./share.js?v=18"></script>','share.js?v=18');
+  inject('<script type="module" src="./public-profile.js?v=18"></script>','public-profile.js?v=18');
+  inject('<script src="./brand-brazil.js?v=18"></script>','brand-brazil.js?v=18');
+  inject('<script src="./contact-open-chat.js?v=18"></script>','contact-open-chat.js?v=18');
+  inject('<script type="module" src="./forgot-password.js?v=18"></script>','forgot-password.js?v=18');
+  inject('<script src="./clickable-links.js?v=18"></script>','clickable-links.js?v=18');
+  inject('<script type="module" src="./friends.js?v=18"></script>','friends.js?v=18');
+  inject('<script src="./media-render-safe.js?v=18"></script>','media-render-safe.js?v=18');
+  inject('<script type="module" src="./media-chat.js?v=18"></script>','media-chat.js?v=18');
+  inject('<script src="./chat-safe-ui.js?v=18"></script>','chat-safe-ui.js?v=18');
+  inject('<script type="module" src="./notifications.js?v=18"></script>','notifications.js?v=18');
   return html;
 }
+self.addEventListener("notificationclick",e=>{
+  e.notification.close();
+  e.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{
+    for(const c of list){if("focus"in c)return c.focus()}
+    return clients.openWindow("./")
+  }))
+});
 self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET")return;
   if(e.request.mode==="navigate"){
