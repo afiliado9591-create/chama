@@ -1,1 +1,78 @@
-(()=>{function add(){let s=document.getElementById('mobileTopbarFixStyle');if(!s){s=document.createElement('style');s.id='mobileTopbarFixStyle';document.head.appendChild(s)}s.textContent=`.topbar{box-sizing:border-box;max-width:100%;min-width:0}.topbar button{box-sizing:border-box}@media(max-width:700px){.topbar{display:flex!important;flex-wrap:wrap!important;gap:6px!important;align-items:center!important;padding:8px!important;height:auto!important;min-height:58px!important;overflow:visible!important}.topbar>#notifBtn,.topbar>[id*="notif"]{order:1!important;flex:0 0 42px!important;width:42px!important;height:42px!important;padding:0!important;margin:0!important}.topbar>#bizTopBtn{order:2!important;flex:1 1 92px!important}.topbar>#offersTopBtn{order:3!important;flex:1 1 82px!important}.topbar>#adminBtn{order:4!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important}.topbar>#logoutBtn{order:5!important;flex:0 0 42px!important;width:42px!important;min-width:42px!important;height:42px!important;padding:0!important;margin:0!important;font-size:0!important;overflow:hidden!important}.topbar>#logoutBtn:after{content:'↪';font-size:21px!important}.topbar>#bizTopBtn,.topbar>#offersTopBtn,.topbar>#adminBtn{height:42px!important;min-width:0!important;max-width:100%!important;padding:6px 7px!important;margin:0!important;border-radius:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:11px!important}.topbar>#adminBtn{font-size:0!important}.topbar>#adminBtn:after{content:'🛡️';font-size:19px!important}.topbar>*{min-width:0!important}#appView{max-width:100vw!important;overflow-x:hidden!important}}@media(max-width:420px){.topbar>#notifBtn,.topbar>[id*="notif"],.topbar>#logoutBtn{flex-basis:38px!important;width:38px!important;min-width:38px!important}.topbar>#adminBtn{flex-basis:40px!important;width:40px!important;min-width:40px!important}.topbar>#bizTopBtn,.topbar>#offersTopBtn{font-size:10px!important;padding:5px 4px!important}}`; }document.readyState==='loading'?document.addEventListener('DOMContentLoaded',add):add();})();
+(()=>{
+function install(){
+  let s=document.getElementById('mobileTopbarFixStyle');
+  if(!s){s=document.createElement('style');s.id='mobileTopbarFixStyle';document.head.appendChild(s)}
+  s.textContent=`
+    .chama-mobile-menu-btn,.chama-mobile-menu{display:none}
+    @media(max-width:700px){
+      #appView{max-width:100vw!important;overflow-x:hidden!important}
+      .topbar{position:relative!important;display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:8px!important;padding:10px 12px!important;height:64px!important;min-height:64px!important;overflow:visible!important}
+      .topbar>#notifBtn,.topbar>[id*="notif"],.topbar>#bizTopBtn,.topbar>#offersTopBtn,.topbar>#adminBtn,.topbar>#logoutBtn{display:none!important}
+      .chama-mobile-menu-btn{display:flex!important;margin-left:auto!important;flex:0 0 44px!important;width:44px!important;height:44px!important;align-items:center!important;justify-content:center!important;border:1px solid #ffffff55!important;border-radius:13px!important;background:#ffffff18!important;color:#fff!important;font-size:25px!important;font-weight:900!important;padding:0!important;cursor:pointer!important}
+      .chama-mobile-menu{display:none;position:fixed;top:68px;right:10px;z-index:1000;width:min(280px,calc(100vw - 20px));background:#fff;border:1px solid #dde6e1;border-radius:16px;box-shadow:0 12px 35px #0003;padding:8px;overflow:hidden}
+      .chama-mobile-menu.open{display:block!important}
+      .chama-mobile-menu button{display:flex!important;width:100%!important;align-items:center!important;gap:10px!important;border:0!important;background:#fff!important;color:#173f33!important;padding:13px 14px!important;border-radius:11px!important;text-align:left!important;font-size:15px!important;font-weight:800!important;cursor:pointer!important}
+      .chama-mobile-menu button:active{background:#eef5f1!important}
+      .chama-mobile-menu .menu-sep{height:1px;background:#edf1ef;margin:5px 4px}
+      .chama-mobile-menu .menu-logout{color:#a52b2b!important}
+    }`;
+
+  const top=document.querySelector('.topbar');
+  if(!top)return;
+  let btn=document.getElementById('chamaMobileMenuBtn');
+  if(!btn){
+    btn=document.createElement('button');
+    btn.id='chamaMobileMenuBtn';
+    btn.className='chama-mobile-menu-btn';
+    btn.type='button';
+    btn.setAttribute('aria-label','Abrir menu');
+    btn.textContent='☰';
+    top.appendChild(btn);
+  }
+  let menu=document.getElementById('chamaMobileMenu');
+  if(!menu){
+    menu=document.createElement('div');
+    menu.id='chamaMobileMenu';
+    menu.className='chama-mobile-menu';
+    document.body.appendChild(menu);
+  }
+  function build(){
+    const items=[
+      ['#notifBtn','🔔','Notificações'],
+      ['[id*="notif"]','🔔','Notificações'],
+      ['#bizTopBtn','📍','Negócios'],
+      ['#offersTopBtn','🔥','Ofertas'],
+      ['#adminBtn','🛡️','Admin']
+    ];
+    const seen=new Set();
+    let html='';
+    for(const [sel,icon,label] of items){
+      const el=document.querySelector('.topbar '+sel);
+      if(!el||seen.has(el))continue;
+      seen.add(el);
+      html+=`<button type="button" data-target="${el.id}"><span>${icon}</span><span>${label}</span></button>`;
+    }
+    const logout=document.getElementById('logoutBtn');
+    if(logout)html+=`<div class="menu-sep"></div><button type="button" class="menu-logout" data-target="logoutBtn"><span>🚪</span><span>Sair</span></button>`;
+    menu.innerHTML=html;
+    menu.querySelectorAll('[data-target]').forEach(b=>b.onclick=()=>{
+      const target=document.getElementById(b.dataset.target);
+      menu.classList.remove('open');
+      btn.textContent='☰';
+      if(target)target.click();
+    });
+  }
+  btn.onclick=e=>{
+    e.stopPropagation();
+    build();
+    const open=menu.classList.toggle('open');
+    btn.textContent=open?'×':'☰';
+  };
+  document.addEventListener('click',e=>{
+    if(!menu.contains(e.target)&&e.target!==btn){menu.classList.remove('open');btn.textContent='☰'}
+  });
+  window.addEventListener('resize',()=>{if(innerWidth>700){menu.classList.remove('open');btn.textContent='☰'}});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+setTimeout(install,700);
+})();
