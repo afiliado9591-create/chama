@@ -1,41 +1,36 @@
 (()=>{
-  function addStyle(){if(document.getElementById('chatBackStyle'))return;const s=document.createElement('style');s.id='chatBackStyle';s.textContent=`#backBtn{display:none;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;padding:0!important;border:0!important;border-radius:50%!important;background:#e8f5ef!important;color:#0b7a53!important;font-size:0!important;box-shadow:0 1px 4px #00000016;cursor:pointer;transition:transform .12s ease,background .12s ease}#backBtn:before{content:'‹';font-size:36px;line-height:1;font-weight:500;transform:translateY(-1px)}#backBtn:active{transform:scale(.94);background:#d9eee5!important}@media(max-width:700px){#backBtn{display:inline-flex!important}.chat-head{padding-left:10px!important}}`;document.head.appendChild(s)}
-  function closeOverlays(){
-    let closed=false;
-    for(const id of ['profileModal','offersModal','businessDirectoryModal','channelsModal','bulkShareModal']){
-      const el=document.getElementById(id);if(el&&!el.classList.contains('hidden')){el.classList.add('hidden');closed=true}
-    }
-    return closed;
+  function addStyle(){if(document.getElementById('chatBackStyle'))return;const s=document.createElement('style');s.id='chatBackStyle';s.textContent=`#backBtn{display:none;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;padding:0!important;border:0!important;border-radius:50%!important;background:#e8f5ef!important;color:#0b7a53!important;font-size:0!important;box-shadow:0 1px 4px #00000016;cursor:pointer}#backBtn:before{content:'‹';font-size:36px;line-height:1;font-weight:500}@media(max-width:700px){#backBtn{display:inline-flex!important}.chat-head{padding-left:10px!important}}`;document.head.appendChild(s)}
+  const overlays=['profileModal','offersModal','businessDirectoryModal','channelsModal','bulkShareModal','offerEditor','twoOffersManager','twoOfferEditor'];
+  const logged=()=>{const a=document.getElementById('app');return !!a&&!a.classList.contains('hidden')};
+  function closeOverlays(){let c=false;for(const id of overlays){const e=document.getElementById(id);if(e&&!e.classList.contains('hidden')){e.classList.add('hidden');c=true}}return c}
+  function chatOpen(){const p=document.getElementById('chatPanel');return !!p&&!p.classList.contains('hidden-mobile')}
+  function closeChat(){const p=document.getElementById('chatPanel');if(chatOpen()){p.classList.add('hidden-mobile');return true}return false}
+  function home(){closeOverlays();closeChat();try{history.replaceState({chama:'home'},'',location.pathname)}catch{}}
+  function arm(){
+    // PWA precisa de uma entrada anterior interna. Assim o primeiro Voltar do Android não fecha o app.
+    try{
+      history.replaceState({chama:'guard'},'',location.pathname+location.search);
+      history.pushState({chama:'home'},'',location.pathname+location.search);
+    }catch{}
   }
-  function closeChat(){const p=document.getElementById('chatPanel');if(!p)return false;const visible=!p.classList.contains('hidden-mobile');if(visible)p.classList.add('hidden-mobile');return visible}
-  function goHome(){closeOverlays();closeChat();try{history.replaceState({chamaHome:true},'',location.pathname)}catch{} }
-  function armHomeHistory(){
-    if(!history.state?.chamaHome){try{history.replaceState({...(history.state||{}),chamaHome:true},'',location.href)}catch{}}
-  }
-  function openProfile(){
-    const modal=document.getElementById('profileModal'); if(!modal)return;
-    const name=(document.getElementById('chatName')?.textContent||'Usuário').trim();
-    const email=(document.getElementById('chatEmail')?.textContent||'').trim();
-    const pn=document.getElementById('profileName'),pe=document.getElementById('profileEmail');
-    if(pn)pn.textContent=name;if(pe)pe.textContent=email;
-    document.getElementById('profileView')?.classList.remove('hidden');
-    document.getElementById('profileEdit')?.classList.add('hidden');
-    modal.classList.remove('hidden');
-  }
-  function handler(e){
-    const back=e.target.closest?.('#backBtn');
-    if(back){e.preventDefault();e.stopPropagation();goHome();return}
-    const name=e.target.closest?.('#chatName');
-    if(name){e.preventDefault();e.stopPropagation();openProfile();}
-  }
-  addStyle();armHomeHistory();
-  document.addEventListener('click',handler,true);
+  function enterInternal(){if(!logged())return;try{if(history.state?.chama!=='inside')history.pushState({chama:'inside'},'',location.pathname+location.search)}catch{}}
+  function openProfile(){const m=document.getElementById('profileModal');if(!m)return;const n=(document.getElementById('chatName')?.textContent||'Usuário').trim(),e=(document.getElementById('chatEmail')?.textContent||'').trim();if(document.getElementById('profileName'))document.getElementById('profileName').textContent=n;if(document.getElementById('profileEmail'))document.getElementById('profileEmail').textContent=e;document.getElementById('profileView')?.classList.remove('hidden');document.getElementById('profileEdit')?.classList.add('hidden');m.classList.remove('hidden');enterInternal()}
+  addStyle();arm();
+  document.addEventListener('click',e=>{
+    const b=e.target.closest?.('#backBtn');if(b){e.preventDefault();e.stopPropagation();home();return}
+    const n=e.target.closest?.('#chatName');if(n){e.preventDefault();e.stopPropagation();openProfile();return}
+    // Ao abrir uma conversa/tela interna, cria uma etapa real no histórico do PWA.
+    if(e.target.closest?.('#usersList .user,[data-talk],[data-catalog],#offersTopBtn,#channelsBtn,#businessDirectoryBtn,#bulkShareBtn,#myProfileBtn'))setTimeout(enterInternal,0);
+  },true);
   window.addEventListener('popstate',()=>{
-    const logged=document.getElementById('app')&&!document.getElementById('app').classList.contains('hidden');
-    if(!logged)return;
-    const overlayClosed=closeOverlays(),chatClosed=closeChat();
-    if(overlayClosed||chatClosed){try{history.pushState({chamaHome:true},'',location.pathname)}catch{};return}
-    // Mantém o usuário logado na tela principal do Chama em vez de cair em perfil/link público anterior.
-    try{history.pushState({chamaHome:true},'',location.pathname)}catch{}
+    if(!logged())return;
+    if(closeOverlays()||closeChat()){
+      try{history.replaceState({chama:'home'},'',location.pathname)}catch{}
+      return;
+    }
+    // Se já estava na principal, mantém uma proteção para não fechar no primeiro Voltar acidental.
+    if(history.state?.chama==='guard'){
+      try{history.pushState({chama:'home'},'',location.pathname)}catch{}
+    }
   });
 })();
