@@ -1,0 +1,23 @@
+import{getApps,getApp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import{getFirestore,collection,query,where,onSnapshot}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+const app=getApps().length?getApp():null;if(!app)throw new Error('Firebase não iniciado');const auth=getAuth(app),db=getFirestore(app);
+let stopChats=null,chatMap=new Map();
+function addStyle(){if(document.getElementById('conversationListStyle'))return;const s=document.createElement('style');s.id='conversationListStyle';s.textContent=`
+#usersList .user{position:relative;min-height:74px;padding-right:72px!important}
+#usersList .user-main{flex:1!important;min-width:0!important}
+#usersList .user-name{font-size:16px;line-height:1.2;margin-bottom:4px}
+#usersList .conversation-preview{display:block;color:#6a756f;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#usersList .conversation-time{position:absolute;right:15px;top:15px;font-size:11px;color:#7a8580;white-space:nowrap}
+#usersList .conversation-time.recent{color:#0b7a53;font-weight:800}
+#usersList .user-email{display:none!important}
+@media(max-width:700px){#usersList .user{min-height:82px;padding:13px 72px 13px 16px!important}#usersList .avatar{width:50px;height:50px;flex:0 0 50px}#usersList .user-name{font-size:17px}#usersList .conversation-preview{font-size:14px}}
+`;document.head.appendChild(s)}
+function cleanPreview(v=''){let t=String(v||'').trim();if(!t)return 'Toque para iniciar uma conversa';if(t.startsWith('__CHAMA_PRODUCT_CONTEXT__'))return '🛍️ Produto compartilhado';if(t.startsWith('__CHAMA_MEDIA__'))return '📎 Mídia';if(t.length>65)t=t.slice(0,62)+'...';return t.replace(/\s+/g,' ')}
+function stampValue(v){const d=v?.toDate?.();return d?d.getTime():0}
+function fmt(v){const d=v?.toDate?.();if(!d)return '';const now=new Date(),same=now.toDateString()===d.toDateString();if(same)return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});const diff=now-d;if(diff<7*86400000)return d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}
+function emailOf(row){return (row.querySelector('.user-email')?.textContent||'').trim().toLowerCase()}
+function decorate(){const list=document.getElementById('usersList');if(!list)return;const rows=[...list.querySelectorAll('.user')];for(const row of rows){const email=emailOf(row),c=chatMap.get(email);let preview=row.querySelector('.conversation-preview');if(!preview){preview=document.createElement('span');preview.className='conversation-preview';const main=row.querySelector('.user-main')||row.querySelector('.user-name')?.parentElement;if(main)main.appendChild(preview)}if(preview)preview.textContent=c?cleanPreview(c.lastMessage):'Toque para iniciar uma conversa';let time=row.querySelector('.conversation-time');if(!time){time=document.createElement('span');time.className='conversation-time';row.appendChild(time)}if(time){time.textContent=c?fmt(c.updatedAt):'';time.classList.toggle('recent',!!c&&stampValue(c.updatedAt)>Date.now()-86400000)}}const ordered=rows.sort((a,b)=>{const ca=chatMap.get(emailOf(a)),cb=chatMap.get(emailOf(b)),ta=stampValue(ca?.updatedAt),tb=stampValue(cb?.updatedAt);if(tb!==ta)return tb-ta;return (a.querySelector('.user-name')?.textContent||'').localeCompare(b.querySelector('.user-name')?.textContent||'','pt-BR')});ordered.forEach(r=>list.appendChild(r))}
+function watchChats(u){if(stopChats){stopChats();stopChats=null}chatMap.clear();if(!u)return;stopChats=onSnapshot(query(collection(db,'chats'),where('participants','array-contains',u.uid)),snap=>{chatMap.clear();snap.forEach(d=>{const c=d.data()||{},other=(c.participants||[]).find(x=>x!==u.uid);if(!other)return;const row=[...document.querySelectorAll('#usersList .user')].find(r=>r.dataset.uid===other);const email=(row?.querySelector('.user-email')?.textContent||'').trim().toLowerCase();if(email)chatMap.set(email,c)});decorate()},()=>{})}
+function start(){addStyle();const list=document.getElementById('usersList');if(!list)return setTimeout(start,100);new MutationObserver(()=>setTimeout(decorate,30)).observe(list,{childList:true,subtree:true});onAuthStateChanged(auth,u=>{watchChats(u);setTimeout(decorate,300)});decorate()}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
