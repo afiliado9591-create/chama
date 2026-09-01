@@ -37,6 +37,22 @@ service cloud.firestore {
       allow delete: if isAdmin() || (activeUser() && request.auth.uid == userId);
     }
 
+    match /massLimits/{limitId} {
+      allow read: if activeUser() && resource.data.ownerId == request.auth.uid;
+      allow create: if activeUser() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.count is int &&
+        request.resource.data.count >= 0 &&
+        request.resource.data.count <= 50;
+      allow update: if activeUser() &&
+        resource.data.ownerId == request.auth.uid &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.count is int &&
+        request.resource.data.count >= 0 &&
+        request.resource.data.count <= 50;
+      allow delete: if isAdmin();
+    }
+
     match /bannedUsers/{userId} { allow read, create, update, delete: if isAdmin(); }
     match /publicProfiles/{userId} { allow read: if true; allow create, update, delete: if isAdmin() || (activeUser() && request.auth.uid == userId); }
     match /appConfig/{configId} { allow read: if activeUser(); allow create, update, delete: if isAdmin(); }
