@@ -4,7 +4,7 @@ import{getFirestore,collection,query,where,limit,getDocs}from"https://www.gstati
 
 const firebaseConfig={apiKey:"AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",authDomain:"chama-cfc28.firebaseapp.com",projectId:"chama-cfc28",storageBucket:"chama-cfc28.firebasestorage.app",messagingSenderId:"680045231088",appId:"1:680045231088:web:8db35684e4b56a320ebb35"};
 const app=getApps()[0]||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-const BASE=location.origin+location.pathname;
+const BASE="https://chama.alibr.com.br/";
 
 async function nativeShare(title,text,url){
   try{
