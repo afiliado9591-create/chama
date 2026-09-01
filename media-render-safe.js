@@ -41,6 +41,14 @@
       el=document.createElement('video'); el.className='chat-media video'; el.controls=true; el.preload='none'; el.playsInline=true;
     }
     if(!el)return;
+    const bubble=btn.closest('.bubble'),messageId=bubble?.dataset?.messageId||'';
+    if(m.kind==='audio'&&messageId){
+      el.addEventListener('play',()=>{
+        if(el.dataset.playReceiptSent==='1')return;
+        el.dataset.playReceiptSent='1';
+        document.dispatchEvent(new CustomEvent('chama-media-played',{detail:{messageId}}));
+      },{once:true});
+    }
     el.src=m.url;
     el.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';el.replaceWith(d)};
     btn.replaceWith(el);
