@@ -1,11 +1,74 @@
 (()=>{
   const PREFIX='__CHAMA_MEDIA__';
-  function rawText(b){let out='';for(const n of b.childNodes){if(n.nodeType===Node.TEXT_NODE)out+=n.nodeValue||'';else if(n.nodeType===Node.ELEMENT_NODE&&!n.classList.contains('time'))out+=n.textContent||''}return out.trim()}
-  function addStyle(){if(document.getElementById('mediaSafeToggleStyle'))return;const s=document.createElement('style');s.id='mediaSafeToggleStyle';s.textContent=`.media-image-wrap{display:grid;gap:7px}.media-close-btn{border:0;background:#fff3b0;color:#126b45;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}.chat-media.image{cursor:pointer;max-width:100%;border-radius:12px}.media-placeholder{background:#ffd84d!important;color:#123f2c!important;border:1px solid #e5b900!important;box-shadow:0 2px 7px #00000012}.media-placeholder:hover{background:#ffcf24!important}.chama-media-player{display:grid;gap:7px;background:#fff8d6;border:1px solid #f1cf45;border-radius:14px;padding:10px;min-width:min(285px,70vw)}.chama-media-player audio,.chama-media-player video{width:100%}.chama-media-label{display:flex;align-items:center;gap:8px;color:#126b45;font-weight:850;font-size:13px}.chama-media-icon{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#ffd84d;color:#123f2c;font-size:16px}.chat-media.video{border:3px solid #ffd84d;border-radius:13px;background:#000}`;document.head.appendChild(s)}
-  function makePlaceholder(m){const btn=document.createElement('button');btn.type='button';btn.className='media-placeholder';btn.textContent=m.kind==='image'?'📷 Ver imagem':m.kind==='audio'?'🎤 Ouvir áudio':'▶️ Reproduzir vídeo';btn.addEventListener('click',()=>openMedia(btn,m));return btn}
-  function openMedia(btn,m){if(m.kind==='image'){const wrap=document.createElement('div');wrap.className='media-image-wrap';const img=document.createElement('img');img.className='chat-media image';img.loading='lazy';img.decoding='async';img.alt=m.name||'Imagem';img.src=m.url;const close=document.createElement('button');close.type='button';close.className='media-close-btn';close.textContent='✕ Fechar imagem';const closeImage=()=>wrap.replaceWith(makePlaceholder(m));close.onclick=closeImage;img.onclick=closeImage;img.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';wrap.replaceWith(d)};wrap.append(img,close);btn.replaceWith(wrap);return}let el;if(m.kind==='audio'){el=document.createElement('audio');el.className='chat-media audio';el.controls=true;el.preload='none'}else if(m.kind==='video'){el=document.createElement('video');el.className='chat-media video';el.controls=true;el.preload='none';el.playsInline=true}if(!el)return;el.src=m.url;el.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';wrap.replaceWith(d)};const wrap=document.createElement('div');wrap.className='chama-media-player';const label=document.createElement('div');label.className='chama-media-label';label.innerHTML=`<span class="chama-media-icon">${m.kind==='audio'?'♪':'▶'}</span><span>${m.kind==='audio'?'Áudio Chama':'Vídeo Chama'}</span>`;wrap.append(label,el);btn.replaceWith(wrap)}
-  function render(b){if(!b||b.dataset.mediaSafe==='1')return;const raw=rawText(b);if(!raw.startsWith(PREFIX))return;let m;try{m=JSON.parse(raw.slice(PREFIX.length))}catch{return}b.dataset.mediaSafe='1';b.dataset.mediaReady='1';b.dataset.linksReady='1';const time=b.querySelector('.time')?.cloneNode(true);b.textContent='';b.appendChild(makePlaceholder(m));if(m.name){const n=document.createElement('div');n.className='media-name';n.textContent=m.name;b.appendChild(n)}if(time)b.appendChild(time)}
+  function rawText(b){
+    let out='';
+    for(const n of b.childNodes){
+      if(n.nodeType===Node.TEXT_NODE) out+=n.nodeValue||'';
+      else if(n.nodeType===Node.ELEMENT_NODE && !n.classList.contains('time')) out+=n.textContent||'';
+    }
+    return out.trim();
+  }
+  function addStyle(){
+    if(document.getElementById('mediaSafeToggleStyle'))return;
+    const s=document.createElement('style');
+    s.id='mediaSafeToggleStyle';
+    s.textContent=`.media-image-wrap{display:grid;gap:7px}.media-close-btn{border:0;background:#eef4f1;color:#0b7a53;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}.chat-media.image{cursor:pointer;max-width:100%;border-radius:12px}`;
+    document.head.appendChild(s);
+  }
+  function makePlaceholder(m){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='media-placeholder';
+    btn.textContent=m.kind==='image'?'📷 Ver imagem':m.kind==='audio'?'🎤 Ouvir áudio':'▶️ Reproduzir vídeo';
+    btn.addEventListener('click',()=>openMedia(btn,m));
+    return btn;
+  }
+  function openMedia(btn,m){
+    if(m.kind==='image'){
+      const wrap=document.createElement('div');wrap.className='media-image-wrap';
+      const img=document.createElement('img');img.className='chat-media image';img.loading='lazy';img.decoding='async';img.alt=m.name||'Imagem';img.src=m.url;
+      const close=document.createElement('button');close.type='button';close.className='media-close-btn';close.textContent='✕ Fechar imagem';
+      const closeImage=()=>wrap.replaceWith(makePlaceholder(m));
+      close.onclick=closeImage;
+      img.onclick=closeImage;
+      img.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';wrap.replaceWith(d)};
+      wrap.append(img,close);btn.replaceWith(wrap);return;
+    }
+    let el;
+    if(m.kind==='audio'){
+      el=document.createElement('audio'); el.className='chat-media audio'; el.controls=true; el.preload='none';
+    }else if(m.kind==='video'){
+      el=document.createElement('video'); el.className='chat-media video'; el.controls=true; el.preload='none'; el.playsInline=true;
+    }
+    if(!el)return;
+    el.src=m.url;
+    el.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';el.replaceWith(d)};
+    btn.replaceWith(el);
+  }
+  function render(b){
+    if(!b||b.dataset.mediaSafe==='1')return;
+    const raw=rawText(b);
+    if(!raw.startsWith(PREFIX))return;
+    let m;try{m=JSON.parse(raw.slice(PREFIX.length))}catch{return}
+    b.dataset.mediaSafe='1'; b.dataset.mediaReady='1'; b.dataset.linksReady='1';
+    const time=b.querySelector('.time')?.cloneNode(true);
+    b.textContent='';
+    b.appendChild(makePlaceholder(m));
+    if(m.name){const n=document.createElement('div');n.className='media-name';n.textContent=m.name;b.appendChild(n)}
+    if(time)b.appendChild(time);
+  }
   function scan(root=document){root.querySelectorAll?.('#messages .bubble').forEach(render)}
-  function start(){addStyle();scan();const messages=document.getElementById('messages');if(!messages)return;new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes){if(n.nodeType!==1)continue;if(n.matches?.('.bubble'))render(n);else n.querySelectorAll?.('.bubble').forEach(render)}}).observe(messages,{childList:true})}
+  function start(){
+    addStyle();scan();
+    const messages=document.getElementById('messages');
+    if(!messages)return;
+    new MutationObserver(ms=>{
+      for(const m of ms) for(const n of m.addedNodes){
+        if(n.nodeType!==1)continue;
+        if(n.matches?.('.bubble')) render(n);
+        else n.querySelectorAll?.('.bubble').forEach(render);
+      }
+    }).observe(messages,{childList:true});
+  }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
