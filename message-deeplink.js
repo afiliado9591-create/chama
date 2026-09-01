@@ -1,0 +1,5 @@
+import{getApps,getApp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import{getFirestore,doc,getDoc}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+const app=getApps().length?getApp():null;
+if(app){const auth=getAuth(app),db=getFirestore(app);let tried=false;const uid=new URLSearchParams(location.search).get('mensagem');async function openTarget(){if(tried||!uid||!auth.currentUser)return;const s=await getDoc(doc(db,'users',uid)).catch(()=>null);if(!s?.exists())return;const email=String(s.data().email||'').trim().toLowerCase();if(!email)return;let attempts=0;const timer=setInterval(()=>{attempts++;const row=[...document.querySelectorAll('#usersList .user')].find(r=>(r.querySelector('.user-email')?.textContent||'').trim().toLowerCase()===email);if(row){clearInterval(timer);tried=true;row.click();history.replaceState({},'',location.pathname)}else if(attempts>40)clearInterval(timer)},150)}onAuthStateChanged(auth,u=>{if(u)setTimeout(openTarget,250)})}
