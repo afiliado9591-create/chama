@@ -1,71 +1,34 @@
 import{getApps,initializeApp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import{getAuth}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import{getFirestore,collection,query,where,limit,getDocs}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import{getFirestore,collection,query,where,limit,getDocs,doc,setDoc,addDoc,serverTimestamp,orderBy}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",authDomain:"chama-cfc28.firebaseapp.com",projectId:"chama-cfc28",storageBucket:"chama-cfc28.firebasestorage.app",messagingSenderId:"680045231088",appId:"1:680045231088:web:8db35684e4b56a320ebb35"};
 const app=getApps()[0]||initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const BASE="https://chama.alibr.com.br/";
+const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 
 async function nativeShare(title,text,url){
-  try{
-    if(navigator.share){await navigator.share({title,text,url});return}
-    if(navigator.clipboard){await navigator.clipboard.writeText(url);alert('Link copiado!');return}
-    prompt('Copie este link:',url)
-  }catch(e){if(e?.name!=='AbortError')prompt('Copie este link:',url)}
+  try{if(navigator.share){await navigator.share({title,text,url});return}if(navigator.clipboard){await navigator.clipboard.writeText(url);alert('Link copiado!');return}prompt('Copie este link:',url)}catch(e){if(e?.name!=='AbortError')prompt('Copie este link:',url)}
 }
 function btn(label,fn){const b=document.createElement('button');b.type='button';b.className='secondary share-btn';b.textContent=label;b.onclick=fn;return b}
 function visible(id){const el=document.getElementById(id);return !!el&&!el.classList.contains('hidden')}
 function text(id){return document.getElementById(id)?.textContent?.trim()||''}
-async function uidByEmail(email){
-  if(!email)return auth.currentUser?.uid||'';
-  if(auth.currentUser?.email===email)return auth.currentUser.uid;
-  try{const s=await getDocs(query(collection(db,'users'),where('email','==',email),limit(1)));return s.empty?'':s.docs[0].id}catch{return ''}
-}
-async function contextUid(){
-  let email='';
-  if(visible('profileModal'))email=text('profileEmail');
-  if(!email)email=text('chatEmail');
-  if(!email)email=auth.currentUser?.email||'';
-  return uidByEmail(email)
-}
+async function uidByEmail(email){if(!email)return auth.currentUser?.uid||'';if(auth.currentUser?.email===email)return auth.currentUser.uid;try{const s=await getDocs(query(collection(db,'users'),where('email','==',email),limit(1)));return s.empty?'':s.docs[0].id}catch{return ''}}
+async function contextUid(){let email='';if(visible('profileModal'))email=text('profileEmail');if(!email)email=text('chatEmail');if(!email)email=auth.currentUser?.email||'';return uidByEmail(email)}
 function profileName(){return text('profileName')||text('meName')||'usuário'}
 function catalogName(){return text('catalogTitle').replace(/^Catálogo\s*(de)?\s*/i,'').trim()||profileName()}
-function sendInsideChama(card,uid,i){
-  const input=document.getElementById('messageInput'),form=document.getElementById('composer');
-  const active=document.getElementById('activeChat');
-  if(!input||!form||!active||active.classList.contains('hidden'))return alert('Abra uma conversa no Chama antes de enviar o produto.');
-  const title=card.querySelector('.product-title')?.textContent?.trim()||'Produto';
-  const price=card.querySelector('.product-price')?.textContent?.trim()||'';
-  const link=`${BASE}?produto=${encodeURIComponent(uid+':'+i)}`;
-  input.value=`🛍️ ${title}${price?'\n💰 '+price:''}\n${link}`;
-  document.getElementById('catalogModal')?.classList.add('hidden');
-  input.dispatchEvent(new Event('input',{bubbles:true}));
-  if(form.requestSubmit)form.requestSubmit();else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
-}
+function sendInsideChama(card,uid,i){const input=document.getElementById('messageInput'),form=document.getElementById('composer'),active=document.getElementById('activeChat');if(!input||!form||!active||active.classList.contains('hidden'))return alert('Abra uma conversa no Chama antes de enviar o produto.');const title=card.querySelector('.product-title')?.textContent?.trim()||'Produto',price=card.querySelector('.product-price')?.textContent?.trim()||'',link=`${BASE}?produto=${encodeURIComponent(uid+':'+i)}`;input.value=`🛍️ ${title}${price?'\n💰 '+price:''}\n${link}`;document.getElementById('catalogModal')?.classList.add('hidden');input.dispatchEvent(new Event('input',{bubbles:true}));if(form.requestSubmit)form.requestSubmit();else form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))}
 
-function addProfileShare(){
-  const actions=document.getElementById('profileActions');if(!actions||actions.querySelector('[data-share-profile]')||!visible('profileModal'))return;
-  const b=btn('🔗 Compartilhar perfil',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este perfil.');await nativeShare('Perfil no Chama',`Veja o perfil de ${profileName()} no Chama`,`${BASE}?perfil=${encodeURIComponent(uid)}`)});b.dataset.shareProfile='1';actions.prepend(b)
-}
-function addCatalogShare(){
-  const actions=document.getElementById('catalogOwnerActions');if(!actions||actions.querySelector('[data-share-catalog]')||!visible('catalogModal'))return;
-  const b=btn('🔗 Compartilhar catálogo',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este catálogo.');await nativeShare('Catálogo no Chama',`Veja o catálogo de ${catalogName()} no Chama`,`${BASE}?catalogo=${encodeURIComponent(uid)}`)});b.dataset.shareCatalog='1';actions.prepend(b)
-}
-function addProductShares(){
-  if(!visible('catalogModal'))return;
-  document.querySelectorAll('#catalogGrid .product').forEach((card,i)=>{
-    const body=card.querySelector('.product-body')||card;
-    if(!card.querySelector('[data-share-product]')){
-      const title=card.querySelector('.product-title')?.textContent?.trim()||'Produto';
-      const b=btn('↗ Compartilhar produto',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este produto.');await nativeShare(title,`Veja este produto no Chama: ${title}`,`${BASE}?produto=${encodeURIComponent(uid+':'+i)}`)});b.dataset.shareProduct='1';body.appendChild(b)
-    }
-    if(!card.querySelector('[data-send-chama]')){
-      const c=btn('💬 Enviar no Chama',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este produto.');sendInsideChama(card,uid,i)});c.dataset.sendChama='1';c.classList.add('send-chama-btn');body.appendChild(c)
-    }
-  })
-}
+function closeSendCatalog(){document.getElementById('catalogShareModal')?.remove()}
+async function sendCatalogToUser(user,catalogUid,name){const me=auth.currentUser;if(!me)return;const ids=[me.uid,user.uid].sort(),chatId=ids.join('_'),link=`${BASE}?catalogo=${encodeURIComponent(catalogUid)}`,msg=`🛍️ Catálogo de ${name}\nVeja os produtos no Chama:\n${link}`;await setDoc(doc(db,'chats',chatId),{participants:ids,lastMessage:msg,updatedAt:serverTimestamp()},{merge:true});await addDoc(collection(db,'chats',chatId,'messages'),{text:msg,senderId:me.uid,receiverId:user.uid,createdAt:serverTimestamp()});closeSendCatalog();alert(`Catálogo enviado para ${user.nome||user.email||'o usuário'}.`)}
+async function sendCatalogToChannel(channel,catalogUid,name){const me=auth.currentUser;if(!me)return;const link=`${BASE}?catalogo=${encodeURIComponent(catalogUid)}`,txt=`🛍️ Catálogo de ${name}\nVeja os produtos no Chama:\n${link}`;const p=await addDoc(collection(db,'channels',channel.id,'posts'),{ownerId:me.uid,text:txt,image:'',createdAt:serverTimestamp()});try{const token=await me.getIdToken();fetch('/api/channel-push',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({channelId:channel.id,postId:p.id}),cache:'no-store'}).catch(()=>{})}catch{}closeSendCatalog();alert(`Catálogo publicado no canal ${channel.name||'selecionado'}.`)}
+async function openCatalogSendChooser(){const catalogUid=await contextUid();if(!catalogUid)return alert('Não consegui identificar este catálogo.');const me=auth.currentUser;if(!me)return alert('Entre no Chama para compartilhar.');const name=catalogName();closeSendCatalog();const m=document.createElement('div');m.id='catalogShareModal';m.className='cs-modal';m.innerHTML=`<div class="cs-card"><div class="cs-head"><h3>📤 Compartilhar catálogo</h3><button class="cs-x">×</button></div><div class="cs-tabs"><button class="cs-tab on" data-tab="users">👤 Usuários</button><button class="cs-tab" data-tab="channels">📢 Meus canais</button></div><div id="csBody" class="cs-body">Carregando...</div></div>`;document.body.appendChild(m);m.querySelector('.cs-x').onclick=closeSendCatalog;m.onclick=e=>{if(e.target===m)closeSendCatalog()};const body=m.querySelector('#csBody');async function users(){body.textContent='Carregando usuários...';try{const s=await getDocs(query(collection(db,'users'),limit(150)));const list=[];s.forEach(d=>{if(d.id!==me.uid)list.push({uid:d.id,...d.data()})});list.sort((a,b)=>String(a.nome||a.email||'').localeCompare(String(b.nome||b.email||''),'pt-BR'));body.innerHTML=list.length?'':'<div class="cs-empty">Nenhum usuário encontrado.</div>';for(const u of list){const r=document.createElement('button');r.className='cs-row';r.innerHTML=`<span class="cs-avatar">${esc((u.nome||u.email||'U').charAt(0).toUpperCase())}</span><span><b>${esc(u.nome||'Usuário')}</b><small>${esc(u.email||'')}</small></span><em>Enviar</em>`;r.onclick=async()=>{r.disabled=true;try{await sendCatalogToUser(u,catalogUid,name)}catch(e){console.error(e);alert('Não consegui enviar o catálogo.');r.disabled=false}};body.appendChild(r)}}catch(e){console.error(e);body.innerHTML='<div class="cs-empty">Não foi possível carregar os usuários.</div>'}}
+async function channels(){body.textContent='Carregando seus canais...';try{const s=await getDocs(query(collection(db,'channels'),orderBy('createdAt','desc'),limit(100)));const list=[];s.forEach(d=>{const c=d.data();if(c.ownerId===me.uid)list.push({id:d.id,...c})});body.innerHTML=list.length?'':'<div class="cs-empty">Você ainda não possui canal para publicar.</div>';for(const c of list){const r=document.createElement('button');r.className='cs-row';r.innerHTML=`<span class="cs-avatar">📢</span><span><b>${esc(c.name||'Canal')}</b><small>${esc(c.description||'')}</small></span><em>Publicar</em>`;r.onclick=async()=>{r.disabled=true;try{await sendCatalogToChannel(c,catalogUid,name)}catch(e){console.error(e);alert('Não consegui publicar o catálogo neste canal.');r.disabled=false}};body.appendChild(r)}}catch(e){console.error(e);body.innerHTML='<div class="cs-empty">Não foi possível carregar os canais.</div>'}}
+m.querySelectorAll('.cs-tab').forEach(t=>t.onclick=()=>{m.querySelectorAll('.cs-tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');t.dataset.tab==='users'?users():channels()});users()}
+
+function addProfileShare(){const actions=document.getElementById('profileActions');if(!actions||actions.querySelector('[data-share-profile]')||!visible('profileModal'))return;const b=btn('🔗 Compartilhar perfil',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este perfil.');await nativeShare('Perfil no Chama',`Veja o perfil de ${profileName()} no Chama`,`${BASE}?perfil=${encodeURIComponent(uid)}`)});b.dataset.shareProfile='1';actions.prepend(b)}
+function addCatalogShare(){const actions=document.getElementById('catalogOwnerActions');if(!actions||!visible('catalogModal'))return;if(!actions.querySelector('[data-send-catalog-internal]')){const x=btn('📤 Enviar catálogo no Chama',openCatalogSendChooser);x.dataset.sendCatalogInternal='1';actions.prepend(x)}if(!actions.querySelector('[data-share-catalog]')){const b=btn('🔗 Compartilhar catálogo',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este catálogo.');await nativeShare('Catálogo no Chama',`Veja o catálogo de ${catalogName()} no Chama`,`${BASE}?catalogo=${encodeURIComponent(uid)}`)});b.dataset.shareCatalog='1';actions.prepend(b)}}
+function addProductShares(){if(!visible('catalogModal'))return;document.querySelectorAll('#catalogGrid .product').forEach((card,i)=>{const body=card.querySelector('.product-body')||card;if(!card.querySelector('[data-share-product]')){const title=card.querySelector('.product-title')?.textContent?.trim()||'Produto';const b=btn('↗ Compartilhar produto',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este produto.');await nativeShare(title,`Veja este produto no Chama: ${title}`,`${BASE}?produto=${encodeURIComponent(uid+':'+i)}`)});b.dataset.shareProduct='1';body.appendChild(b)}if(!card.querySelector('[data-send-chama]')){const c=btn('💬 Enviar no Chama',async()=>{const uid=await contextUid();if(!uid)return alert('Não consegui identificar este produto.');sendInsideChama(card,uid,i)});c.dataset.sendChama='1';c.classList.add('send-chama-btn');body.appendChild(c)}})}
 function refresh(){addProfileShare();addCatalogShare();addProductShares()}
-new MutationObserver(refresh).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
-document.addEventListener('click',()=>setTimeout(refresh,50),true);
-const style=document.createElement('style');style.textContent='.share-btn{font-size:13px}.product .share-btn{padding:9px 8px;margin-top:8px}.send-chama-btn{background:#e6f5ee!important;color:#0b7a53!important;border-color:#b9dfcc!important}';document.head.appendChild(style);
-refresh();
+new MutationObserver(refresh).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});document.addEventListener('click',()=>setTimeout(refresh,50),true);
+const style=document.createElement('style');style.textContent='.share-btn{font-size:13px}.product .share-btn{padding:9px 8px;margin-top:8px}.send-chama-btn{background:#e6f5ee!important;color:#0b7a53!important;border-color:#b9dfcc!important}.cs-modal{position:fixed;inset:0;background:#0009;z-index:900;display:grid;place-items:center;padding:14px}.cs-card{width:min(480px,100%);max-height:86dvh;overflow:auto;background:#fff;border-radius:20px;padding:16px}.cs-head{display:flex;align-items:center;gap:8px}.cs-head h3{margin:0;flex:1}.cs-x{border:0;background:#eef4f1;border-radius:50%;width:38px;height:38px;font-size:22px}.cs-tabs{display:flex;gap:7px;margin:14px 0}.cs-tab{flex:1;border:1px solid #d8e3de;background:#fff;padding:10px;border-radius:12px;font-weight:800;color:#446057}.cs-tab.on{background:#0b7a53;color:#fff;border-color:#0b7a53}.cs-body{display:grid;gap:8px}.cs-row{width:100%;display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;text-align:left;border:1px solid #e1e8e4;background:#fff;border-radius:14px;padding:10px}.cs-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#e6f5ee;color:#0b7a53;font-weight:900}.cs-row span:nth-child(2){min-width:0}.cs-row b,.cs-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cs-row small{color:#718078;font-size:12px;margin-top:2px}.cs-row em{font-style:normal;color:#0b7a53;font-size:12px;font-weight:850}.cs-empty{padding:20px;text-align:center;color:#718078}';document.head.appendChild(style);refresh();
