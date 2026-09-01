@@ -27,8 +27,14 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if activeUser() || isAdmin();
       allow create: if signedIn() && request.auth.uid == userId && !banned(userId) && !request.resource.data.keys().hasAny(['admin','suspended','adminBanner','adminUpdatedAt']);
-      allow update: if isAdmin() || (activeUser() && request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['admin','suspended','adminBanner','adminUpdatedAt']));
-      allow delete: if isAdmin() || (activeUser() && request.auth.uid == userId);
+      allow update: if
+        (isAdmin() && request.auth.uid != userId) ||
+        (isAdmin() && request.auth.uid == userId &&
+          ('admin' in resource.data) && resource.data.admin == true &&
+          ('admin' in request.resource.data) && request.resource.data.admin == true) ||
+        (activeUser() && request.auth.uid == userId &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['admin','suspended','adminBanner','adminUpdatedAt']));
+      allow delete: if isAdmin() && request.auth.uid != userId;
     }
 
     match /presence/{userId} {
