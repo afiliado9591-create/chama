@@ -29,12 +29,17 @@ if(app){
   onAuthStateChanged(auth,u=>{
     stop?.();stop=null;sent.clear();
     if(!u)return;
-    const q=query(collection(db,"calls"),where("callerId","==",u.uid));
+    // Escuta somente chamadas ainda tocando. Antes a consulta carregava
+    // todo o histórico de chamadas feitas pelo usuário a cada login.
+    const q=query(
+      collection(db,"calls"),
+      where("callerId","==",u.uid),
+      where("status","==","ringing")
+    );
     stop=onSnapshot(q,s=>{
       for(const ch of s.docChanges()){
         if(ch.type==="removed")continue;
-        const d=ch.doc.data();
-        if(d.status==="ringing")sendCall(ch.doc.id,d);
+        sendCall(ch.doc.id,ch.doc.data());
       }
     },e=>console.warn("Chama push listener:",e));
   });
