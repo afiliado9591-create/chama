@@ -16,66 +16,21 @@ function install(){
       .chama-mobile-menu .menu-sep{height:1px;background:#edf1ef;margin:5px 4px}
       .chama-mobile-menu .menu-logout{color:#a52b2b!important}
     }`;
-
-  const top=document.querySelector('.topbar');
-  if(!top)return;
-  let btn=document.getElementById('chamaMobileMenuBtn');
-  if(!btn){
-    btn=document.createElement('button');
-    btn.id='chamaMobileMenuBtn';
-    btn.className='chama-mobile-menu-btn';
-    btn.type='button';
-    btn.setAttribute('aria-label','Abrir menu');
-    btn.textContent='☰';
-    top.appendChild(btn);
-  }
-  let menu=document.getElementById('chamaMobileMenu');
-  if(!menu){
-    menu=document.createElement('div');
-    menu.id='chamaMobileMenu';
-    menu.className='chama-mobile-menu';
-    document.body.appendChild(menu);
-  }
+  const top=document.querySelector('.topbar');if(!top)return;
+  let btn=document.getElementById('chamaMobileMenuBtn');if(!btn){btn=document.createElement('button');btn.id='chamaMobileMenuBtn';btn.className='chama-mobile-menu-btn';btn.type='button';btn.setAttribute('aria-label','Abrir menu');btn.textContent='☰';top.appendChild(btn)}
+  let menu=document.getElementById('chamaMobileMenu');if(!menu){menu=document.createElement('div');menu.id='chamaMobileMenu';menu.className='chama-mobile-menu';document.body.appendChild(menu)}
   function build(){
-    const items=[
-      ['#notifBtn','🔔','Notificações'],
-      ['[id*="notif"]','🔔','Notificações'],
-      ['#bizTopBtn','📍','Negócios'],
-      ['#offersTopBtn','🔥','Ofertas'],
-      ['#bulkShareBtn','📣','Envio em massa'],
-      ['#aboutBtn','ℹ️','Sobre o Chama'],
-      ['#privacyBtn','🔒','Política de Privacidade'],
-      ['#adminBtn','🛡️','Admin']
-    ];
-    const seen=new Set();
-    let html='';
-    for(const [sel,icon,label] of items){
-      const el=document.querySelector('.topbar '+sel);
-      if(!el||seen.has(el))continue;
-      seen.add(el);
-      html+=`<button type="button" data-target="${el.id}"><span>${icon}</span><span>${label}</span></button>`;
-    }
-    const logout=document.getElementById('logoutBtn');
-    if(logout)html+=`<div class="menu-sep"></div><button type="button" class="menu-logout" data-target="logoutBtn"><span>🚪</span><span>Sair</span></button>`;
-    menu.innerHTML=html;
-    menu.querySelectorAll('[data-target]').forEach(b=>b.onclick=()=>{
-      const target=document.getElementById(b.dataset.target);
-      menu.classList.remove('open');
-      btn.textContent='☰';
-      if(target)target.click();
-    });
+    const items=[['#notifBtn','🔔','Notificações'],['[id*="notif"]','🔔','Notificações'],['#bizTopBtn','📍','Negócios'],['#offersTopBtn','🔥','Ofertas'],['#bulkShareBtn','📣','Envio em massa'],['#aboutBtn','ℹ️','Sobre o Chama'],['#privacyBtn','🔒','Política de Privacidade'],['#adminBtn','🛡️','Admin']];
+    const seen=new Set();let html='';
+    for(const [sel,icon,label] of items){const el=document.querySelector('.topbar '+sel);if(!el||seen.has(el))continue;seen.add(el);html+=`<button type="button" data-target="${el.id}"><span>${icon}</span><span>${label}</span></button>`}
+    const logout=document.getElementById('logoutBtn');if(logout)html+=`<div class="menu-sep"></div><button type="button" class="menu-logout" data-target="logoutBtn"><span>🚪</span><span>Sair</span></button>`;
+    menu.innerHTML=html;menu.querySelectorAll('[data-target]').forEach(b=>b.onclick=()=>{const target=document.getElementById(b.dataset.target);menu.classList.remove('open');btn.textContent='☰';if(target)target.click()})
   }
-  btn.onclick=e=>{
-    e.stopPropagation();
-    build();
-    const open=menu.classList.toggle('open');
-    btn.textContent=open?'×':'☰';
-  };
-  document.addEventListener('click',e=>{
-    if(!menu.contains(e.target)&&e.target!==btn){menu.classList.remove('open');btn.textContent='☰'}
-  });
+  btn.onclick=e=>{e.stopPropagation();build();const open=menu.classList.toggle('open');btn.textContent=open?'×':'☰'};
+  document.addEventListener('click',e=>{if(!menu.contains(e.target)&&e.target!==btn){menu.classList.remove('open');btn.textContent='☰'}});
   window.addEventListener('resize',()=>{if(innerWidth>700){menu.classList.remove('open');btn.textContent='☰'}});
+  // O Admin é criado de forma assíncrona. Se aparecer depois, atualiza o menu aberto imediatamente.
+  if(!window.__chamaMenuAdminWatch){window.__chamaMenuAdminWatch=true;new MutationObserver(()=>{if(menu.classList.contains('open'))build()}).observe(top,{childList:true,subtree:true})}
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-setTimeout(install,700);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();setTimeout(install,700);setTimeout(install,1800);
 })();
