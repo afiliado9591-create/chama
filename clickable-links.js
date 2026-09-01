@@ -1,11 +1,12 @@
 (()=>{
   const URL_RE=/(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
   const MEDIA_PREFIX="__CHAMA_MEDIA__";
+  const PRODUCT_PREFIX="__CHAMA_PRODUCT_CONTEXT__";
   const trimEnd=url=>{let end="";while(/[.,!?;:)]$/.test(url)){end=url.slice(-1)+end;url=url.slice(0,-1)}return [url,end]};
   function linkifyBubble(bubble){
     if(!bubble||bubble.dataset.linksReady==="1")return;
     const raw=(bubble.textContent||"").trimStart();
-    if(raw.startsWith(MEDIA_PREFIX))return;
+    if(raw.startsWith(MEDIA_PREFIX)||raw.startsWith(PRODUCT_PREFIX))return;
     const walker=document.createTreeWalker(bubble,NodeFilter.SHOW_TEXT);
     const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
     nodes.forEach(node=>{
