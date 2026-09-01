@@ -7,7 +7,7 @@ function install(){
     @media(max-width:700px){
       #appView{max-width:100vw!important;overflow-x:hidden!important}
       .topbar{position:relative!important;display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:8px!important;padding:10px 12px!important;height:64px!important;min-height:64px!important;overflow:visible!important}
-      .topbar>#notifBtn,.topbar>[id*="notif"],.topbar>#bizTopBtn,.topbar>#offersTopBtn,.topbar>#adminBtn,.topbar>#aboutBtn,.topbar>#privacyBtn,.topbar>#logoutBtn{display:none!important}
+      .topbar>#notifBtn,.topbar>[id*="notif"],.topbar>#bizTopBtn,.topbar>#offersTopBtn,.topbar>#bulkShareBtn,.topbar>#adminBtn,.topbar>#aboutBtn,.topbar>#privacyBtn,.topbar>#logoutBtn{display:none!important}
       .chama-mobile-menu-btn{display:flex!important;margin-left:auto!important;flex:0 0 44px!important;width:44px!important;height:44px!important;align-items:center!important;justify-content:center!important;border:1px solid #ffffff55!important;border-radius:13px!important;background:#ffffff18!important;color:#fff!important;font-size:25px!important;font-weight:900!important;padding:0!important;cursor:pointer!important}
       .chama-mobile-menu{display:none;position:fixed;top:68px;right:10px;z-index:1000;width:min(280px,calc(100vw - 20px));background:#fff;border:1px solid #dde6e1;border-radius:16px;box-shadow:0 12px 35px #0003;padding:8px;overflow:hidden}
       .chama-mobile-menu.open{display:block!important}
@@ -42,6 +42,7 @@ function install(){
       ['[id*="notif"]','🔔','Notificações'],
       ['#bizTopBtn','📍','Negócios'],
       ['#offersTopBtn','🔥','Ofertas'],
+      ['#bulkShareBtn','📣','Envio em massa'],
       ['#aboutBtn','ℹ️','Sobre o Chama'],
       ['#privacyBtn','🔒','Política de Privacidade'],
       ['#adminBtn','🛡️','Admin']
