@@ -3,10 +3,11 @@ import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.18.
 import{getFirestore,doc,getDoc,setDoc,collection,query,where,getDocs,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",authDomain:"chama-cfc28.firebaseapp.com",projectId:"chama-cfc28",storageBucket:"chama-cfc28.firebasestorage.app",messagingSenderId:"680045231088",appId:"1:680045231088:web:8db35684e4b56a320ebb35"};
 const app=getApps()[0]||initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);let me=null,count=0;
+const BASE="https://chama.alibr.com.br/";
 const norm=v=>String(v||"").trim().toLowerCase();
 const incoming=new URL(location.href).searchParams.get("ref");if(incoming)try{localStorage.setItem("chama_ref",incoming)}catch{}
 function style(){if(document.getElementById("refStyle"))return;const s=document.createElement("style");s.id="refStyle";s.textContent=`.ref-btn{width:100%;border:1px solid #c9d4cf;background:#fff;color:#0b7a53;padding:13px 16px;border-radius:14px;font-weight:800;cursor:pointer}.ref-count{text-align:center;color:#6a756f;font-size:12px;margin-top:-2px;margin-bottom:4px}`;document.head.appendChild(s)}
-function link(){return `${location.origin}${location.pathname}?ref=${encodeURIComponent(me.uid)}`}
+function link(){return `${BASE}?ref=${encodeURIComponent(me.uid)}`}
 async function registerReferral(){let ref="";try{ref=localStorage.getItem("chama_ref")||""}catch{}if(!me||!ref||ref===me.uid)return;try{const mine=await getDoc(doc(db,"users",me.uid));if(mine.exists()&&mine.data().indicadoPor){localStorage.removeItem("chama_ref");return}const inviter=await getDoc(doc(db,"users",ref));if(!inviter.exists()){localStorage.removeItem("chama_ref");return}await setDoc(doc(db,"users",me.uid),{indicadoPor:ref,indicadoEm:serverTimestamp()},{merge:true});localStorage.removeItem("chama_ref")}catch{}}
 async function loadCount(){if(!me)return;try{const s=await getDocs(query(collection(db,"users"),where("indicadoPor","==",me.uid)));count=s.size}catch{count=0}refreshOwnProfile()}
 async function shareReferral(){if(!me)return;const url=link(),text="Entre no Chama pelo meu convite 🇧🇷";try{if(navigator.share){await navigator.share({title:"Chama",text,url});return}await navigator.clipboard.writeText(url);alert("Link de indicação copiado!")}catch{try{await navigator.clipboard.writeText(url);alert("Link de indicação copiado!")}catch{prompt("Copie seu link de indicação:",url)}}}
