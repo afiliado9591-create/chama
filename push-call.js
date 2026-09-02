@@ -7,6 +7,7 @@ const app=getApps().length?getApp():null;
 if(app){
   const auth=getAuth(app),db=getFirestore(app);
   let me=null,registered=false,registering=null;
+  const PUSH_REFRESH_MS=7*24*60*60*1000;
 
   async function getConfig(){
     const r=await fetch('/api/push-config',{cache:'no-store'});
@@ -32,13 +33,23 @@ if(app){
       const messaging=getMessaging(app);
       const token=await getToken(messaging,{vapidKey:cfg.vapidKey,serviceWorkerRegistration:reg});
       if(!token)throw new Error('Token não gerado');
-      await updateDoc(doc(db,'users',me.uid),{
-        pushToken:token,
-        pushTokens:arrayUnion(token),
-        pushEnabled:true,
-        pushOrigin:location.origin,
-        pushUpdatedAt:serverTimestamp()
-      });
+
+      const savedToken=localStorage.getItem('chama_push_token_full')||'';
+      const savedAt=Number(localStorage.getItem('chama_push_updated_at')||0);
+      const fresh=savedToken===token&&savedAt>0&&(Date.now()-savedAt)<PUSH_REFRESH_MS;
+
+      if(!fresh||force){
+        await updateDoc(doc(db,'users',me.uid),{
+          pushToken:token,
+          pushTokens:arrayUnion(token),
+          pushEnabled:true,
+          pushOrigin:location.origin,
+          pushUpdatedAt:serverTimestamp()
+        });
+        localStorage.setItem('chama_push_token_full',token);
+        localStorage.setItem('chama_push_updated_at',String(Date.now()));
+      }
+
       registered=true;
       localStorage.setItem('chama_push_ok','1');
       localStorage.setItem('chama_push_token',token.slice(-18));
@@ -74,8 +85,8 @@ if(app){
     me=u||null;registered=false;
     document.getElementById('pushCallBanner')?.remove();
     if(!u)return;
-    if(Notification.permission==='granted')registerPush(true).catch(()=>{});
+    if(Notification.permission==='granted')registerPush(false).catch(()=>{});
     else setTimeout(banner,1200);
   });
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&me&&Notification.permission==='granted')registerPush(true).catch(()=>{})});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&me&&Notification.permission==='granted')registerPush(false).catch(()=>{})});
 }
