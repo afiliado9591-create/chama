@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaProfileCityStyleV3';
+  const STYLE_ID='chamaProfileCityStyleV4';
   const CHATSHOP_HOME='https://alibr.com.br/';
   let auth=null,db=null,fs=null,me=null;
 
@@ -13,11 +13,13 @@
       .chama-profile-backdrop{position:fixed;inset:0;background:#0007;z-index:3000;display:grid;place-items:center;padding:18px}
       .chama-profile-card{width:min(410px,100%);max-height:92dvh;overflow:auto;background:#fff;border-radius:24px;box-shadow:0 20px 60px #0004}
       .chama-profile-head{background:#0b7a53;color:#fff;padding:22px 20px;display:flex;align-items:center;gap:14px}
-      .chama-profile-avatar{width:58px;height:58px;border-radius:50%;background:#ffffff22;display:grid;place-items:center;font-size:28px;flex:0 0 58px}
+      .chama-profile-avatar{width:72px;height:72px;border-radius:50%;background:#ffffff22;display:grid;place-items:center;font-size:30px;flex:0 0 72px;overflow:hidden;border:3px solid #ffffff80}
+      .chama-profile-avatar img{width:100%;height:100%;object-fit:cover;display:block}
       .chama-profile-title{flex:1}.chama-profile-title strong{display:block;font-size:20px}.chama-profile-title small{opacity:.86}
       .chama-profile-close{border:0;background:#ffffff18;color:#fff;width:40px;height:40px;border-radius:12px;font-size:20px;cursor:pointer}
       .chama-profile-body{padding:20px}.chama-profile-location{background:#eef8f3;border:1px solid #dbece3;border-radius:16px;padding:16px}
       .chama-profile-location small{display:block;color:#65736c;font-weight:700;margin-bottom:4px}.chama-profile-location strong{font-size:20px;color:#16372a}
+      .chama-photo-actions{display:flex;gap:9px;align-items:center;margin-top:14px}.chama-photo-btn{border:0;background:#eef8f3;color:#0b7a53;border-radius:12px;padding:11px 13px;font-weight:900;cursor:pointer}.chama-photo-btn[disabled]{opacity:.65;cursor:default}.chama-photo-help{font-size:11px;color:#748078}
       .chama-profile-edit{display:grid;gap:10px;margin-top:16px}.chama-profile-edit label{font-size:13px;font-weight:800;color:#56645d}
       .chama-profile-edit input{width:100%;border:1px solid #cfd8d3;border-radius:13px;padding:12px 14px;outline:none}.chama-profile-edit input:focus{border-color:#0b7a53}
       .chama-profile-save{border:0;background:#0b7a53;color:#fff;border-radius:13px;padding:12px 14px;font-weight:850;cursor:pointer}
@@ -42,12 +44,21 @@
     try{const u=new URL(v);const h=u.hostname.toLowerCase();if(u.protocol!=='https:'||(h!=='alibr.com.br'&&!h.endsWith('.alibr.com.br')))return null;return u.href}catch{return null}
   }
 
+  function safePhotoUrl(value){
+    const v=String(value||'').trim();if(!v)return '';
+    try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}
+  }
+
   function closeProfile(){document.getElementById('chamaProfileModal')?.remove()}
 
   async function readProfile(uid){
-    if(!db||!fs||!uid)return {nome:'',cidade:'',chatshopLink:''};
-    try{const snap=await fs.getDoc(fs.doc(db,'publicProfiles',uid));if(!snap.exists())return {nome:'',cidade:'',chatshopLink:''};const d=snap.data()||{};return {nome:String(d.nome||'').trim(),cidade:String(d.cidade||'').trim(),chatshopLink:String(d.chatshopLink||'').trim()}}
-    catch(e){console.error('Chama: não foi possível ler perfil público',e);return {nome:'',cidade:'',chatshopLink:''}}
+    if(!db||!fs||!uid)return {nome:'',cidade:'',chatshopLink:'',photoUrl:'',photoKey:''};
+    try{
+      const snap=await fs.getDoc(fs.doc(db,'publicProfiles',uid));
+      if(!snap.exists())return {nome:'',cidade:'',chatshopLink:'',photoUrl:'',photoKey:''};
+      const d=snap.data()||{};
+      return {nome:String(d.nome||'').trim(),cidade:String(d.cidade||'').trim(),chatshopLink:String(d.chatshopLink||'').trim(),photoUrl:safePhotoUrl(d.photoUrl),photoKey:String(d.photoKey||'').trim()};
+    }catch(e){console.error('Chama: não foi possível ler perfil público',e);return {nome:'',cidade:'',chatshopLink:'',photoUrl:'',photoKey:''}}
   }
 
   function renderRequiredBadge(cidade){
@@ -65,7 +76,7 @@
       const ref=fs.doc(db,'publicProfiles',user.uid),snap=await fs.getDoc(ref),old=snap.exists()?snap.data()||{}:{};
       const patch={uid:user.uid,nome,nomeBusca:norm(nome)};const cidade=String(old.cidade||'').trim();if(cidade)patch.cidadeBusca=norm(cidade);
       if(!snap.exists()||old.nome!==nome||old.nomeBusca!==patch.nomeBusca||(cidade&&old.cidadeBusca!==patch.cidadeBusca)){patch.updatedAt=fs.serverTimestamp();await fs.setDoc(ref,patch,{merge:true})}
-      return {...old,...patch,cidade,chatshopLink:String(old.chatshopLink||'').trim()};
+      return {...old,...patch,cidade,chatshopLink:String(old.chatshopLink||'').trim(),photoUrl:safePhotoUrl(old.photoUrl),photoKey:String(old.photoKey||'').trim()};
     }catch(e){console.warn('Chama: não foi possível indexar perfil público',e);return null}
   }
 
@@ -74,23 +85,55 @@
     return `<a class="chama-shop-public" href="${safe}" target="_blank" rel="noopener noreferrer">🛍️ Ver minha vitrine</a>`;
   }
 
+  function renderAvatar(el,url){
+    if(!el)return;const safe=safePhotoUrl(url);el.textContent='';
+    if(!safe){el.textContent='👤';return}
+    const img=document.createElement('img');img.alt='Foto de perfil';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=safe;img.onerror=()=>{el.textContent='👤'};el.appendChild(img);
+  }
+
+  async function deleteOldPhoto(key){
+    if(!key||!me)return;
+    try{const token=await me.getIdToken();await fetch('/api/media?key='+encodeURIComponent(key),{method:'DELETE',headers:{Authorization:'Bearer '+token}})}catch(_){ }
+  }
+
+  async function uploadProfilePhoto(file,current,avatar,button){
+    if(!me||!file)return;
+    if(!file.type?.startsWith('image/'))return alert('Escolha uma imagem para a foto do perfil.');
+    if(file.size>5*1024*1024)return alert('A foto deve ter no máximo 5 MB.');
+    button.disabled=true;button.textContent='Enviando foto...';
+    let newKey='';
+    try{
+      const token=await me.getIdToken();
+      const r=await fetch('/api/media',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name||'foto-perfil')},body:file});
+      const data=await r.json().catch(()=>({}));if(!r.ok||!data.url||!data.key)throw new Error(data.error||'Não foi possível enviar a foto.');
+      newKey=data.key;
+      await fs.setDoc(fs.doc(db,'publicProfiles',me.uid),{photoUrl:data.url,photoKey:data.key,updatedAt:fs.serverTimestamp()},{merge:true});
+      const oldKey=current.photoKey||'';current.photoUrl=data.url;current.photoKey=data.key;renderAvatar(avatar,data.url);button.textContent='Trocar foto';
+      if(oldKey&&oldKey!==data.key)deleteOldPhoto(oldKey);
+    }catch(e){
+      console.error(e);if(newKey)deleteOldPhoto(newKey);alert(e.message||'Não foi possível salvar a foto.');button.textContent=current.photoUrl?'Trocar foto':'Colocar foto';
+    }finally{button.disabled=false}
+  }
+
   async function openProfile(uid){
     if(!uid)return;closeProfile();const own=!!me&&uid===me.uid;
     const backdrop=document.createElement('div');backdrop.id='chamaProfileModal';backdrop.className='chama-profile-backdrop';
     const card=document.createElement('section');card.className='chama-profile-card';card.innerHTML=`
-      <div class="chama-profile-head"><div class="chama-profile-avatar">👤</div><div class="chama-profile-title"><strong id="chamaProfileNameText">${own?'Meu perfil':'Perfil do Chama'}</strong><small>${own?'Complete seu perfil':'Perfil público'}</small></div><button type="button" class="chama-profile-close" aria-label="Fechar">✕</button></div>
+      <div class="chama-profile-head"><div class="chama-profile-avatar" id="chamaProfileAvatar">👤</div><div class="chama-profile-title"><strong id="chamaProfileNameText">${own?'Meu perfil':'Perfil do Chama'}</strong><small>${own?'Complete seu perfil':'Perfil público'}</small></div><button type="button" class="chama-profile-close" aria-label="Fechar">✕</button></div>
       <div class="chama-profile-body">
-        <div class="chama-profile-location"><small>Cidade</small><strong id="chamaProfileCityText">Carregando...</strong></div>
+        ${own?`<div class="chama-photo-actions"><button id="chamaProfilePhotoBtn" class="chama-photo-btn" type="button">Colocar foto</button><span class="chama-photo-help">JPG, PNG ou WebP • até 5 MB</span><input id="chamaProfilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>`:''}
+        <div class="chama-profile-location" style="margin-top:${own?'14px':'0'}"><small>Cidade</small><strong id="chamaProfileCityText">Carregando...</strong></div>
         <div id="chamaProfileShopArea"></div>
         ${own?`<div id="chamaProfileRequiredNote" class="chama-profile-required-note">🔴 Para concluir seu perfil, informe sua cidade.</div><a class="chama-shop-create" href="${CHATSHOP_HOME}" target="_blank" rel="noopener noreferrer">🛍️ Venda seu produto no ChatShop</a><div class="chama-profile-edit"><label for="chamaProfileCityInput">Cidade *</label><input id="chamaProfileCityInput" maxlength="80" placeholder="Ex.: São Paulo"><label for="chamaProfileShopInput">Link ChatShop (opcional)</label><input id="chamaProfileShopInput" maxlength="500" placeholder="Cole aqui o link do seu catálogo"><button id="chamaProfileSave" class="chama-profile-save" type="button">Salvar perfil</button></div>`:''}
-        <div class="chama-profile-note">Seu e-mail não aparece no perfil público. O link do ChatShop é opcional e deve usar alibr.com.br.</div>
+        <div class="chama-profile-note">Seu e-mail não aparece no perfil público. O link do ChatShop e a foto são opcionais.</div>
       </div>`;
     backdrop.appendChild(card);document.body.appendChild(backdrop);card.querySelector('.chama-profile-close').onclick=closeProfile;backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeProfile()});
 
-    const profile=await readProfile(uid),nameText=card.querySelector('#chamaProfileNameText'),cityText=card.querySelector('#chamaProfileCityText'),shopArea=card.querySelector('#chamaProfileShopArea');
-    if(nameText&&profile.nome)nameText.textContent=profile.nome;if(cityText)cityText.textContent=profile.cidade||'Cidade não informada';if(shopArea)shopArea.innerHTML=shopButton(profile.chatshopLink);
+    const profile=await readProfile(uid),nameText=card.querySelector('#chamaProfileNameText'),cityText=card.querySelector('#chamaProfileCityText'),shopArea=card.querySelector('#chamaProfileShopArea'),avatar=card.querySelector('#chamaProfileAvatar');
+    if(nameText&&profile.nome)nameText.textContent=profile.nome;if(cityText)cityText.textContent=profile.cidade||'Cidade não informada';if(shopArea)shopArea.innerHTML=shopButton(profile.chatshopLink);renderAvatar(avatar,profile.photoUrl);
 
     if(own){
+      const photoBtn=card.querySelector('#chamaProfilePhotoBtn'),photoInput=card.querySelector('#chamaProfilePhotoInput');photoBtn.textContent=profile.photoUrl?'Trocar foto':'Colocar foto';photoBtn.onclick=()=>photoInput.click();photoInput.onchange=()=>{const file=photoInput.files?.[0];if(file)uploadProfilePhoto(file,profile,avatar,photoBtn);photoInput.value=''};
       const city=card.querySelector('#chamaProfileCityInput'),shop=card.querySelector('#chamaProfileShopInput'),save=card.querySelector('#chamaProfileSave'),note=card.querySelector('#chamaProfileRequiredNote');
       city.value=profile.cidade;shop.value=profile.chatshopLink;if(profile.cidade)note.style.display='none';
       save.onclick=async()=>{
