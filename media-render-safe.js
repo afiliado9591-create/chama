@@ -1,13 +1,48 @@
 (()=>{
   const PREFIX='__CHAMA_MEDIA__';
+  const HIDDEN_KEY='chama_hidden_messages_v1';
+
   function rawText(b){
     let out='';
     for(const n of b.childNodes){
       if(n.nodeType===Node.TEXT_NODE) out+=n.nodeValue||'';
-      else if(n.nodeType===Node.ELEMENT_NODE && !n.classList.contains('time')) out+=n.textContent||'';
+      else if(n.nodeType===Node.ELEMENT_NODE && !n.classList.contains('time') && !n.classList.contains('chama-msg-menu-btn')) out+=n.textContent||'';
     }
     return out.trim();
   }
+
+  function getStoredHidden(){
+    try{
+      const v=JSON.parse(localStorage.getItem(HIDDEN_KEY)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch{return []}
+  }
+  function saveHidden(list){
+    try{localStorage.setItem(HIDDEN_KEY,JSON.stringify(list.slice(-500)))}catch(_){ }
+  }
+  function chatScope(){
+    return (document.getElementById('chatEmail')?.textContent||'').trim().toLowerCase()||'chat';
+  }
+  function bubbleBaseSignature(b){
+    const raw=b.dataset.chamaRaw||rawText(b);
+    const time=(b.querySelector('.time')?.textContent||'').trim();
+    const side=b.classList.contains('mine')?'mine':'theirs';
+    return `${chatScope()}␟${side}␟${time}␟${raw}`;
+  }
+  function bubbleLocalKey(b){
+    const base=bubbleBaseSignature(b);
+    const bubbles=[...document.querySelectorAll('#messages .bubble')].filter(x=>bubbleBaseSignature(x)===base);
+    const ordinal=Math.max(0,bubbles.indexOf(b));
+    return `${base}␟${ordinal}`;
+  }
+  function hideStoredBubbles(){
+    const hidden=new Set(getStoredHidden());
+    for(const b of document.querySelectorAll('#messages .bubble')){
+      if(!b.dataset.chamaRaw)b.dataset.chamaRaw=rawText(b);
+      if(hidden.has(bubbleLocalKey(b)))b.remove();
+    }
+  }
+
   function addStyle(){
     if(document.getElementById('mediaSafeToggleStyle'))return;
     const s=document.createElement('style');
@@ -29,9 +64,20 @@
       .media-error{font-size:13px;color:#b42318}
       .image-send-btn,.video-send-btn{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:50%;font-size:20px;display:grid;place-items:center;cursor:pointer;flex:0 0 42px}
       .image-upload-toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:120;font-size:14px;white-space:nowrap}
+      .bubble.chama-actions-ready{position:relative;padding-right:34px}
+      .chama-msg-menu-btn{position:absolute;top:4px;right:5px;width:25px;height:25px;border:0;border-radius:50%;background:transparent;color:#65736c;font-size:20px;line-height:20px;display:grid;place-items:center;cursor:pointer;padding:0}
+      .chama-msg-menu-btn:active{background:#00000010}
+      .chama-sheet-backdrop{position:fixed;inset:0;background:#0007;z-index:1000;display:grid;align-items:end}
+      .chama-sheet{background:#fff;border-radius:22px 22px 0 0;padding:10px 14px max(18px,env(safe-area-inset-bottom));box-shadow:0 -10px 30px #0002}
+      .chama-sheet-title{font-weight:800;padding:10px 8px 8px;color:#25332c}
+      .chama-sheet button{width:100%;border:0;background:#fff;text-align:left;padding:15px 12px;border-radius:12px;font-size:16px;cursor:pointer}
+      .chama-sheet button:active{background:#f0f4f2}
+      .chama-sheet .danger{color:#b42318;font-weight:750}
+      .chama-sheet .cancel{color:#5d6963;border-top:1px solid #edf0ee;margin-top:4px}
     `;
     document.head.appendChild(s);
   }
+
   function makePlaceholder(m){
     if(m.kind==='audio'){
       const btn=document.createElement('button');
@@ -49,6 +95,7 @@
     btn.addEventListener('click',()=>openMedia(btn,m));
     return btn;
   }
+
   function openMedia(btn,m){
     if(m.kind==='image'){
       const wrap=document.createElement('div');
@@ -111,9 +158,11 @@
       btn.replaceWith(el);
     }
   }
+
   function render(b){
     if(!b||b.dataset.mediaSafe==='1')return;
     const raw=rawText(b);
+    if(!b.dataset.chamaRaw)b.dataset.chamaRaw=raw;
     if(!raw.startsWith(PREFIX))return;
     let m;try{m=JSON.parse(raw.slice(PREFIX.length))}catch{return}
     b.dataset.mediaSafe='1'; b.dataset.mediaReady='1'; b.dataset.linksReady='1';
@@ -122,12 +171,13 @@
     b.appendChild(makePlaceholder(m));
     if(time)b.appendChild(time);
   }
-  function scan(root=document){root.querySelectorAll?.('#messages .bubble').forEach(render)}
+
   function toast(text){
     let n=document.getElementById('imageUploadToast');
     if(!n){n=document.createElement('div');n.id='imageUploadToast';n.className='image-upload-toast';document.body.appendChild(n)}
     n.textContent=text;n.hidden=false;return()=>{n.hidden=true};
   }
+
   function currentReceiverUid(){
     const email=(document.getElementById('chatEmail')?.textContent||'').trim().toLowerCase();
     if(!email)return '';
@@ -137,6 +187,17 @@
     }
     return '';
   }
+
+  async function firebaseParts(){
+    const [{getApps},{getAuth},{getFirestore,collection,addDoc,doc,setDoc,serverTimestamp,increment,getDocs,query,orderBy,limit,deleteDoc}]=await Promise.all([
+      import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')
+    ]);
+    const app=getApps()[0];
+    return {app,getAuth,getFirestore,collection,addDoc,doc,setDoc,serverTimestamp,increment,getDocs,query,orderBy,limit,deleteDoc};
+  }
+
   async function sendMedia(file,kind){
     const expected=kind==='image'?'image/':'video/';
     const max=kind==='image'?5*1024*1024:25*1024*1024;
@@ -149,24 +210,134 @@
     if(!otherUid)return alert('Não consegui identificar o contato desta conversa.');
     const hide=toast(`Enviando ${label}...`);
     try{
-      const [{getApps},{getAuth},{getFirestore,collection,addDoc,doc,setDoc,serverTimestamp,increment}]=await Promise.all([
-        import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js'),
-        import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),
-        import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')
-      ]);
-      const app=getApps()[0];
-      const auth=getAuth(app),me=auth.currentUser;
+      const f=await firebaseParts();
+      const auth=f.getAuth(f.app),me=auth.currentUser;
       if(!me)throw new Error('Faça login novamente.');
       const token=await me.getIdToken();
       const r=await fetch('/api/media',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name||label)},body:file});
       const data=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(data.error||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`);
-      const db=getFirestore(app),ids=[me.uid,otherUid].sort(),chatId=ids.join('_');
+      const db=f.getFirestore(f.app),ids=[me.uid,otherUid].sort(),chatId=ids.join('_');
       const text=PREFIX+JSON.stringify({kind,url:data.url,key:data.key});
-      await addDoc(collection(db,'chats',chatId,'messages'),{text,senderId:me.uid,receiverId:otherUid,createdAt:serverTimestamp()});
-      await setDoc(doc(db,'chats',chatId),{participants:ids,lastMessage:kind==='image'?'📷 Imagem':'🎥 Vídeo',lastSenderId:me.uid,updatedAt:serverTimestamp(),unreadCounts:{[otherUid]:increment(1),[me.uid]:0}},{merge:true});
+      await f.addDoc(f.collection(db,'chats',chatId,'messages'),{text,senderId:me.uid,receiverId:otherUid,createdAt:f.serverTimestamp()});
+      await f.setDoc(f.doc(db,'chats',chatId),{participants:ids,lastMessage:kind==='image'?'📷 Imagem':'🎥 Vídeo',lastSenderId:me.uid,updatedAt:f.serverTimestamp(),unreadCounts:{[otherUid]:f.increment(1),[me.uid]:0}},{merge:true});
     }catch(e){alert(e?.message||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`)}finally{hide()}
   }
+
+  function parseMediaMeta(raw){
+    if(!raw?.startsWith(PREFIX))return null;
+    try{
+      const m=JSON.parse(raw.slice(PREFIX.length));
+      return m&&typeof m==='object'?m:null;
+    }catch{return null}
+  }
+
+  function formatDocTime(m){
+    return m?.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+  }
+
+  async function resolveMessageDoc(b){
+    const f=await firebaseParts();
+    const auth=f.getAuth(f.app),me=auth.currentUser;
+    if(!me)throw new Error('Faça login novamente.');
+    const otherUid=currentReceiverUid();
+    if(!otherUid)throw new Error('Não consegui identificar esta conversa.');
+    const db=f.getFirestore(f.app),ids=[me.uid,otherUid].sort(),chatId=ids.join('_');
+    const q=f.query(f.collection(db,'chats',chatId,'messages'),f.orderBy('createdAt','desc'),f.limit(20));
+    const snap=await f.getDocs(q);
+    const docs=[];snap.forEach(d=>docs.push(d));docs.reverse();
+    const raw=b.dataset.chamaRaw||rawText(b);
+    const time=(b.querySelector('.time')?.textContent||'').trim();
+    const mine=b.classList.contains('mine');
+    const domMatches=[...document.querySelectorAll('#messages .bubble')].filter(x=>{
+      const xr=x.dataset.chamaRaw||rawText(x);
+      const xt=(x.querySelector('.time')?.textContent||'').trim();
+      return xr===raw && xt===time && x.classList.contains('mine')===mine;
+    });
+    const ordinal=Math.max(0,domMatches.indexOf(b));
+    const matches=docs.filter(d=>{
+      const m=d.data();
+      return (m.text||'')===raw && formatDocTime(m)===time && (m.senderId===me.uid)===mine;
+    });
+    const hit=matches[ordinal]||matches[0];
+    if(!hit)throw new Error('Não consegui localizar esta mensagem com segurança. Tente novamente.');
+    return {f,auth,me,db,chatId,docSnap:hit,data:hit.data(),raw};
+  }
+
+  function deleteForMe(b){
+    const key=bubbleLocalKey(b);
+    const list=getStoredHidden();
+    if(!list.includes(key)){list.push(key);saveHidden(list)}
+    b.remove();
+  }
+
+  async function deleteForEveryone(b){
+    const hide=toast('Apagando para todos...');
+    try{
+      const r=await resolveMessageDoc(b);
+      if(r.data.senderId!==r.me.uid)throw new Error('Você só pode apagar para todos mensagens que você enviou.');
+      await r.f.deleteDoc(r.f.doc(r.db,'chats',r.chatId,'messages',r.docSnap.id));
+      const meta=parseMediaMeta(r.raw);
+      if(meta?.key){
+        try{
+          const token=await r.me.getIdToken();
+          await fetch('/api/media?key='+encodeURIComponent(meta.key),{method:'DELETE',headers:{Authorization:'Bearer '+token}});
+        }catch(_){ }
+      }
+      b.remove();
+    }catch(e){alert(e?.message||'Não foi possível apagar para todos.')}finally{hide()}
+  }
+
+  function closeSheet(){document.getElementById('chamaMessageSheet')?.remove()}
+  function openMessageMenu(b){
+    closeSheet();
+    const mine=b.classList.contains('mine');
+    const backdrop=document.createElement('div');
+    backdrop.id='chamaMessageSheet';
+    backdrop.className='chama-sheet-backdrop';
+    const sheet=document.createElement('div');
+    sheet.className='chama-sheet';
+    const title=document.createElement('div');
+    title.className='chama-sheet-title';
+    title.textContent='Apagar mensagem';
+    const onlyMe=document.createElement('button');
+    onlyMe.type='button';onlyMe.className='danger';onlyMe.textContent='🗑️ Apagar para mim';
+    onlyMe.onclick=()=>{closeSheet();deleteForMe(b)};
+    sheet.append(title,onlyMe);
+    if(mine){
+      const everyone=document.createElement('button');
+      everyone.type='button';everyone.className='danger';everyone.textContent='🗑️ Apagar para todos';
+      everyone.onclick=()=>{closeSheet();deleteForEveryone(b)};
+      sheet.appendChild(everyone);
+    }
+    const cancel=document.createElement('button');
+    cancel.type='button';cancel.className='cancel';cancel.textContent='Cancelar';cancel.onclick=closeSheet;
+    sheet.appendChild(cancel);
+    backdrop.appendChild(sheet);
+    backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeSheet()});
+    document.body.appendChild(backdrop);
+  }
+
+  function installMessageAction(b){
+    if(!b||b.dataset.chamaActions==='1')return;
+    if(!b.dataset.chamaRaw)b.dataset.chamaRaw=rawText(b);
+    b.dataset.chamaActions='1';
+    b.classList.add('chama-actions-ready');
+    const btn=document.createElement('button');
+    btn.type='button';btn.className='chama-msg-menu-btn';btn.setAttribute('aria-label','Opções da mensagem');btn.textContent='⋮';
+    btn.onclick=e=>{e.stopPropagation();openMessageMenu(b)};
+    b.appendChild(btn);
+  }
+
+  function processBubble(b){
+    if(!b)return;
+    if(!b.dataset.chamaRaw)b.dataset.chamaRaw=rawText(b);
+    render(b);
+    installMessageAction(b);
+  }
+
+  function scan(root=document){root.querySelectorAll?.('#messages .bubble').forEach(processBubble);hideStoredBubbles()}
+
   function installMediaButtons(){
     const form=document.getElementById('composer'),input=document.getElementById('messageInput');
     if(!form||!input)return;
@@ -193,6 +364,7 @@
       form.insertBefore(btn,input);
     }
   }
+
   function start(){
     addStyle();installMediaButtons();scan();
     const messages=document.getElementById('messages');
@@ -200,9 +372,10 @@
     new MutationObserver(ms=>{
       for(const m of ms) for(const n of m.addedNodes){
         if(n.nodeType!==1)continue;
-        if(n.matches?.('.bubble')) render(n);
-        else n.querySelectorAll?.('.bubble').forEach(render);
+        if(n.matches?.('.bubble')) processBubble(n);
+        else n.querySelectorAll?.('.bubble').forEach(processBubble);
       }
+      hideStoredBubbles();
     }).observe(messages,{childList:true});
   }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
