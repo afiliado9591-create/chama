@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaAffiliateMenuStyleV1';
+  const STYLE_ID='chamaAffiliateMenuStyleV2';
   let db=null,fs=null,loaded=false;
 
   function addStyle(){
@@ -8,9 +8,11 @@
     s.id=STYLE_ID;
     s.textContent=`
       .chama-affiliate-menu{display:flex;gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid #edf0ee}
-      .chama-affiliate-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;text-decoration:none;background:#0b7a53;color:#fff;border-radius:12px;padding:10px 8px;font-size:13px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 7px #0b7a5318}
-      .chama-affiliate-btn:active{transform:scale(.98)}
-      @media(max-width:380px){.chama-affiliate-menu{gap:6px;padding:9px 8px}.chama-affiliate-btn{font-size:12px;padding:9px 5px}}
+      .chama-affiliate-btn{flex:1;min-width:0;min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;background:#fff;color:#0b7a53;border:1px solid #d8e7df;border-radius:14px;padding:10px 8px;font-size:13px;font-weight:850;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 7px #14221c0a;position:relative}
+      .chama-affiliate-btn:active{transform:scale(.98);background:#eef7f2}
+      .chama-affiliate-btn.featured{background:linear-gradient(135deg,#fff7e6 0%,#ffedc2 100%)!important;color:#8b4b00!important;border:1px solid #f4b94f!important;box-shadow:0 4px 12px #d88a001c!important;padding-top:22px!important}
+      .chama-affiliate-btn.featured::before{content:'🔥 DESTAQUE';position:absolute;top:5px;left:7px;font-size:9px;font-weight:950;letter-spacing:.04em;color:#a55a00}
+      @media(max-width:380px){.chama-affiliate-menu{gap:6px;padding:9px 8px}.chama-affiliate-btn{font-size:12px;padding:9px 5px}.chama-affiliate-btn.featured{padding-top:21px!important}}
     `;
     document.head.appendChild(s);
   }
@@ -32,22 +34,25 @@
     const valid=(Array.isArray(buttons)?buttons:[]).slice(0,3).map(x=>({
       label:String(x?.label||'').trim().slice(0,24),
       url:safeUrl(x?.url||''),
-      enabled:x?.enabled!==false
+      enabled:x?.enabled!==false,
+      featured:x?.featured===true
     })).filter(x=>x.enabled&&x.label&&x.url);
     if(!valid.length)return;
 
+    let featuredUsed=false;
     const box=document.createElement('nav');
     box.id='chamaAffiliateMenu';
     box.className='chama-affiliate-menu';
-    box.setAttribute('aria-label','Links recomendados');
+    box.setAttribute('aria-label','Ofertas e links recomendados');
     for(const item of valid){
       const a=document.createElement('a');
       a.className='chama-affiliate-btn';
+      if(item.featured&&!featuredUsed){a.classList.add('featured');featuredUsed=true}
       a.href=item.url;
       a.target='_blank';
       a.rel='noopener noreferrer sponsored';
       a.textContent=item.label;
-      a.title=item.label;
+      a.title=item.featured?`Destaque: ${item.label}`:item.label;
       box.appendChild(a);
     }
     sidebar.insertBefore(box,sidebar.firstChild);
