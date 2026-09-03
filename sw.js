@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v103";
+const VERSION="chama-clean-v104";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "103") return;
-        url.searchParams.set("chama_update", "103");
+        if (url.searchParams.get("chama_update") === "104") return;
+        url.searchParams.set("chama_update", "104");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -28,22 +28,31 @@ function injectSafeUi(html) {
   const menuMarker = 'app-menu.js?v=3';
   const unreadMarker = 'unread-badges.js?v=1';
   const profileMarker = 'profile-safe-v6.js?v=1';
-  const homeMarker = 'home-conversations-search.js?v=2';
+  const homeMarker = 'home-conversations-search.js?v=3';
   const backMarker = 'ui-back-button.js?v=1';
   const ownAvatarMarker = 'home-own-avatar.js?v=2';
+  const avatarEverywhereMarker = 'avatar-everywhere.js?v=1';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
     out = out.replace('  async function saveMessage(text,label=text){', '  window.chamaOpenChat=openChat;\n\n  async function saveMessage(text,label=text){');
   }
 
+  if (!out.includes('chama-chat-opened')) {
+    out = out.replace(
+      '  async function openChat(u){\n    activeUser=u;',
+      '  async function openChat(u){\n    activeUser=u;\n    const activeEl=$("activeChat"); if(activeEl) activeEl.dataset.uid=u.uid||"";\n    document.dispatchEvent(new CustomEvent("chama-chat-opened",{detail:{uid:u.uid||"",nome:u.nome||"Usuário",photoUrl:u.photoUrl||""}}));'
+    );
+  }
+
   if (!out.includes(mediaMarker)) out = out.replace('</body>', `<script src="./media-render-safe.js?v=91"></script></body>`);
   if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=3"></script></body>`);
   if (!out.includes(unreadMarker)) out = out.replace('</body>', `<script src="./unread-badges.js?v=1"></script></body>`);
   if (!out.includes(profileMarker)) out = out.replace('</body>', `<script src="./profile-safe-v6.js?v=1"></script></body>`);
-  if (!out.includes(homeMarker)) out = out.replace('</body>', `<script src="./home-conversations-search.js?v=2"></script></body>`);
+  if (!out.includes(homeMarker)) out = out.replace('</body>', `<script src="./home-conversations-search.js?v=3"></script></body>`);
   if (!out.includes(backMarker)) out = out.replace('</body>', `<script src="./ui-back-button.js?v=1"></script></body>`);
   if (!out.includes(ownAvatarMarker)) out = out.replace('</body>', `<script src="./home-own-avatar.js?v=2"></script></body>`);
+  if (!out.includes(avatarEverywhereMarker)) out = out.replace('</body>', `<script src="./avatar-everywhere.js?v=1"></script></body>`);
   return out;
 }
 
