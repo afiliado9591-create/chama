@@ -1,4 +1,6 @@
 (()=>{
+  let adminAllowed=false;
+
   function addMenuStyles(){
     if(document.getElementById('chamaAppMenuStyle'))return;
     const s=document.createElement('style');
@@ -18,11 +20,18 @@
       .chama-menu-icon{width:28px;text-align:center;font-size:20px}
       .chama-menu-note{margin-top:auto;padding:14px 10px 4px;color:#738078;font-size:12px;line-height:1.45}
       .chama-auth-privacy{display:block;text-align:center;margin-top:16px;color:#0b7a53;text-decoration:none;font-size:13px;font-weight:700}
+      #usersList .user-email,#chatEmail{display:none!important}
     `;
     document.head.appendChild(s);
   }
 
   function closeMenu(){document.getElementById('chamaMainMenu')?.remove()}
+
+  function addLink(links,icon,label,href){
+    const a=document.createElement('a');
+    a.className='chama-menu-link';a.href=href;a.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${label}</span>`;
+    links.appendChild(a);return a;
+  }
 
   function openMenu(){
     closeMenu();
@@ -43,14 +52,9 @@
 
     const links=document.createElement('nav');
     links.className='chama-menu-links';
-
-    const home=document.createElement('a');
-    home.className='chama-menu-link';home.href='./';home.innerHTML='<span class="chama-menu-icon">🏠</span><span>Início</span>';
-    links.appendChild(home);
-
-    const privacy=document.createElement('a');
-    privacy.className='chama-menu-link';privacy.href='./politica-de-privacidade.html';privacy.innerHTML='<span class="chama-menu-icon">🔒</span><span>Política de Privacidade</span>';
-    links.appendChild(privacy);
+    addLink(links,'🏠','Início','./');
+    if(adminAllowed)addLink(links,'🛡️','Painel do Admin','./admin.html');
+    addLink(links,'🔒','Política de Privacidade','./politica-de-privacidade.html');
 
     const install=document.getElementById('installBtn');
     if(install && !install.classList.contains('hidden')){
@@ -62,7 +66,7 @@
 
     const note=document.createElement('div');
     note.className='chama-menu-note';
-    note.textContent='O menu é apenas visual e não faz consultas ao banco de dados.';
+    note.textContent=adminAllowed?'O painel do administrador é exibido somente para contas marcadas como admin.':'Seu e-mail não é exibido na lista pública de contatos.';
 
     panel.append(head,links,note);
     backdrop.appendChild(panel);
@@ -90,6 +94,36 @@
     card.appendChild(a);
   }
 
-  function start(){addMenuStyles();installTopMenu();installAuthPrivacy()}
+  async function waitForFirebase(attempt=0){
+    try{
+      const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
+      const app=appMod.getApps()[0];
+      if(app)return app;
+      if(attempt>=20)return null;
+      await new Promise(r=>setTimeout(r,100));
+      return waitForFirebase(attempt+1);
+    }catch{return null}
+  }
+
+  async function initAdminAccess(){
+    const app=await waitForFirebase();if(!app)return;
+    try{
+      const [authMod,fs]=await Promise.all([
+        import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),
+        import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')
+      ]);
+      const auth=authMod.getAuth(app),db=fs.getFirestore(app);
+      authMod.onAuthStateChanged(auth,async user=>{
+        adminAllowed=false;
+        if(!user)return;
+        try{
+          const snap=await fs.getDoc(fs.doc(db,'users',user.uid));
+          adminAllowed=snap.exists()&&snap.data().admin===true;
+        }catch{adminAllowed=false}
+      });
+    }catch{adminAllowed=false}
+  }
+
+  function start(){addMenuStyles();installTopMenu();installAuthPrivacy();initAdminAccess()}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
