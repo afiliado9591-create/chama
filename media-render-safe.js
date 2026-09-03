@@ -23,9 +23,10 @@
       .audio-wave i:nth-child(1){height:7px}.audio-wave i:nth-child(2){height:13px}.audio-wave i:nth-child(3){height:19px}.audio-wave i:nth-child(4){height:10px}.audio-wave i:nth-child(5){height:22px}.audio-wave i:nth-child(6){height:15px}.audio-wave i:nth-child(7){height:8px}.audio-wave i:nth-child(8){height:18px}.audio-wave i:nth-child(9){height:12px}.audio-wave i:nth-child(10){height:20px}.audio-wave i:nth-child(11){height:9px}.audio-wave i:nth-child(12){height:15px}.audio-wave i:nth-child(13){height:6px}.audio-wave i:nth-child(14){height:17px}.audio-wave i:nth-child(15){height:11px}.audio-wave i:nth-child(16){height:21px}.audio-wave i:nth-child(17){height:13px}.audio-wave i:nth-child(18){height:8px}
       .audio-label{font-size:12px;color:#607068}
       .chat-media.audio{width:min(285px,72vw);height:42px}
+      .chat-media.video{display:block;width:min(300px,72vw);max-height:380px;border-radius:12px;background:#000}
       .media-placeholder{border:0;background:#eef4f1;color:#0b7a53;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
       .media-error{font-size:13px;color:#b42318}
-      .image-send-btn{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:50%;font-size:20px;display:grid;place-items:center;cursor:pointer;flex:0 0 42px}
+      .image-send-btn,.video-send-btn{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:50%;font-size:20px;display:grid;place-items:center;cursor:pointer;flex:0 0 42px}
       .image-upload-toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:120;font-size:14px;white-space:nowrap}
     `;
     document.head.appendChild(s);
@@ -54,7 +55,7 @@
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='media-placeholder';
-    btn.textContent='▶️ Reproduzir vídeo';
+    btn.textContent='🎥 Reproduzir vídeo';
     btn.addEventListener('click',()=>openMedia(btn,m));
     return btn;
   }
@@ -63,7 +64,7 @@
     if(m.kind==='audio'){
       el=document.createElement('audio'); el.className='chat-media audio'; el.controls=true; el.preload='none';
     }else if(m.kind==='video'){
-      el=document.createElement('video'); el.className='chat-media video'; el.controls=true; el.preload='none'; el.playsInline=true;
+      el=document.createElement('video'); el.className='chat-media video'; el.controls=true; el.preload='metadata'; el.playsInline=true;
     }
     if(!el)return;
     const bubble=btn.closest('.bubble'),messageId=bubble?.dataset?.messageId||'';
@@ -104,14 +105,17 @@
     }
     return '';
   }
-  async function sendImage(file){
-    if(!file?.type?.startsWith('image/'))return alert('Escolha uma imagem.');
-    if(file.size>5*1024*1024)return alert('Imagem muito grande. Limite: 5 MB.');
+  async function sendMedia(file,kind){
+    const expected=kind==='image'?'image/':'video/';
+    const max=kind==='image'?5*1024*1024:25*1024*1024;
+    const label=kind==='image'?'imagem':'vídeo';
+    if(!file?.type?.startsWith(expected))return alert(`Escolha um ${label}.`);
+    if(file.size>max)return alert(`${kind==='image'?'Imagem':'Vídeo'} muito grande. Limite: ${kind==='image'?'5':'25'} MB.`);
     const active=document.getElementById('activeChat');
-    if(!active||active.classList.contains('hidden'))return alert('Abra uma conversa antes de enviar a imagem.');
+    if(!active||active.classList.contains('hidden'))return alert(`Abra uma conversa antes de enviar ${kind==='image'?'a imagem':'o vídeo'}.`);
     const otherUid=currentReceiverUid();
     if(!otherUid)return alert('Não consegui identificar o contato desta conversa.');
-    const hide=toast('Enviando imagem...');
+    const hide=toast(`Enviando ${label}...`);
     try{
       const [{getApps},{getAuth},{getFirestore,collection,addDoc,doc,setDoc,serverTimestamp,increment}]=await Promise.all([
         import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js'),
@@ -122,31 +126,43 @@
       const auth=getAuth(app),me=auth.currentUser;
       if(!me)throw new Error('Faça login novamente.');
       const token=await me.getIdToken();
-      const r=await fetch('/api/media',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name||'imagem')},body:file});
+      const r=await fetch('/api/media',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name||label)},body:file});
       const data=await r.json().catch(()=>({}));
-      if(!r.ok)throw new Error(data.error||'Não foi possível enviar a imagem.');
+      if(!r.ok)throw new Error(data.error||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`);
       const db=getFirestore(app),ids=[me.uid,otherUid].sort(),chatId=ids.join('_');
-      const text=PREFIX+JSON.stringify({kind:'image',url:data.url,key:data.key});
+      const text=PREFIX+JSON.stringify({kind,url:data.url,key:data.key});
       await addDoc(collection(db,'chats',chatId,'messages'),{text,senderId:me.uid,receiverId:otherUid,createdAt:serverTimestamp()});
-      await setDoc(doc(db,'chats',chatId),{participants:ids,lastMessage:'📷 Imagem',lastSenderId:me.uid,updatedAt:serverTimestamp(),unreadCounts:{[otherUid]:increment(1),[me.uid]:0}},{merge:true});
-    }catch(e){alert(e?.message||'Não foi possível enviar a imagem.')}finally{hide()}
+      await setDoc(doc(db,'chats',chatId),{participants:ids,lastMessage:kind==='image'?'📷 Imagem':'🎥 Vídeo',lastSenderId:me.uid,updatedAt:serverTimestamp(),unreadCounts:{[otherUid]:increment(1),[me.uid]:0}},{merge:true});
+    }catch(e){alert(e?.message||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`)}finally{hide()}
   }
-  function installImageButton(){
-    if(document.getElementById('imageBtn'))return;
+  function installMediaButtons(){
     const form=document.getElementById('composer'),input=document.getElementById('messageInput');
     if(!form||!input)return;
-    const btn=document.createElement('button');
-    btn.id='imageBtn';btn.type='button';btn.className='image-send-btn';btn.title='Enviar imagem';btn.textContent='📷';
-    btn.onclick=()=>{
-      const pick=document.createElement('input');
-      pick.type='file';pick.accept='image/*';pick.hidden=true;document.body.appendChild(pick);
-      pick.onchange=async()=>{const f=pick.files?.[0];pick.remove();if(f)await sendImage(f)};
-      pick.click();
-    };
-    form.insertBefore(btn,input);
+    if(!document.getElementById('imageBtn')){
+      const btn=document.createElement('button');
+      btn.id='imageBtn';btn.type='button';btn.className='image-send-btn';btn.title='Enviar imagem';btn.textContent='📷';
+      btn.onclick=()=>{
+        const pick=document.createElement('input');
+        pick.type='file';pick.accept='image/*';pick.hidden=true;document.body.appendChild(pick);
+        pick.onchange=async()=>{const f=pick.files?.[0];pick.remove();if(f)await sendMedia(f,'image')};
+        pick.click();
+      };
+      form.insertBefore(btn,input);
+    }
+    if(!document.getElementById('videoBtn')){
+      const btn=document.createElement('button');
+      btn.id='videoBtn';btn.type='button';btn.className='video-send-btn';btn.title='Enviar vídeo';btn.textContent='🎥';
+      btn.onclick=()=>{
+        const pick=document.createElement('input');
+        pick.type='file';pick.accept='video/*';pick.hidden=true;document.body.appendChild(pick);
+        pick.onchange=async()=>{const f=pick.files?.[0];pick.remove();if(f)await sendMedia(f,'video')};
+        pick.click();
+      };
+      form.insertBefore(btn,input);
+    }
   }
   function start(){
-    addStyle();installImageButton();scan();
+    addStyle();installMediaButtons();scan();
     const messages=document.getElementById('messages');
     if(!messages)return;
     new MutationObserver(ms=>{
