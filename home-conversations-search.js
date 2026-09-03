@@ -26,6 +26,7 @@
       .chama-search-main{min-width:0;flex:1}.chama-search-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chama-search-city{font-size:12px;color:#6a756f;margin-top:2px}
       #usersList.chama-conversations-mode .user:not(.chama-has-conversation){display:none!important}
       .chama-empty-conversations{padding:18px 16px;color:#6a756f;text-align:center;line-height:1.45}
+      .chama-search-bridge{display:none!important}
     `;
     document.head.appendChild(s);
   }
@@ -54,7 +55,7 @@
   function refreshConversationRows(){
     const list=document.getElementById('usersList');if(!list)return;
     let count=0;
-    list.querySelectorAll('.user').forEach(row=>{
+    list.querySelectorAll('.user:not(.chama-search-bridge)').forEach(row=>{
       const has=!!row.querySelector('.chama-conversation-side');
       row.classList.toggle('chama-has-conversation',has);
       if(has)count++;
@@ -92,6 +93,19 @@
     return fs.getDocs(q);
   }
 
+  function ensureBridge(u){
+    const list=document.getElementById('usersList');if(!list)return '';
+    const bridgeId='chamaBridge_'+u.uid;
+    let row=document.getElementById(bridgeId);
+    const pseudo=`${u.uid}@chama.local`;
+    if(!row){
+      row=document.createElement('div');row.id=bridgeId;row.className='user chama-search-bridge';row.dataset.uid=u.uid;
+      row.innerHTML=`<div class="user-main"><div class="user-name">${esc(u.nome||'Usuário')}</div><div class="user-email">${esc(pseudo)}</div></div>`;
+      list.appendChild(row);
+    }
+    return pseudo;
+  }
+
   async function runSearch(){
     const input=document.getElementById('chamaPeopleSearch');
     const term=norm(input?.value||'');
@@ -122,7 +136,8 @@
         row.innerHTML=`<div class="chama-search-avatar">${esc(initial)}</div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||'Cidade não informada')}</div></div>`;
         row.onclick=()=>{
           if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');
-          window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário'});
+          const pseudo=ensureBridge(u);
+          window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo});
         };
         results.appendChild(row);
       }
