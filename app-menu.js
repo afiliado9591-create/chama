@@ -34,6 +34,12 @@
     links.appendChild(a);return a;
   }
 
+  function addAction(links,icon,label,onClick){
+    const b=document.createElement('button');b.type='button';b.className='chama-menu-link';
+    b.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${label}</span>`;
+    b.onclick=()=>{closeMenu();onClick()};links.appendChild(b);return b;
+  }
+
   function openMenu(){
     closeMenu();
     const backdrop=document.createElement('div');backdrop.id='chamaMainMenu';backdrop.className='chama-menu-backdrop';
@@ -42,13 +48,14 @@
     const close=document.createElement('button');close.type='button';close.className='chama-menu-close';close.setAttribute('aria-label','Fechar menu');close.textContent='✕';close.onclick=closeMenu;head.appendChild(close);
     const links=document.createElement('nav');links.className='chama-menu-links';
     addLink(links,'🏠','Início','./');
+    addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));
     const sell=addLink(links,'🛍️','Venda seu produto','https://alibr.com.br/');sell.classList.add('sell');sell.target='_blank';sell.rel='noopener noreferrer';
     if(adminAllowed)addLink(links,'🛡️','Painel do Admin','./admin.html');
     addLink(links,'🔒','Política de Privacidade','./politica-de-privacidade.html');
 
     const install=document.getElementById('installBtn');
     if(install&&!install.classList.contains('hidden')){
-      const installLink=document.createElement('button');installLink.type='button';installLink.className='chama-menu-link';installLink.innerHTML='<span class="chama-menu-icon">📲</span><span>Instalar Chama</span>';installLink.onclick=()=>{closeMenu();install.click()};links.appendChild(installLink);
+      addAction(links,'📲','Instalar Chama',()=>install.click());
     }
 
     const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'O painel do administrador é exibido somente para contas marcadas como admin.':'Crie sua vitrine no ChatShop e depois cole o link no seu perfil do Chama.';
