@@ -1,6 +1,8 @@
 (()=>{
-  const STYLE_ID='chamaProfileCityStyleV1';
+  const STYLE_ID='chamaProfileCityStyleV2';
   let auth=null, db=null, fs=null, me=null;
+
+  const norm=v=>String(v||'').trim().toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 
   function addStyle(){
     if(document.getElementById(STYLE_ID))return;
@@ -45,12 +47,34 @@
 
   function closeProfile(){document.getElementById('chamaProfileModal')?.remove()}
 
-  async function readCity(uid){
-    if(!db||!fs||!uid)return '';
+  async function readProfile(uid){
+    if(!db||!fs||!uid)return {nome:'',cidade:''};
     try{
       const snap=await fs.getDoc(fs.doc(db,'publicProfiles',uid));
-      return snap.exists()?String(snap.data()?.cidade||'').trim():'';
-    }catch(e){console.error('Chama: não foi possível ler cidade',e);return ''}
+      if(!snap.exists())return {nome:'',cidade:''};
+      const d=snap.data()||{};
+      return {nome:String(d.nome||'').trim(),cidade:String(d.cidade||'').trim()};
+    }catch(e){console.error('Chama: não foi possível ler perfil público',e);return {nome:'',cidade:''}}
+  }
+
+  async function syncOwnPublicProfile(user){
+    if(!user||!db||!fs)return;
+    const nome=(user.displayName||user.email?.split('@')[0]||'Usuário').trim();
+    const key=`chama_public_profile_v2_${user.uid}_${norm(nome)}`;
+    try{if(localStorage.getItem(key)==='1')return}catch(_){ }
+    try{
+      const ref=fs.doc(db,'publicProfiles',user.uid);
+      const snap=await fs.getDoc(ref);
+      const old=snap.exists()?snap.data()||{}:{};
+      const patch={uid:user.uid,nome,nomeBusca:norm(nome)};
+      const cidade=String(old.cidade||'').trim();
+      if(cidade)patch.cidadeBusca=norm(cidade);
+      if(!snap.exists()||old.nome!==nome||old.nomeBusca!==patch.nomeBusca||(cidade&&old.cidadeBusca!==patch.cidadeBusca)){
+        patch.updatedAt=fs.serverTimestamp();
+        await fs.setDoc(ref,patch,{merge:true});
+      }
+      try{localStorage.setItem(key,'1')}catch(_){ }
+    }catch(e){console.warn('Chama: não foi possível indexar perfil público',e)}
   }
 
   async function openProfile(uid){
@@ -64,34 +88,38 @@
     card.className='chama-profile-card';
     card.innerHTML=`
       <div class="chama-profile-head">
-        <div class="chama-profile-avatar">📍</div>
-        <div class="chama-profile-title"><strong>${own?'Meu perfil':'Perfil do Chama'}</strong><small>${own?'Sua cidade pública':'Informação pública do perfil'}</small></div>
+        <div class="chama-profile-avatar">👤</div>
+        <div class="chama-profile-title"><strong id="chamaProfileNameText">${own?'Meu perfil':'Perfil do Chama'}</strong><small>${own?'Seu perfil público':'Perfil público'}</small></div>
         <button type="button" class="chama-profile-close" aria-label="Fechar">✕</button>
       </div>
       <div class="chama-profile-body">
         <div class="chama-profile-location"><small>Cidade</small><strong id="chamaProfileCityText">Carregando...</strong></div>
         ${own?`<div class="chama-profile-edit"><label for="chamaProfileCityInput">Editar sua cidade</label><input id="chamaProfileCityInput" maxlength="80" placeholder="Ex.: São Paulo"><button id="chamaProfileSaveCity" class="chama-profile-save" type="button">Salvar cidade</button></div>`:''}
-        <div class="chama-profile-note">Nome e e-mail não são exibidos neste perfil público.</div>
+        <div class="chama-profile-note">O e-mail não é exibido no perfil público.</div>
       </div>`;
     backdrop.appendChild(card);
     document.body.appendChild(backdrop);
     card.querySelector('.chama-profile-close').onclick=closeProfile;
     backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeProfile()});
 
-    const city=await readCity(uid);
+    const profile=await readProfile(uid);
+    const nameText=card.querySelector('#chamaProfileNameText');
+    if(nameText&&profile.nome)nameText.textContent=profile.nome;
     const text=card.querySelector('#chamaProfileCityText');
-    if(text)text.textContent=city||'Cidade não informada';
+    if(text)text.textContent=profile.cidade||'Cidade não informada';
     if(own){
       const input=card.querySelector('#chamaProfileCityInput');
-      if(input)input.value=city;
+      if(input)input.value=profile.cidade;
       const save=card.querySelector('#chamaProfileSaveCity');
       if(save)save.onclick=async()=>{
         const value=(input?.value||'').trim().replace(/\s+/g,' ');
         if(value.length>80)return alert('Digite somente o nome da cidade.');
         save.disabled=true;save.textContent='Salvando...';
         try{
-          await fs.setDoc(fs.doc(db,'publicProfiles',me.uid),{uid:me.uid,cidade:value,updatedAt:fs.serverTimestamp()},{merge:true});
+          const nome=(me.displayName||me.email?.split('@')[0]||'Usuário').trim();
+          await fs.setDoc(fs.doc(db,'publicProfiles',me.uid),{uid:me.uid,nome,nomeBusca:norm(nome),cidade:value,cidadeBusca:norm(value),updatedAt:fs.serverTimestamp()},{merge:true});
           text.textContent=value||'Cidade não informada';
+          if(nameText)nameText.textContent=nome;
           save.textContent='Salvo ✓';
           setTimeout(()=>{if(save.isConnected){save.textContent='Salvar cidade';save.disabled=false}},900);
         }catch(e){
@@ -102,6 +130,8 @@
   }
 
   function activeChatUid(){
+    const direct=document.getElementById('activeChat')?.dataset?.uid||'';
+    if(direct)return direct;
     const email=(document.getElementById('chatEmail')?.textContent||'').trim().toLowerCase();
     if(!email)return '';
     for(const row of document.querySelectorAll('#usersList .user')){
@@ -113,8 +143,6 @@
 
   function installClicks(){
     document.addEventListener('click',e=>{
-      // Na tela principal, clicar no contato deve abrir a conversa.
-      // O perfil só abre depois, ao tocar no nome ou avatar do cabeçalho da conversa.
       if(e.target.closest?.('#chatName,#chatAvatar')){
         const uid=activeChatUid();
         if(uid){e.preventDefault();e.stopPropagation();openProfile(uid)}
@@ -131,7 +159,7 @@
     addStyle();installClicks();
     const found=await getFirebase();
     if(!found)return;
-    found.authMod.onAuthStateChanged(auth,u=>{me=u||null});
+    found.authMod.onAuthStateChanged(auth,u=>{me=u||null;if(u)syncOwnPublicProfile(u)});
   }
 
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
