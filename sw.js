@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v111";
+const VERSION="chama-clean-v112";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "111") return;
-        url.searchParams.set("chama_update", "111");
+        if (url.searchParams.get("chama_update") === "112") return;
+        url.searchParams.set("chama_update", "112");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -38,6 +38,7 @@ function injectSafeUi(html) {
   const homeProfileMessageMarker = 'home-profile-message.js?v=1';
   const socialVideoMarker = 'social-video-links.js?v=1';
   const professionalPromoMarker = 'professional-promo.js?v=1';
+  const affiliateToolsMarker = 'affiliate-tools.js?v=1';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -65,6 +66,7 @@ function injectSafeUi(html) {
   if (!out.includes(homeProfileMessageMarker)) out = out.replace('</body>', `<script src="./home-profile-message.js?v=1"></script></body>`);
   if (!out.includes(socialVideoMarker)) out = out.replace('</body>', `<script src="./social-video-links.js?v=1"></script></body>`);
   if (!out.includes(professionalPromoMarker)) out = out.replace('</body>', `<script src="./professional-promo.js?v=1"></script></body>`);
+  if (!out.includes(affiliateToolsMarker)) out = out.replace('</body>', `<script src="./affiliate-tools.js?v=1"></script></body>`);
   return out;
 }
 
