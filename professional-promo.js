@@ -15,6 +15,8 @@
     return {
       title:cleanText(d.title,70),
       description:cleanText(d.description,180),
+      calloutText:cleanText(d.calloutText,40),
+      buttonText:cleanText(d.buttonText,30),
       imageUrl:safeHttps(d.imageUrl),
       affiliateUrl:safeHttps(d.affiliateUrl),
       pinned:d.pinned===true
@@ -73,7 +75,7 @@
     const p=await readProfile(me.uid,true);ownProfile=p;
     const promo=p.professionalPromo;
     const box=document.createElement('div');box.id='chamaProfessionalPromoBox';box.className='chama-prof-box';
-    box.innerHTML=`<div class="chama-prof-title">Tipo de perfil e promoção</div><div class="chama-prof-types"><button type="button" class="chama-prof-type" data-type="social">👤 Social</button><button type="button" class="chama-prof-type" data-type="professional">💼 Profissional</button></div><div class="chama-prof-fields"><input class="chama-prof-promo-title" maxlength="70" placeholder="Título do produto ou promoção" value="${esc(promo.title)}"><textarea class="chama-prof-promo-description" maxlength="180" placeholder="Descrição curta da promoção">${esc(promo.description)}</textarea><input class="chama-prof-promo-image" maxlength="900" placeholder="Link https:// da imagem" value="${esc(promo.imageUrl)}"><input class="chama-prof-promo-link" maxlength="900" placeholder="Link de afiliado: Mercado Livre, Shopee, etc." value="${esc(promo.affiliateUrl)}"><label class="chama-prof-check"><input class="chama-prof-promo-pinned" type="checkbox" ${promo.pinned?'checked':''}> 📌 Mostrar esta promoção fixa quando alguém abrir meu chat</label><div class="chama-prof-note">O link pode ser de qualquer site, desde que use https://. A imagem também é carregada pelo link informado.</div><button type="button" class="chama-prof-save">Salvar perfil profissional</button><div class="chama-prof-msg"></div></div>`;
+    box.innerHTML=`<div class="chama-prof-title">Tipo de perfil e divulgação</div><div class="chama-prof-types"><button type="button" class="chama-prof-type" data-type="social">👤 Social</button><button type="button" class="chama-prof-type" data-type="professional">💼 Profissional</button></div><div class="chama-prof-fields"><input class="chama-prof-promo-title" maxlength="70" placeholder="Título da divulgação" value="${esc(promo.title)}"><textarea class="chama-prof-promo-description" maxlength="180" placeholder="Descrição curta da divulgação">${esc(promo.description)}</textarea><input class="chama-prof-promo-callout" maxlength="40" placeholder="Texto de chamada: 🔥 Oferta, 💡 Dica, 📰 Meu blog..." value="${esc(promo.calloutText)}"><input class="chama-prof-promo-button" maxlength="30" placeholder="Texto do botão: Ver oferta, Acessar blog, Saiba mais..." value="${esc(promo.buttonText)}"><input class="chama-prof-promo-image" maxlength="900" placeholder="Link https:// da imagem" value="${esc(promo.imageUrl)}"><input class="chama-prof-promo-link" maxlength="900" placeholder="Link de destino: produto, blog, site, serviço, etc." value="${esc(promo.affiliateUrl)}"><label class="chama-prof-check"><input class="chama-prof-promo-pinned" type="checkbox" ${promo.pinned?'checked':''}> 📌 Mostrar esta divulgação fixa quando alguém abrir meu chat</label><div class="chama-prof-note">Você pode usar esta área para produto, oferta, dica, blog, serviço ou qualquer divulgação. O link precisa usar https://.</div><button type="button" class="chama-prof-save">Salvar perfil profissional</button><div class="chama-prof-msg"></div></div>`;
     edit.insertBefore(box,saveProfile);setType(box,p.profileType);
     box.querySelectorAll('.chama-prof-type').forEach(btn=>btn.onclick=()=>setType(box,btn.dataset.type));
     box.querySelector('.chama-prof-save').onclick=async()=>{
@@ -81,11 +83,13 @@
       const fields={
         title:cleanText(box.querySelector('.chama-prof-promo-title').value,70),
         description:cleanText(box.querySelector('.chama-prof-promo-description').value,180),
+        calloutText:cleanText(box.querySelector('.chama-prof-promo-callout').value,40),
+        buttonText:cleanText(box.querySelector('.chama-prof-promo-button').value,30),
         imageUrl:safeHttps(box.querySelector('.chama-prof-promo-image').value),
         affiliateUrl:safeHttps(box.querySelector('.chama-prof-promo-link').value),
         pinned:!!box.querySelector('.chama-prof-promo-pinned').checked
       };
-      if(type==='professional'&&(!fields.title||!fields.affiliateUrl))return alert('No perfil profissional, informe pelo menos o título e o link do produto.');
+      if(type==='professional'&&(!fields.title||!fields.affiliateUrl))return alert('No perfil profissional, informe pelo menos o título e o link de destino.');
       if(type==='professional'&&box.querySelector('.chama-prof-promo-link').value.trim()&&!fields.affiliateUrl)return alert('Use um link seguro começando com https://');
       if(box.querySelector('.chama-prof-promo-image').value.trim()&&!fields.imageUrl)return alert('O link da imagem precisa começar com https://');
       const btn=box.querySelector('.chama-prof-save'),msg=box.querySelector('.chama-prof-msg');btn.disabled=true;btn.textContent='Salvando...';msg.textContent='';
@@ -103,19 +107,19 @@
   function installSendButton(){
     removeSendButton();if(!me||ownProfile?.profileType!=='professional'||!promoReady(ownProfile.professionalPromo))return;
     const composer=document.getElementById('composer'),input=document.getElementById('messageInput');if(!composer||!input)return;
-    const btn=document.createElement('button');btn.id='chamaPromoSendBtn';btn.type='button';btn.className='chama-promo-send-btn';btn.title='Enviar minha promoção';btn.setAttribute('aria-label','Enviar minha promoção');btn.textContent='🏷️';
+    const btn=document.createElement('button');btn.id='chamaPromoSendBtn';btn.type='button';btn.className='chama-promo-send-btn';btn.title='Enviar minha divulgação';btn.setAttribute('aria-label','Enviar minha divulgação');btn.textContent='🏷️';
     composer.insertBefore(btn,input);btn.onclick=sendOwnPromo;
   }
 
   async function sendOwnPromo(){
-    if(!me||ownProfile?.profileType!=='professional'||!promoReady(ownProfile.professionalPromo))return alert('Salve sua promoção no perfil profissional primeiro.');
-    const otherUid=document.getElementById('activeChat')?.dataset?.uid||'';if(!otherUid)return alert('Abra uma conversa antes de enviar sua promoção.');
-    const title=ownProfile.professionalPromo.title;if(!confirm(`Enviar a promoção “${title}” para esta pessoa?`))return;
+    if(!me||ownProfile?.profileType!=='professional'||!promoReady(ownProfile.professionalPromo))return alert('Salve sua divulgação no perfil profissional primeiro.');
+    const otherUid=document.getElementById('activeChat')?.dataset?.uid||'';if(!otherUid)return alert('Abra uma conversa antes de enviar sua divulgação.');
+    const title=ownProfile.professionalPromo.title;if(!confirm(`Enviar “${title}” para esta pessoa?`))return;
     try{
       const ids=[me.uid,otherUid].sort(),chatId=ids.join('_'),text=PREFIX+JSON.stringify(ownProfile.professionalPromo);
       await fs.addDoc(fs.collection(db,'chats',chatId,'messages'),{text,senderId:me.uid,receiverId:otherUid,createdAt:fs.serverTimestamp()});
-      await fs.setDoc(fs.doc(db,'chats',chatId),{participants:ids,lastMessage:'🏷️ Promoção',lastSenderId:me.uid,updatedAt:fs.serverTimestamp(),unreadCounts:{[otherUid]:fs.increment(1),[me.uid]:0}},{merge:true});
-    }catch(e){console.error(e);alert('Não foi possível enviar a promoção agora.')}
+      await fs.setDoc(fs.doc(db,'chats',chatId),{participants:ids,lastMessage:'🏷️ Divulgação',lastSenderId:me.uid,updatedAt:fs.serverTimestamp(),unreadCounts:{[otherUid]:fs.increment(1),[me.uid]:0}},{merge:true});
+    }catch(e){console.error(e);alert('Não foi possível enviar a divulgação agora.')}
   }
 
   function rawText(b){
@@ -123,12 +127,14 @@
   }
   function buildCard(p,compact=false){
     const promo=normalizePromo(p);const root=document.createElement('div');root.className=compact?'chama-pinned-promo':'chama-promo-card';
+    const callout=promo.calloutText||(compact?'📌 OFERTA FIXA':'🏷️ PROMOÇÃO');
+    const buttonText=promo.buttonText||(compact?'Ver oferta':'Ver produto');
     if(compact){
-      if(promo.imageUrl){const img=document.createElement('img');img.src=promo.imageUrl;img.alt='Promoção';img.loading='lazy';img.onerror=()=>img.remove();root.appendChild(img)}
-      const body=document.createElement('div');body.className='body';body.innerHTML=`<span class="flag">📌 OFERTA FIXA</span><strong>${esc(promo.title)}</strong>${promo.description?`<p>${esc(promo.description)}</p>`:''}<a href="${esc(promo.affiliateUrl)}" target="_blank" rel="noopener noreferrer sponsored">Ver oferta</a>`;root.appendChild(body);return root;
+      if(promo.imageUrl){const img=document.createElement('img');img.src=promo.imageUrl;img.alt='Divulgação';img.loading='lazy';img.onerror=()=>img.remove();root.appendChild(img)}
+      const body=document.createElement('div');body.className='body';body.innerHTML=`<span class="flag">${esc(callout)}</span><strong>${esc(promo.title)}</strong>${promo.description?`<p>${esc(promo.description)}</p>`:''}<a href="${esc(promo.affiliateUrl)}" target="_blank" rel="noopener noreferrer sponsored">${esc(buttonText)}</a>`;root.appendChild(body);return root;
     }
-    if(promo.imageUrl){const img=document.createElement('img');img.src=promo.imageUrl;img.alt='Produto';img.loading='lazy';img.onerror=()=>img.remove();root.appendChild(img)}
-    const body=document.createElement('div');body.className='chama-promo-card-body';body.innerHTML=`<span class="tag">🏷️ PROMOÇÃO</span><strong>${esc(promo.title)}</strong>${promo.description?`<p>${esc(promo.description)}</p>`:''}<a href="${esc(promo.affiliateUrl)}" target="_blank" rel="noopener noreferrer sponsored">Ver produto</a>`;root.appendChild(body);return root;
+    if(promo.imageUrl){const img=document.createElement('img');img.src=promo.imageUrl;img.alt='Divulgação';img.loading='lazy';img.onerror=()=>img.remove();root.appendChild(img)}
+    const body=document.createElement('div');body.className='chama-promo-card-body';body.innerHTML=`<span class="tag">${esc(callout)}</span><strong>${esc(promo.title)}</strong>${promo.description?`<p>${esc(promo.description)}</p>`:''}<a href="${esc(promo.affiliateUrl)}" target="_blank" rel="noopener noreferrer sponsored">${esc(buttonText)}</a>`;root.appendChild(body);return root;
   }
   function renderPromoBubble(b){
     if(!b||b.dataset.chamaPromoReady==='1')return;const raw=rawText(b);if(!raw.startsWith(PREFIX))return;
