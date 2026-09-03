@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v92";
+const VERSION="chama-clean-v93";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "92") return;
-        url.searchParams.set("chama_update", "92");
+        if (url.searchParams.get("chama_update") === "93") return;
+        url.searchParams.set("chama_update", "93");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -27,6 +27,7 @@ function injectSafeUi(html) {
   const mediaMarker = 'media-render-safe.js?v=91';
   const menuMarker = 'app-menu.js?v=1';
   const unreadMarker = 'unread-badges.js?v=1';
+  const profileMarker = 'profile-city-safe.js?v=1';
   let out = html;
   if (!out.includes(mediaMarker)) {
     out = out.replace('</body>', `<script src="./media-render-safe.js?v=91"></script></body>`);
@@ -36,6 +37,9 @@ function injectSafeUi(html) {
   }
   if (!out.includes(unreadMarker)) {
     out = out.replace('</body>', `<script src="./unread-badges.js?v=1"></script></body>`);
+  }
+  if (!out.includes(profileMarker)) {
+    out = out.replace('</body>', `<script src="./profile-city-safe.js?v=1"></script></body>`);
   }
   return out;
 }
