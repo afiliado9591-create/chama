@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v102";
+const VERSION="chama-clean-v103";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "102") return;
-        url.searchParams.set("chama_update", "102");
+        if (url.searchParams.get("chama_update") === "103") return;
+        url.searchParams.set("chama_update", "103");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -30,7 +30,7 @@ function injectSafeUi(html) {
   const profileMarker = 'profile-safe-v6.js?v=1';
   const homeMarker = 'home-conversations-search.js?v=2';
   const backMarker = 'ui-back-button.js?v=1';
-  const ownAvatarMarker = 'home-own-avatar.js?v=1';
+  const ownAvatarMarker = 'home-own-avatar.js?v=2';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -43,7 +43,7 @@ function injectSafeUi(html) {
   if (!out.includes(profileMarker)) out = out.replace('</body>', `<script src="./profile-safe-v6.js?v=1"></script></body>`);
   if (!out.includes(homeMarker)) out = out.replace('</body>', `<script src="./home-conversations-search.js?v=2"></script></body>`);
   if (!out.includes(backMarker)) out = out.replace('</body>', `<script src="./ui-back-button.js?v=1"></script></body>`);
-  if (!out.includes(ownAvatarMarker)) out = out.replace('</body>', `<script src="./home-own-avatar.js?v=1"></script></body>`);
+  if (!out.includes(ownAvatarMarker)) out = out.replace('</body>', `<script src="./home-own-avatar.js?v=2"></script></body>`);
   return out;
 }
 
