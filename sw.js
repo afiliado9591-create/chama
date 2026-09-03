@@ -1,8 +1,5 @@
-const VERSION="chama-clean-v89";
+const VERSION="chama-clean-v90";
 
-// Service Worker de limpeza: remove caches/versões antigas e não injeta mais
-// módulos extras no HTML. Isso evita que PWAs antigos continuem executando
-// listeners e códigos que já não fazem parte do index.html atual.
 self.addEventListener("install", event => {
   self.skipWaiting();
 });
@@ -13,28 +10,24 @@ self.addEventListener("activate", event => {
     await Promise.all(keys.map(key => caches.delete(key)));
     await self.clients.claim();
 
-    // Recarrega janelas já abertas uma única vez quando esta nova versão ativa.
-    // Isso encerra o JavaScript da versão antiga que poderia manter listeners
-    // do Firestore ativos em aparelhos onde o Chama já estava instalado.
     const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     await Promise.all(windows.map(async client => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        url.searchParams.set("chama_update", "89");
+        if (url.searchParams.get("chama_update") === "90") return;
+        url.searchParams.set("chama_update", "90");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
   })());
 });
 
-// Sempre busca a versão publicada. Não reutiliza HTML/JS antigo do cache.
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   event.respondWith(fetch(event.request, { cache: "no-store" }));
 });
 
-// Mantém apenas as notificações push, sem consultas ao Firestore.
 self.addEventListener("push", event => {
   let payload = {};
   try {
@@ -72,7 +65,7 @@ self.addEventListener("push", event => {
       renotify: true,
       requireInteraction: false,
       silent: false,
-      vibrate: [180, 100, 180],
+      vibrate: [180,100,180],
       data: { type: "chama_channel", channelId: data.channelId || "" }
     }));
   }
