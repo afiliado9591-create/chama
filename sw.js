@@ -23,10 +23,17 @@ self.addEventListener("activate", event => {
   })());
 });
 
-function injectAudioRenderer(html) {
-  const marker = 'media-render-safe.js?v=91';
-  if (html.includes(marker)) return html;
-  return html.replace('</body>', `<script src="./media-render-safe.js?v=91"></script></body>`);
+function injectSafeUi(html) {
+  const mediaMarker = 'media-render-safe.js?v=91';
+  const menuMarker = 'app-menu.js?v=1';
+  let out = html;
+  if (!out.includes(mediaMarker)) {
+    out = out.replace('</body>', `<script src="./media-render-safe.js?v=91"></script></body>`);
+  }
+  if (!out.includes(menuMarker)) {
+    out = out.replace('</body>', `<script src="./app-menu.js?v=1"></script></body>`);
+  }
+  return out;
 }
 
 self.addEventListener("fetch", event => {
@@ -37,7 +44,7 @@ self.addEventListener("fetch", event => {
       const response = await fetch(event.request, { cache: "no-store" });
       const type = response.headers.get("content-type") || "";
       if (!type.includes("text/html")) return response;
-      const html = injectAudioRenderer(await response.text());
+      const html = injectSafeUi(await response.text());
       return new Response(html, {
         status: response.status,
         statusText: response.statusText,
