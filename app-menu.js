@@ -1,5 +1,6 @@
 (()=>{
-  let adminAllowed=false,adminCheckDone=false,adminCheckPromise=null;
+  let adminAllowed=false,adminCheckDone=false,adminCheckPromise=null,customItems=[];
+  const DEFAULT_ITEMS=[{type:'external',label:'ChatShop',icon:'🛍️',url:'https://alibr.com.br/',enabled:true,highlight:true}];
 
   function addMenuStyles(){
     if(document.getElementById('chamaAppMenuStyle'))return;
@@ -14,10 +15,10 @@
       .chama-menu-logo{width:42px;height:42px;border-radius:14px;background:#0b7a53;color:#fff;display:grid;place-items:center;font-weight:900;font-size:22px}
       .chama-menu-head-text{flex:1;min-width:0}.chama-menu-head-text strong{display:block;font-size:18px;color:#14221c}.chama-menu-head-text small{color:#65736c}
       .chama-menu-close{border:0;background:#eef4f1;color:#0b7a53;width:38px;height:38px;border-radius:12px;font-size:20px;cursor:pointer}
-      .chama-menu-links{display:grid;gap:5px;padding-top:12px}
+      .chama-menu-links{display:grid;gap:5px;padding-top:12px;overflow:auto}
       .chama-menu-link{display:flex;align-items:center;gap:12px;width:100%;border:0;background:#fff;color:#1d2b24;text-decoration:none;padding:14px 12px;border-radius:13px;font-size:16px;text-align:left;cursor:pointer}
       .chama-menu-link:active,.chama-menu-link:hover{background:#f0f6f3}
-      .chama-menu-link.sell{background:#e7f7ef;color:#0b7a53;font-weight:900;border:1px solid #cbe9da}
+      .chama-menu-link.custom-highlight{background:#e7f7ef;color:#0b7a53;font-weight:900;border:1px solid #cbe9da}
       .chama-menu-link.admin{background:#eef3ff;color:#244a9a;font-weight:900;border:1px solid #d8e2ff}
       .chama-menu-icon{width:28px;text-align:center;font-size:20px}
       .chama-menu-note{margin-top:auto;padding:14px 10px 4px;color:#738078;font-size:12px;line-height:1.45}
@@ -28,21 +29,23 @@
   }
 
   function closeMenu(){document.getElementById('chamaMainMenu')?.remove()}
+  function safeUrl(v){try{const u=new URL(String(v||''));return u.protocol==='https:'?u.href:''}catch{return ''}}
+  function safeSlug(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,48)}
+  function normalizeCustom(x={}){
+    const type=x.type==='page'?'page':'external',label=String(x.label||'').trim().slice(0,28),icon=String(x.icon||'🔗').trim().slice(0,4)||'🔗';
+    return {type,label,icon,url:safeUrl(x.url),slug:safeSlug(x.slug),enabled:x.enabled===true,highlight:x.highlight===true};
+  }
 
   function addLink(links,icon,label,href){
-    const a=document.createElement('a');
-    a.className='chama-menu-link';a.href=href;a.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${label}</span>`;
-    links.appendChild(a);return a;
+    const a=document.createElement('a');a.className='chama-menu-link';a.href=href;a.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${label}</span>`;links.appendChild(a);return a;
   }
 
   function addAction(links,icon,label,onClick){
-    const b=document.createElement('button');b.type='button';b.className='chama-menu-link';
-    b.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${label}</span>`;
-    b.onclick=()=>{closeMenu();onClick()};links.appendChild(b);return b;
+    const b=document.createElement('button');b.type='button';b.className='chama-menu-link';b.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${label}</span>`;b.onclick=()=>{closeMenu();onClick()};links.appendChild(b);return b;
   }
 
   async function waitAdminCheck(){
-    const until=Date.now()+1600;
+    const until=Date.now()+1800;
     while(!adminCheckDone&&Date.now()<until){
       if(adminCheckPromise){try{await Promise.race([adminCheckPromise,new Promise(r=>setTimeout(r,180))])}catch{} }
       else await new Promise(r=>setTimeout(r,80));
@@ -50,8 +53,7 @@
   }
 
   async function openMenu(){
-    await waitAdminCheck();
-    closeMenu();
+    await waitAdminCheck();closeMenu();
     const backdrop=document.createElement('div');backdrop.id='chamaMainMenu';backdrop.className='chama-menu-backdrop';
     const panel=document.createElement('aside');panel.className='chama-menu-panel';panel.setAttribute('aria-label','Menu do Chama');
     const head=document.createElement('div');head.className='chama-menu-head';head.innerHTML='<div class="chama-menu-logo">C</div><div class="chama-menu-head-text"><strong>Chama</strong><small>Menu</small></div>';
@@ -59,14 +61,17 @@
     const links=document.createElement('nav');links.className='chama-menu-links';
     addLink(links,'🏠','Início','./');
     addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));
-    const sell=addLink(links,'🛍️','Venda seu produto','https://alibr.com.br/');sell.classList.add('sell');sell.target='_blank';sell.rel='noopener noreferrer';
+
+    for(const item of customItems){
+      if(!item.enabled||!item.label)continue;
+      const href=item.type==='page'&&item.slug?`./pagina.html?p=${encodeURIComponent(item.slug)}`:item.url;
+      if(!href)continue;const a=addLink(links,item.icon,item.label,href);if(item.highlight)a.classList.add('custom-highlight');if(item.type==='external'){a.target='_blank';a.rel='noopener noreferrer'}
+    }
+
     if(adminAllowed){const admin=addLink(links,'🛡️','Painel do Admin','./admin.html');admin.classList.add('admin')}
     addLink(links,'🔒','Política de Privacidade','./politica-de-privacidade.html');
-
-    const install=document.getElementById('installBtn');
-    if(install&&!install.classList.contains('hidden'))addAction(links,'📲','Instalar Chama',()=>install.click());
-
-    const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'Sua conta é administradora. O Painel do Admin fica disponível somente para você.':'Crie sua vitrine no ChatShop e depois cole o link no seu perfil do Chama.';
+    const install=document.getElementById('installBtn');if(install&&!install.classList.contains('hidden'))addAction(links,'📲','Instalar Chama',()=>install.click());
+    const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'Sua conta é administradora. Em “Painel do Admin” você pode criar páginas e editar os itens deste menu.':'Use o Chama para conversar, divulgar e acessar suas ferramentas.';
     panel.append(head,links,note);backdrop.appendChild(panel);backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeMenu()});document.body.appendChild(backdrop);
   }
 
@@ -86,20 +91,24 @@
   }
 
   async function initAdminAccess(){
-    const app=await waitForFirebase();
-    if(!app){adminCheckDone=true;return}
+    const app=await waitForFirebase();if(!app){adminCheckDone=true;customItems=DEFAULT_ITEMS.map(normalizeCustom);return}
     try{
       const [authMod,fs]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')]);
       const auth=authMod.getAuth(app),db=fs.getFirestore(app);
       authMod.onAuthStateChanged(auth,user=>{
-        adminAllowed=false;adminCheckDone=false;
+        adminAllowed=false;adminCheckDone=false;customItems=[];
         adminCheckPromise=(async()=>{
-          if(!user){adminCheckDone=true;return}
-          try{const snap=await fs.getDoc(fs.doc(db,'users',user.uid));adminAllowed=snap.exists()&&snap.data().admin===true}catch{adminAllowed=false}
+          if(!user){customItems=DEFAULT_ITEMS.map(normalizeCustom);adminCheckDone=true;return}
+          try{
+            const [userSnap,menuSnap]=await Promise.all([fs.getDoc(fs.doc(db,'users',user.uid)),fs.getDoc(fs.doc(db,'appConfig','customPagesMenu'))]);
+            adminAllowed=userSnap.exists()&&userSnap.data().admin===true;
+            const source=menuSnap.exists()?(Array.isArray(menuSnap.data()?.items)?menuSnap.data().items:[]):DEFAULT_ITEMS;
+            customItems=source.slice(0,5).map(normalizeCustom);
+          }catch{adminAllowed=false;customItems=DEFAULT_ITEMS.map(normalizeCustom)}
           finally{adminCheckDone=true}
         })();
       });
-    }catch{adminAllowed=false;adminCheckDone=true}
+    }catch{adminAllowed=false;customItems=DEFAULT_ITEMS.map(normalizeCustom);adminCheckDone=true}
   }
 
   function start(){addMenuStyles();installTopMenu();installAuthPrivacy();initAdminAccess()}
