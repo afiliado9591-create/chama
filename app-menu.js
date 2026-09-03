@@ -1,5 +1,5 @@
 (()=>{
-  let adminAllowed=false;
+  let adminAllowed=false,adminCheckDone=false,adminCheckPromise=null;
 
   function addMenuStyles(){
     if(document.getElementById('chamaAppMenuStyle'))return;
@@ -18,6 +18,7 @@
       .chama-menu-link{display:flex;align-items:center;gap:12px;width:100%;border:0;background:#fff;color:#1d2b24;text-decoration:none;padding:14px 12px;border-radius:13px;font-size:16px;text-align:left;cursor:pointer}
       .chama-menu-link:active,.chama-menu-link:hover{background:#f0f6f3}
       .chama-menu-link.sell{background:#e7f7ef;color:#0b7a53;font-weight:900;border:1px solid #cbe9da}
+      .chama-menu-link.admin{background:#eef3ff;color:#244a9a;font-weight:900;border:1px solid #d8e2ff}
       .chama-menu-icon{width:28px;text-align:center;font-size:20px}
       .chama-menu-note{margin-top:auto;padding:14px 10px 4px;color:#738078;font-size:12px;line-height:1.45}
       .chama-auth-privacy{display:block;text-align:center;margin-top:16px;color:#0b7a53;text-decoration:none;font-size:13px;font-weight:700}
@@ -40,7 +41,16 @@
     b.onclick=()=>{closeMenu();onClick()};links.appendChild(b);return b;
   }
 
-  function openMenu(){
+  async function waitAdminCheck(){
+    const until=Date.now()+1600;
+    while(!adminCheckDone&&Date.now()<until){
+      if(adminCheckPromise){try{await Promise.race([adminCheckPromise,new Promise(r=>setTimeout(r,180))])}catch{} }
+      else await new Promise(r=>setTimeout(r,80));
+    }
+  }
+
+  async function openMenu(){
+    await waitAdminCheck();
     closeMenu();
     const backdrop=document.createElement('div');backdrop.id='chamaMainMenu';backdrop.className='chama-menu-backdrop';
     const panel=document.createElement('aside');panel.className='chama-menu-panel';panel.setAttribute('aria-label','Menu do Chama');
@@ -50,22 +60,20 @@
     addLink(links,'🏠','Início','./');
     addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));
     const sell=addLink(links,'🛍️','Venda seu produto','https://alibr.com.br/');sell.classList.add('sell');sell.target='_blank';sell.rel='noopener noreferrer';
-    if(adminAllowed)addLink(links,'🛡️','Painel do Admin','./admin.html');
+    if(adminAllowed){const admin=addLink(links,'🛡️','Painel do Admin','./admin.html');admin.classList.add('admin')}
     addLink(links,'🔒','Política de Privacidade','./politica-de-privacidade.html');
 
     const install=document.getElementById('installBtn');
-    if(install&&!install.classList.contains('hidden')){
-      addAction(links,'📲','Instalar Chama',()=>install.click());
-    }
+    if(install&&!install.classList.contains('hidden'))addAction(links,'📲','Instalar Chama',()=>install.click());
 
-    const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'O painel do administrador é exibido somente para contas marcadas como admin.':'Crie sua vitrine no ChatShop e depois cole o link no seu perfil do Chama.';
+    const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'Sua conta é administradora. O Painel do Admin fica disponível somente para você.':'Crie sua vitrine no ChatShop e depois cole o link no seu perfil do Chama.';
     panel.append(head,links,note);backdrop.appendChild(panel);backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeMenu()});document.body.appendChild(backdrop);
   }
 
   function installTopMenu(){
     if(document.getElementById('chamaMainMenuBtn'))return;const topbar=document.querySelector('.topbar');if(!topbar)return;
     const btn=document.createElement('button');btn.id='chamaMainMenuBtn';btn.type='button';btn.className='chama-main-menu-btn';btn.title='Menu';btn.setAttribute('aria-label','Abrir menu');btn.textContent='☰';
-    const logout=document.getElementById('logoutBtn');if(logout)topbar.insertBefore(btn,logout);else topbar.appendChild(btn);btn.onclick=openMenu;
+    const logout=document.getElementById('logoutBtn');if(logout)topbar.insertBefore(btn,logout);else topbar.appendChild(btn);btn.onclick=()=>openMenu();
   }
 
   function installAuthPrivacy(){
@@ -78,12 +86,20 @@
   }
 
   async function initAdminAccess(){
-    const app=await waitForFirebase();if(!app)return;
+    const app=await waitForFirebase();
+    if(!app){adminCheckDone=true;return}
     try{
       const [authMod,fs]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')]);
       const auth=authMod.getAuth(app),db=fs.getFirestore(app);
-      authMod.onAuthStateChanged(auth,async user=>{adminAllowed=false;if(!user)return;try{const snap=await fs.getDoc(fs.doc(db,'users',user.uid));adminAllowed=snap.exists()&&snap.data().admin===true}catch{adminAllowed=false}});
-    }catch{adminAllowed=false}
+      authMod.onAuthStateChanged(auth,user=>{
+        adminAllowed=false;adminCheckDone=false;
+        adminCheckPromise=(async()=>{
+          if(!user){adminCheckDone=true;return}
+          try{const snap=await fs.getDoc(fs.doc(db,'users',user.uid));adminAllowed=snap.exists()&&snap.data().admin===true}catch{adminAllowed=false}
+          finally{adminCheckDone=true}
+        })();
+      });
+    }catch{adminAllowed=false;adminCheckDone=true}
   }
 
   function start(){addMenuStyles();installTopMenu();installAuthPrivacy();initAdminAccess()}
