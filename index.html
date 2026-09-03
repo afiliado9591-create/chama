@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b7a53" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" />
   <title>Chama</title>
   <style>
     :root{--green:#0b7a53;--green2:#0f9d6a;--bg:#f3f5f4;--card:#fff;--line:#e6e9e7;--text:#14221c;--muted:#6a756f}
@@ -31,9 +33,11 @@
     .messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:8px;background-image:radial-gradient(#dfe7e2 1px,transparent 1px);background-size:20px 20px}
     .bubble{max-width:min(78%,520px);padding:10px 12px;border-radius:16px;box-shadow:0 1px 1px #0000000b;word-break:break-word}.mine{align-self:flex-end;background:#d7f7e7;border-bottom-right-radius:5px}.theirs{align-self:flex-start;background:#fff;border-bottom-left-radius:5px}
     .time{display:block;text-align:right;font-size:10px;color:#6d7772;margin-top:4px}
-    .composer{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom))}
-    .composer input{flex:1;border:1px solid #d5ddd9;border-radius:999px;padding:12px 16px;outline:none}.send{border:0;background:var(--green);color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px}
-    .install{background:#fff;color:var(--green);border:1px solid #ffffff80}
+    .composer{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom));align-items:center}
+    .composer input{flex:1;border:1px solid #d5ddd9;border-radius:999px;padding:12px 16px;outline:none;min-width:0}.send{border:0;background:var(--green);color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px;flex:0 0 46px}
+    .audio-record{border:0;background:#eef4f1;color:var(--green);width:42px;height:42px;border-radius:50%;font-size:20px;flex:0 0 42px;cursor:pointer}.audio-record.recording{background:#ffe5e5;color:#b42318}
+    .audio-player{width:min(280px,65vw);display:block;margin:2px 0}.audio-label{font-size:12px;font-weight:700;color:#4d5b54;margin-bottom:5px}.install{background:#fff;color:var(--green);border:1px solid #ffffff80}
+    .audio-toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:100;font-size:14px;white-space:nowrap}
     @media(max-width:700px){
       .layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}
     }
@@ -56,7 +60,7 @@
   <div id="appView" class="shell hidden">
     <header class="topbar">
       <h2>Chama</h2>
-      <button id="installBtn" class="iconbtn install hidden">Instalar app</button>
+      <button id="installBtn" class="iconbtn install hidden">Instalar Chama</button>
       <button id="logoutBtn" class="iconbtn">Sair</button>
     </header>
     <main class="layout">
@@ -75,6 +79,7 @@
           </div>
           <div id="messages" class="messages"></div>
           <form id="composer" class="composer">
+            <button id="audioBtn" class="audio-record" type="button" title="Gravar áudio">🎤</button>
             <input id="messageInput" maxlength="1500" placeholder="Digite uma mensagem..." autocomplete="off">
             <button class="send" type="submit">➤</button>
           </form>
@@ -100,10 +105,12 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const MEDIA_PREFIX="__CHAMA_MEDIA__";
 
   const $ = (id) => document.getElementById(id);
   const authView=$("authView"), appView=$("appView"), authMsg=$("authMsg");
   let me=null, activeUser=null, stopMessages=null, usersLoadToken=0, installPrompt=null;
+  let recorder=null, audioChunks=[], audioStream=null;
 
   function friendlyError(e){
     const c=e?.code||"";
@@ -166,7 +173,6 @@
     const list=$("usersList");
     list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando pessoas...</div>';
     try{
-      // Modo econômico: não carrega até 100 perfis de uma vez ao abrir o Chama.
       const q=query(collection(db,"users"),limit(20));
       const snap=await getDocs(q);
       if(token!==usersLoadToken || !me) return;
@@ -191,6 +197,27 @@
     }
   }
 
+  function parseAudio(text=""){
+    if(!text.startsWith(MEDIA_PREFIX))return null;
+    try{
+      const meta=JSON.parse(text.slice(MEDIA_PREFIX.length));
+      if(meta?.kind==="audio" && /^https?:\/\//i.test(meta.url||""))return meta;
+    }catch(_){ }
+    return null;
+  }
+
+  function renderMessage(b,m,t){
+    const audio=parseAudio(m.text||"");
+    if(audio){
+      const label=document.createElement("div");label.className="audio-label";label.textContent="🎤 Áudio";
+      const player=document.createElement("audio");player.className="audio-player";player.controls=true;player.preload="metadata";player.src=audio.url;
+      b.append(label,player);
+      const time=document.createElement("span");time.className="time";time.textContent=t;b.appendChild(time);
+      return;
+    }
+    b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`;
+  }
+
   async function openChat(u){
     activeUser=u;
     $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||"";
@@ -199,13 +226,8 @@
 
     const ids=[me.uid,u.uid].sort();
     const chatId=ids.join("_");
-
-    // Não grava mais no Firestore só por abrir uma conversa.
-    // O contador de não lidas continua sendo atualizado no envio e poderá ser zerado
-    // junto do listener principal sem criar gravações desnecessárias a cada toque.
     if(stopMessages) stopMessages();
 
-    // Modo econômico: abre somente as 20 mensagens mais recentes.
     const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(20));
     stopMessages=onSnapshot(mq,snap=>{
       const box=$("messages"); box.innerHTML="";
@@ -215,11 +237,24 @@
         const m=d.data(), mine=m.senderId===me.uid;
         const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs");
         const t=m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "";
-        b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`;
+        renderMessage(b,m,t);
         box.appendChild(b);
       });
       box.scrollTop=box.scrollHeight;
     },e=>console.error(e));
+  }
+
+  async function saveMessage(text,label=text){
+    if(!me||!activeUser)return;
+    const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
+    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
+    await setDoc(doc(db,"chats",chatId),{
+      participants:ids,
+      lastMessage:label,
+      lastSenderId:me.uid,
+      updatedAt:serverTimestamp(),
+      unreadCounts:{[activeUser.uid]:increment(1),[me.uid]:0}
+    },{merge:true});
   }
 
   $("composer").addEventListener("submit", async e=>{
@@ -227,21 +262,75 @@
     const text=$("messageInput").value.trim();
     if(!text || !activeUser) return;
     $("messageInput").value="";
-    const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
-    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
-    await setDoc(doc(db,"chats",chatId),{
-      participants:ids,
-      lastMessage:text,
-      lastSenderId:me.uid,
-      updatedAt:serverTimestamp(),
-      unreadCounts:{[activeUser.uid]:increment(1),[me.uid]:0}
-    },{merge:true});
+    try{await saveMessage(text,text)}catch(e){console.error(e);alert("Não foi possível enviar a mensagem.")}
   });
+
+  function showAudioToast(text){
+    let el=$("audioToast");
+    if(!el){el=document.createElement("div");el.id="audioToast";el.className="audio-toast";document.body.appendChild(el)}
+    el.textContent=text;el.classList.remove("hidden");return()=>el.classList.add("hidden");
+  }
+
+  async function uploadAudio(blob,type){
+    if(!me||!activeUser)throw new Error("Abra uma conversa antes de enviar áudio.");
+    if(blob.size>10*1024*1024)throw new Error("Áudio muito grande. Limite de 10 MB.");
+    const token=await me.getIdToken();
+    const ext=type.includes("mp4")?"m4a":"webm";
+    const response=await fetch("/api/media",{
+      method:"POST",
+      headers:{Authorization:"Bearer "+token,"Content-Type":type||"audio/webm","X-File-Name":encodeURIComponent(`audio-${Date.now()}.${ext}`)},
+      body:blob
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.url)throw new Error(data.error||"Falha ao enviar áudio.");
+    const text=MEDIA_PREFIX+JSON.stringify({kind:"audio",url:data.url,key:data.key||"",name:`audio-${Date.now()}.${ext}`});
+    await saveMessage(text,"🎤 Áudio");
+  }
+
+  $("audioBtn").onclick=async()=>{
+    const btn=$("audioBtn");
+    if(recorder&&recorder.state==="recording"){
+      recorder.stop();
+      btn.classList.remove("recording");btn.textContent="🎤";
+      return;
+    }
+    if(!activeUser)return alert("Abra uma conversa antes de gravar áudio.");
+    if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined")return alert("Este navegador não permite gravação de áudio.");
+    try{
+      audioStream=await navigator.mediaDevices.getUserMedia({audio:true});
+      audioChunks=[];
+      let mime="";
+      for(const t of["audio/webm;codecs=opus","audio/webm","audio/mp4"]){if(MediaRecorder.isTypeSupported?.(t)){mime=t;break}}
+      recorder=new MediaRecorder(audioStream,mime?{mimeType:mime}:undefined);
+      recorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data)};
+      recorder.onstop=async()=>{
+        const hide=showAudioToast("Enviando áudio...");
+        try{
+          audioStream?.getTracks().forEach(t=>t.stop());
+          const type=recorder?.mimeType||"audio/webm";
+          const blob=new Blob(audioChunks,{type});
+          recorder=null;audioChunks=[];audioStream=null;
+          if(blob.size)await uploadAudio(blob,type);
+        }catch(e){console.error(e);alert(e.message||"Não foi possível enviar o áudio.")}finally{hide()}
+      };
+      recorder.start();
+      btn.classList.add("recording");btn.textContent="■";
+      showAudioToast("Gravando... toque ■ para enviar");
+    }catch(e){
+      audioStream?.getTracks().forEach(t=>t.stop());audioStream=null;recorder=null;
+      alert("Não foi possível acessar o microfone.");
+    }
+  };
 
   function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]))}
 
   window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});
-  $("installBtn").onclick=async()=>{ if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")} };
+  $("installBtn").onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")}};
+  window.addEventListener("appinstalled",()=>$("installBtn").classList.add("hidden"));
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
+  }
 </script>
 </body>
 </html>
