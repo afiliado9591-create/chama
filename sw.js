@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v109";
+const VERSION="chama-clean-v110";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "109") return;
-        url.searchParams.set("chama_update", "109");
+        if (url.searchParams.get("chama_update") === "110") return;
+        url.searchParams.set("chama_update", "110");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -36,14 +36,13 @@ function injectSafeUi(html) {
   const layoutRefreshMarker = 'layout-refresh.js?v=1';
   const profileHomeMessageMarker = 'profile-home-message.js?v=1';
   const homeProfileMessageMarker = 'home-profile-message.js?v=1';
+  const socialVideoMarker = 'social-video-links.js?v=1';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
     out = out.replace('  async function saveMessage(text,label=text){', '  window.chamaOpenChat=openChat;\n\n  async function saveMessage(text,label=text){');
   }
 
-  // A foto precisa ser aplicada DEPOIS que o código principal coloca a letra inicial.
-  // Caso contrário, a letra sobrescreve a foto logo após o evento.
   if (!out.includes('chama-chat-opened')) {
     out = out.replace(
       '    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();',
@@ -63,6 +62,7 @@ function injectSafeUi(html) {
   if (!out.includes(layoutRefreshMarker)) out = out.replace('</body>', `<script src="./layout-refresh.js?v=1"></script></body>`);
   if (!out.includes(profileHomeMessageMarker)) out = out.replace('</body>', `<script src="./profile-home-message.js?v=1"></script></body>`);
   if (!out.includes(homeProfileMessageMarker)) out = out.replace('</body>', `<script src="./home-profile-message.js?v=1"></script></body>`);
+  if (!out.includes(socialVideoMarker)) out = out.replace('</body>', `<script src="./social-video-links.js?v=1"></script></body>`);
   return out;
 }
 
