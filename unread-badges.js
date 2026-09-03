@@ -81,6 +81,12 @@
     document.querySelectorAll('#usersList .user').forEach(renderRow);
   }
 
+  function renderWhenUsersReady(attempt=0){
+    const rows=document.querySelectorAll('#usersList .user');
+    if(rows.length){renderAll();return}
+    if(attempt<40)setTimeout(()=>renderWhenUsersReady(attempt+1),125);
+  }
+
   async function resetUnread(row){
     const c=conversationForRow(row);
     if(!c||c.unread<=0||!meUid||!db||!firestore||c.resetting)return;
@@ -102,14 +108,22 @@
     }
   }
 
+  async function getFirebaseApp(attempt=0){
+    const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
+    const app=appMod.getApps()[0];
+    if(app)return {app,appMod};
+    if(attempt>=20)return null;
+    await new Promise(r=>setTimeout(r,100));
+    return getFirebaseApp(attempt+1);
+  }
+
   async function loadConversations(user){
     meUid=user.uid;
     try{
-      const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
+      const found=await getFirebaseApp();
+      if(!found)return;
       const fs=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
-      const app=appMod.getApps()[0];
-      if(!app)return;
-      db=fs.getFirestore(app);
+      db=fs.getFirestore(found.app);
       firestore=fs;
 
       const q=fs.query(
@@ -130,7 +144,7 @@
           lastMessage:data.lastMessage||''
         });
       });
-      renderAll();
+      renderWhenUsersReady();
     }catch(e){
       console.error('Chama: não foi possível carregar contadores',e);
     }
@@ -138,18 +152,11 @@
 
   async function start(){
     addStyle();
-
-    const list=document.getElementById('usersList');
-    if(list){
-      new MutationObserver(()=>renderAll()).observe(list,{childList:true});
-    }
-
     try{
-      const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
+      const found=await getFirebaseApp();
+      if(!found)return;
       const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');
-      const app=appMod.getApps()[0];
-      if(!app)return;
-      const auth=authMod.getAuth(app);
+      const auth=authMod.getAuth(found.app);
       authMod.onAuthStateChanged(auth,user=>{
         if(!user){
           meUid='';db=null;firestore=null;conversations.clear();renderAll();return;
