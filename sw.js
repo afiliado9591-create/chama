@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v90";
+const VERSION="chama-clean-v91";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,16 +15,41 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "90") return;
-        url.searchParams.set("chama_update", "90");
+        if (url.searchParams.get("chama_update") === "91") return;
+        url.searchParams.set("chama_update", "91");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
   })());
 });
 
+function injectAudioRenderer(html) {
+  const marker = 'media-render-safe.js?v=91';
+  if (html.includes(marker)) return html;
+  return html.replace('</body>', `<script src="./media-render-safe.js?v=91"></script></body>`);
+}
+
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
+  if (event.request.mode === "navigate") {
+    event.respondWith((async () => {
+      const response = await fetch(event.request, { cache: "no-store" });
+      const type = response.headers.get("content-type") || "";
+      if (!type.includes("text/html")) return response;
+      const html = injectAudioRenderer(await response.text());
+      return new Response(html, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store"
+        }
+      });
+    })());
+    return;
+  }
+
   event.respondWith(fetch(event.request, { cache: "no-store" }));
 });
 
