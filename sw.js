@@ -1,12 +1,95 @@
-const CACHE="chama-v88";
-const ASSETS=["./","./index.html","./manifest.webmanifest","./icon.svg","./search.js","./auth-persistence.js","./share.js","./public-profile.js","./brand-brazil.js","./contact-open-chat.js","./forgot-password.js","./clickable-links.js","./friends.js","./media-chat.js","./media-render-safe.js","./read-receipts.js","./chat-safe-ui.js","./notifications.js","./delete-messages.js","./admin-panel.js","./profile-type.js","./referral.js","./professional-profile.js","./offers.js","./offers-two.js","./business-directory.js","./push-messages.js","./channels.js","./video-embeds.js","./catalog-platforms.js","./home-highlights.js","./about-privacy.js","./admin-moderation.js","./profile-location.js","./context-chat.js","./message-deeplink.js","./catalog-chat.js","./presence.js","./admin-recover.js","./email-privacy.js","./conversation-list.js","./bulk-share.js","./chama-sso.js","./shopads-bridge.js","./shopads-feed.js","./shopads-earn.js","./mobile-topbar-fix.js"];
-self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
-self.addEventListener("activate",e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
-function injectExtras(html){
-html=html.replace('const q=query(collection(db,"users"),limit(100));','const q=query(collection(db,"users"),limit(30));');
-html=html.replace('const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(100));','const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(20));');
-html=html.replace('    listenUsers();','    if(!window.__chamaUsersLoaded){window.__chamaUsersLoaded=true;listenUsers();}');
-const inject=(tag,needle)=>{if(!html.includes(needle))html=html.replace("</body>",tag+"</body>")};const scripts=[["search.js",0],["auth-persistence.js",1],["share.js",1],["public-profile.js",1],["brand-brazil.js",0],["contact-open-chat.js",0],["forgot-password.js",1],["clickable-links.js",0],["friends.js",1],["media-render-safe.js",0],["media-chat.js",1],["read-receipts.js",1],["chat-safe-ui.js",0],["notifications.js",1],["delete-messages.js",1],["admin-panel.js",1],["profile-type.js",1],["referral.js",1],["professional-profile.js",1],["offers.js",1],["offers-two.js",1],["business-directory.js",1],["push-messages.js",1],["channels.js",1],["video-embeds.js",0],["catalog-platforms.js",0],["home-highlights.js",1],["about-privacy.js",0],["admin-moderation.js",1],["profile-location.js",1],["context-chat.js",1],["message-deeplink.js",1],["catalog-chat.js",1],["presence.js",1],["admin-recover.js",1],["email-privacy.js",1],["conversation-list.js",1],["bulk-share.js",1],["chama-sso.js",1],["shopads-bridge.js",0],["shopads-feed.js",1],["shopads-earn.js",0],["mobile-topbar-fix.js",0]];for(const [f,m] of scripts)inject(`<script ${m?'type="module" ':''}src="./${f}?v=88"></script>`,`${f}?v=88`);return html}
-self.addEventListener("push",e=>{let p={};try{p=e.data?.json?.()||{}}catch{try{p=JSON.parse(e.data?.text?.()||"{}")||{}}catch{}}const d=p.data||p;if(d.type==="chama_message"){const title=d.senderName||p.notification?.title||"Nova mensagem no Chama",body=d.text||p.notification?.body||"Você recebeu uma nova mensagem";e.waitUntil(self.registration.showNotification(title,{body,icon:"./icon.svg",badge:"./icon.svg",tag:"chama-msg-"+(d.chatId||"nova"),renotify:true,requireInteraction:false,silent:false,vibrate:[250,120,250],data:{type:"chama_message",chatId:d.chatId||""}}));return}if(d.type==="chama_channel"){const title='📢 '+(d.channelName||'Canal Chama'),body=d.text||'Nova publicação';e.waitUntil(self.registration.showNotification(title,{body,icon:"./icon.svg",badge:"./icon.svg",tag:"chama-channel-"+(d.channelId||"novo"),renotify:true,requireInteraction:false,silent:false,vibrate:[180,100,180],data:{type:"chama_channel",channelId:d.channelId||""}}))}});
-self.addEventListener("notificationclick",e=>{const d=e.notification?.data||{};e.notification.close();let url="./";if(d.type==="chama_message"&&d.chatId)url="./?chat="+encodeURIComponent(d.chatId);if(d.type==="chama_channel"&&d.channelId)url="./?channel="+encodeURIComponent(d.channelId);e.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{for(const c of list){if("navigate"in c)c.navigate(url).catch(()=>{});if("focus"in c)return c.focus()}return clients.openWindow(url)}))});
-self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;if(e.request.mode==="navigate"){e.respondWith((async()=>{try{const r=await fetch(e.request,{cache:"no-store"});const type=r.headers.get("content-type")||"";if(type.includes("text/html")){const html=injectExtras(await r.text());return new Response(html,{status:r.status,statusText:r.statusText,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}})}return r}catch{const cached=await caches.match("./index.html");if(!cached)return Response.error();const html=injectExtras(await cached.text());return new Response(html,{headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}})}})());return}const u=new URL(e.request.url);if(u.pathname.endsWith('.js')){e.respondWith(fetch(e.request,{cache:"no-store"}).catch(()=>caches.match(u.pathname.replace(/^\//,'./'))));return}e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});
+const VERSION="chama-clean-v89";
+
+// Service Worker de limpeza: remove caches/versões antigas e não injeta mais
+// módulos extras no HTML. Isso evita que PWAs antigos continuem executando
+// listeners e códigos que já não fazem parte do index.html atual.
+self.addEventListener("install", event => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(key => caches.delete(key)));
+    await self.clients.claim();
+
+    // Recarrega janelas já abertas uma única vez quando esta nova versão ativa.
+    // Isso encerra o JavaScript da versão antiga que poderia manter listeners
+    // do Firestore ativos em aparelhos onde o Chama já estava instalado.
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    await Promise.all(windows.map(async client => {
+      try {
+        const url = new URL(client.url);
+        if (url.origin !== self.location.origin) return;
+        url.searchParams.set("chama_update", "89");
+        await client.navigate(url.toString());
+      } catch (_) {}
+    }));
+  })());
+});
+
+// Sempre busca a versão publicada. Não reutiliza HTML/JS antigo do cache.
+self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
+  event.respondWith(fetch(event.request, { cache: "no-store" }));
+});
+
+// Mantém apenas as notificações push, sem consultas ao Firestore.
+self.addEventListener("push", event => {
+  let payload = {};
+  try {
+    payload = event.data?.json?.() || {};
+  } catch (_) {
+    try { payload = JSON.parse(event.data?.text?.() || "{}") || {}; } catch (_) {}
+  }
+
+  const data = payload.data || payload;
+  if (data.type === "chama_message") {
+    const title = data.senderName || payload.notification?.title || "Nova mensagem no Chama";
+    const body = data.text || payload.notification?.body || "Você recebeu uma nova mensagem";
+    event.waitUntil(self.registration.showNotification(title, {
+      body,
+      icon: "./icon.svg",
+      badge: "./icon.svg",
+      tag: "chama-msg-" + (data.chatId || "nova"),
+      renotify: true,
+      requireInteraction: false,
+      silent: false,
+      vibrate: [250, 120, 250],
+      data: { type: "chama_message", chatId: data.chatId || "" }
+    }));
+    return;
+  }
+
+  if (data.type === "chama_channel") {
+    const title = "📢 " + (data.channelName || "Canal Chama");
+    const body = data.text || "Nova publicação";
+    event.waitUntil(self.registration.showNotification(title, {
+      body,
+      icon: "./icon.svg",
+      badge: "./icon.svg",
+      tag: "chama-channel-" + (data.channelId || "novo"),
+      renotify: true,
+      requireInteraction: false,
+      silent: false,
+      vibrate: [180, 100, 180],
+      data: { type: "chama_channel", channelId: data.channelId || "" }
+    }));
+  }
+});
+
+self.addEventListener("notificationclick", event => {
+  const data = event.notification?.data || {};
+  event.notification.close();
+  let url = "./";
+  if (data.type === "chama_message" && data.chatId) url = "./?chat=" + encodeURIComponent(data.chatId);
+  if (data.type === "chama_channel" && data.channelId) url = "./?channel=" + encodeURIComponent(data.channelId);
+
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+    for (const client of list) {
+      if ("navigate" in client) client.navigate(url).catch(() => {});
+      if ("focus" in client) return client.focus();
+    }
+    return self.clients.openWindow(url);
+  }));
+});
