@@ -13,7 +13,7 @@
     const s=document.createElement('style');
     s.id='mediaSafeToggleStyle';
     s.textContent=`
-      .media-image-wrap{display:grid;gap:7px}
+      .media-wrap{display:grid;gap:7px}
       .chat-media.image{display:block;width:min(270px,68vw);max-height:340px;object-fit:cover;border-radius:12px;background:#e8eeeb}
       .audio-placeholder{border:0;background:transparent;padding:2px 0;display:flex;align-items:center;gap:10px;min-width:220px;max-width:280px;cursor:pointer;text-align:left;color:#14221c}
       .audio-play{width:42px;height:42px;border-radius:50%;background:#0b7a53;color:#fff;display:grid;place-items:center;font-size:18px;flex:0 0 42px;box-shadow:0 1px 2px #0002}
@@ -25,24 +25,14 @@
       .chat-media.audio{width:min(285px,72vw);height:42px}
       .chat-media.video{display:block;width:min(300px,72vw);max-height:380px;border-radius:12px;background:#000}
       .media-placeholder{border:0;background:#eef4f1;color:#0b7a53;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
+      .media-close-btn{border:0;background:#eef4f1;color:#0b7a53;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer;justify-self:start}
       .media-error{font-size:13px;color:#b42318}
       .image-send-btn,.video-send-btn{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:50%;font-size:20px;display:grid;place-items:center;cursor:pointer;flex:0 0 42px}
       .image-upload-toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:120;font-size:14px;white-space:nowrap}
     `;
     document.head.appendChild(s);
   }
-  function imageElement(m){
-    const img=document.createElement('img');
-    img.className='chat-media image';
-    img.loading='lazy';
-    img.decoding='async';
-    img.alt='Imagem';
-    img.src=m.url;
-    img.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta imagem.';img.replaceWith(d)};
-    return img;
-  }
   function makePlaceholder(m){
-    if(m.kind==='image') return imageElement(m);
     if(m.kind==='audio'){
       const btn=document.createElement('button');
       btn.type='button';
@@ -55,29 +45,71 @@
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='media-placeholder';
-    btn.textContent='🎥 Reproduzir vídeo';
+    btn.textContent=m.kind==='image'?'📷 Ver imagem':'🎥 Reproduzir vídeo';
     btn.addEventListener('click',()=>openMedia(btn,m));
     return btn;
   }
   function openMedia(btn,m){
-    let el;
+    if(m.kind==='image'){
+      const wrap=document.createElement('div');
+      wrap.className='media-wrap';
+      const img=document.createElement('img');
+      img.className='chat-media image';
+      img.loading='lazy';
+      img.decoding='async';
+      img.alt='Imagem';
+      img.src=m.url;
+      const close=document.createElement('button');
+      close.type='button';
+      close.className='media-close-btn';
+      close.textContent='✕ Fechar imagem';
+      const collapse=()=>wrap.replaceWith(makePlaceholder(m));
+      close.onclick=collapse;
+      img.onclick=collapse;
+      img.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta imagem.';wrap.replaceWith(d)};
+      wrap.append(img,close);
+      btn.replaceWith(wrap);
+      return;
+    }
+    if(m.kind==='video'){
+      const wrap=document.createElement('div');
+      wrap.className='media-wrap';
+      const video=document.createElement('video');
+      video.className='chat-media video';
+      video.controls=true;
+      video.preload='metadata';
+      video.playsInline=true;
+      video.src=m.url;
+      const close=document.createElement('button');
+      close.type='button';
+      close.className='media-close-btn';
+      close.textContent='✕ Fechar vídeo';
+      close.onclick=()=>{
+        try{video.pause()}catch(_){ }
+        wrap.replaceWith(makePlaceholder(m));
+      };
+      video.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar este vídeo.';wrap.replaceWith(d)};
+      wrap.append(video,close);
+      btn.replaceWith(wrap);
+      return;
+    }
     if(m.kind==='audio'){
-      el=document.createElement('audio'); el.className='chat-media audio'; el.controls=true; el.preload='none';
-    }else if(m.kind==='video'){
-      el=document.createElement('video'); el.className='chat-media video'; el.controls=true; el.preload='metadata'; el.playsInline=true;
+      const el=document.createElement('audio');
+      el.className='chat-media audio';
+      el.controls=true;
+      el.preload='none';
+      const bubble=btn.closest('.bubble'),messageId=bubble?.dataset?.messageId||'';
+      if(messageId){
+        el.addEventListener('play',()=>{
+          if(el.dataset.playReceiptSent==='1')return;
+          el.dataset.playReceiptSent='1';
+          document.dispatchEvent(new CustomEvent('chama-media-played',{detail:{messageId}}));
+        },{once:true});
+      }
+      el.src=m.url;
+      el.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar este áudio.';el.replaceWith(d)};
+      btn.replaceWith(el);
     }
-    if(!el)return;
-    const bubble=btn.closest('.bubble'),messageId=bubble?.dataset?.messageId||'';
-    if(m.kind==='audio'&&messageId){
-      el.addEventListener('play',()=>{
-        if(el.dataset.playReceiptSent==='1')return;
-        el.dataset.playReceiptSent='1';
-        document.dispatchEvent(new CustomEvent('chama-media-played',{detail:{messageId}}));
-      },{once:true});
-    }
-    el.src=m.url;
-    el.onerror=()=>{const d=document.createElement('div');d.className='media-error';d.textContent='Não foi possível carregar esta mídia.';el.replaceWith(d)};
-    btn.replaceWith(el);
   }
   function render(b){
     if(!b||b.dataset.mediaSafe==='1')return;
