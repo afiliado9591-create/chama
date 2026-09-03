@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b7a53">
+  <title>Chama</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f3f5f4;color:#14221c}.top{position:sticky;top:0;background:#fff;border-bottom:1px solid #e3e9e6;padding:12px 14px;display:flex;align-items:center;gap:10px}.back{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:12px;font-size:22px}.top strong{font-size:18px}.wrap{width:min(760px,100%);margin:auto;padding:18px}.card{background:#fff;border:1px solid #e1e7e4;border-radius:20px;padding:20px;box-shadow:0 6px 20px #14221c08}.card h1{font-size:25px;margin:0 0 14px;color:#183429}.content{font-size:16px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;color:#314239}.status{text-align:center;color:#6e7a74;padding:30px 10px}.error{color:#a42318}.login{display:inline-block;margin-top:12px;background:#0b7a53;color:#fff;text-decoration:none;border-radius:11px;padding:10px 13px;font-weight:800}
+  </style>
+</head>
+<body>
+  <header class="top"><button class="back" onclick="location.href='./'" aria-label="Voltar">←</button><strong>Chama</strong></header>
+  <main class="wrap"><article class="card"><div id="status" class="status">Carregando página...</div><h1 id="title" hidden></h1><div id="content" class="content" hidden></div></article></main>
+<script type="module">
+  import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
+  import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
+  import {getFirestore,doc,getDoc} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+  const cfg={apiKey:'AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I',authDomain:'chama-cfc28.firebaseapp.com',projectId:'chama-cfc28',storageBucket:'chama-cfc28.firebasestorage.app',messagingSenderId:'680045231088',appId:'1:680045231088:web:8db35684e4b56a320ebb35'};
+  const app=getApps()[0]||initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),status=document.getElementById('status'),title=document.getElementById('title'),content=document.getElementById('content');
+  const slug=String(new URL(location.href).searchParams.get('p')||'').trim().toLowerCase();
+  function fail(msg,login=false){status.className='status error';status.innerHTML='';const t=document.createElement('div');t.textContent=msg;status.appendChild(t);if(login){const a=document.createElement('a');a.className='login';a.href='./';a.textContent='Entrar no Chama';status.appendChild(a)}}
+  onAuthStateChanged(auth,async user=>{
+    if(!user)return fail('Faça login no Chama para abrir esta página.',true);
+    if(!slug)return fail('Página não encontrada.');
+    try{
+      const snap=await getDoc(doc(db,'appConfig','customPagesMenu'));if(!snap.exists())return fail('Página não encontrada.');
+      const items=Array.isArray(snap.data()?.items)?snap.data().items:[];const page=items.find(x=>x&&x.type==='page'&&x.enabled===true&&String(x.slug||'').toLowerCase()===slug);
+      if(!page)return fail('Esta página não existe ou não está publicada.');
+      document.title=(page.title||page.label||'Chama')+' | Chama';title.textContent=String(page.title||page.label||'Página');content.textContent=String(page.content||'');status.hidden=true;title.hidden=false;content.hidden=false;
+    }catch(e){console.error(e);fail('Não foi possível abrir esta página agora.')}
+  });
+</script>
+</body>
+</html>
