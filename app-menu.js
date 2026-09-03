@@ -20,6 +20,7 @@
       .chama-menu-link:active,.chama-menu-link:hover{background:#f0f6f3}
       .chama-menu-link.custom-highlight{background:#e7f7ef;color:#0b7a53;font-weight:900;border:1px solid #cbe9da}
       .chama-menu-link.admin{background:#eef3ff;color:#244a9a;font-weight:900;border:1px solid #d8e2ff}
+      .chama-menu-link.admin-pages{background:#fff8e8;color:#805100;font-weight:900;border:1px solid #f0ddb0}
       .chama-menu-icon{width:28px;text-align:center;font-size:20px}
       .chama-menu-note{margin-top:auto;padding:14px 10px 4px;color:#738078;font-size:12px;line-height:1.45}
       .chama-auth-privacy{display:block;text-align:center;margin-top:16px;color:#0b7a53;text-decoration:none;font-size:13px;font-weight:700}
@@ -68,10 +69,13 @@
       if(!href)continue;const a=addLink(links,item.icon,item.label,href);if(item.highlight)a.classList.add('custom-highlight');if(item.type==='external'){a.target='_blank';a.rel='noopener noreferrer'}
     }
 
-    if(adminAllowed){const admin=addLink(links,'🛡️','Painel do Admin','./admin.html');admin.classList.add('admin')}
+    if(adminAllowed){
+      const admin=addLink(links,'🛡️','Painel do Admin','./admin.html');admin.classList.add('admin');
+      const pages=addLink(links,'📄','Páginas e Menu','./admin.html#pagesMenuCard');pages.classList.add('admin-pages');
+    }
     addLink(links,'🔒','Política de Privacidade','./politica-de-privacidade.html');
     const install=document.getElementById('installBtn');if(install&&!install.classList.contains('hidden'))addAction(links,'📲','Instalar Chama',()=>install.click());
-    const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'Sua conta é administradora. Em “Painel do Admin” você pode criar páginas e editar os itens deste menu.':'Use o Chama para conversar, divulgar e acessar suas ferramentas.';
+    const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'Sua conta é administradora. Use “Páginas e Menu” para criar páginas e editar os itens deste menu.':'Use o Chama para conversar, divulgar e acessar suas ferramentas.';
     panel.append(head,links,note);backdrop.appendChild(panel);backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeMenu()});document.body.appendChild(backdrop);
   }
 
