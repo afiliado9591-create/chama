@@ -11,6 +11,7 @@
     button,input{font:inherit}.top{position:sticky;top:0;z-index:5;background:var(--green);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px}.back{border:0;background:#ffffff18;color:#fff;width:42px;height:42px;border-radius:12px;font-size:22px}.top strong{font-size:18px;flex:1}.refresh{border:0;background:#fff;color:var(--green);border-radius:12px;padding:10px 12px;font-weight:800}
     main{width:min(860px,100%);margin:auto;padding:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}.muted{color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#eef8f3;border-radius:14px;padding:14px}.stat b{display:block;font-size:26px;color:var(--green)}
     .search{width:100%;border:1px solid #cad5cf;border-radius:13px;padding:12px 14px;outline:none;margin-bottom:12px}.users{display:grid;gap:10px}.user{border:1px solid var(--line);border-radius:15px;padding:13px;background:#fff}.user-top{display:flex;gap:10px;align-items:flex-start}.avatar{width:42px;height:42px;border-radius:50%;background:#dff4ea;color:var(--green);display:grid;place-items:center;font-weight:900;flex:0 0 42px;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.user-main{flex:1;min-width:0}.name{font-weight:850}.email{font-size:13px;color:#56645d;overflow-wrap:anywhere;margin-top:2px}.meta{font-size:12px;color:var(--muted);margin-top:5px}.actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}.actions button{border:0;border-radius:10px;padding:9px 11px;font-weight:800}.ok{background:#e6f5ee;color:var(--green)}.danger{background:#fff0f0;color:var(--danger)}.self{font-size:12px;color:var(--muted);padding:7px 0}.status{padding:20px;text-align:center;color:var(--muted)}
+    h2{font-size:18px;margin:0 0 5px}.affiliate-grid{display:grid;gap:10px;margin-top:12px}.affiliate-row{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcfb}.affiliate-row strong{display:block;margin-bottom:8px}.affiliate-fields{display:grid;grid-template-columns:minmax(110px,.7fr) minmax(180px,1.6fr) auto;gap:8px;align-items:center}.affiliate-fields input[type="text"],.affiliate-fields input[type="url"]{width:100%;border:1px solid #cad5cf;border-radius:11px;padding:10px 11px;outline:none}.affiliate-fields input:focus{border-color:var(--green)}.affiliate-check{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:#405048;white-space:nowrap}.save-links{margin-top:12px;border:0;background:var(--green);color:#fff;border-radius:12px;padding:11px 14px;font-weight:850;width:100%}.save-links:disabled{opacity:.65}.save-msg{min-height:18px;margin-top:8px;font-size:13px;color:var(--green);font-weight:700}@media(max-width:620px){.affiliate-fields{grid-template-columns:1fr}.affiliate-check{padding:3px 2px}}
   </style>
 </head>
 <body>
@@ -19,24 +20,74 @@
     <section id="gate" class="card status">Verificando permissão de administrador...</section>
     <section id="panel" hidden>
       <div class="card"><div class="stats"><div class="stat"><b id="userCount">0</b><span>Usuários carregados</span></div><div class="stat"><b id="suspendedCount">0</b><span>Suspensos</span></div></div><p class="muted">Este painel não carrega nem exibe conversas. Ele consulta os usuários somente quando o administrador abre ou atualiza esta página.</p></div>
+
+      <div class="card">
+        <h2>💰 Links de afiliado no topo</h2>
+        <p class="muted">Você pode publicar até 3 botões no topo da home do Chama. Coloque o nome do botão e seu link de afiliado. Deixe “Exibir” marcado para o botão aparecer aos usuários.</p>
+        <div id="affiliateGrid" class="affiliate-grid"></div>
+        <button id="saveAffiliateBtn" class="save-links" type="button">Salvar botões do topo</button>
+        <div id="affiliateMsg" class="save-msg"></div>
+      </div>
+
       <div class="card"><input id="search" class="search" placeholder="Pesquisar nome, e-mail ou cidade"><div id="users" class="users"></div></div>
     </section>
   </main>
 <script type="module">
   import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
   import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
-  import {getFirestore,doc,getDoc,getDocs,collection,query,limit,updateDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
+  import {getFirestore,doc,getDoc,getDocs,setDoc,collection,query,limit,updateDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
   const cfg={apiKey:'AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I',authDomain:'chama-cfc28.firebaseapp.com',projectId:'chama-cfc28',storageBucket:'chama-cfc28.firebasestorage.app',messagingSenderId:'680045231088',appId:'1:680045231088:web:8db35684e4b56a320ebb35'};
   const app=getApps()[0]||initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
   const gate=document.getElementById('gate'),panel=document.getElementById('panel'),usersBox=document.getElementById('users'),search=document.getElementById('search');
-  let me=null,rows=[];
-  const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[s]));
+  let me=null,rows=[],adminAllowed=false;
+  const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
   function safePhotoUrl(value){const v=String(value||'').trim();if(!v)return '';try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}}
+  function cleanLink(value){let v=String(value||'').trim();if(!v)return '';if(!/^https?:\/\//i.test(v))v='https://'+v;try{const u=new URL(v);return u.protocol==='https:'?u.href:null}catch{return null}}
   async function isAdmin(user){if(!user)return false;const s=await getDoc(doc(db,'users',user.uid));return s.exists()&&s.data().admin===true}
+
+  function renderAffiliateEditor(buttons=[]){
+    const list=Array.isArray(buttons)?buttons:[];
+    const grid=document.getElementById('affiliateGrid');
+    grid.innerHTML='';
+    for(let i=0;i<3;i++){
+      const item=list[i]||{};
+      const row=document.createElement('div');row.className='affiliate-row';row.dataset.index=String(i);
+      row.innerHTML=`<strong>Botão ${i+1}</strong><div class="affiliate-fields"><input class="affiliate-label" type="text" maxlength="24" placeholder="Ex.: Ofertas Shopee" value="${esc(item.label||'')}"><input class="affiliate-url" type="url" maxlength="700" placeholder="https://seu-link-de-afiliado..." value="${esc(item.url||'')}"><label class="affiliate-check"><input class="affiliate-enabled" type="checkbox" ${item.enabled!==false&&item.label&&item.url?'checked':''}> Exibir</label></div>`;
+      grid.appendChild(row);
+    }
+  }
+
+  async function loadAffiliateMenu(){
+    const snap=await getDoc(doc(db,'appConfig','affiliateMenu'));
+    renderAffiliateEditor(snap.exists()?snap.data()?.buttons||[]:[]);
+  }
+
+  async function saveAffiliateMenu(){
+    if(!adminAllowed)return alert('Acesso restrito ao administrador.');
+    const btn=document.getElementById('saveAffiliateBtn'),msg=document.getElementById('affiliateMsg');
+    const buttons=[];
+    for(const row of document.querySelectorAll('.affiliate-row')){
+      const label=(row.querySelector('.affiliate-label')?.value||'').trim();
+      const raw=(row.querySelector('.affiliate-url')?.value||'').trim();
+      const enabled=!!row.querySelector('.affiliate-enabled')?.checked;
+      const url=cleanLink(raw);
+      if(raw&&url===null)return alert('Use somente links seguros começando com https://');
+      if(enabled&&(!label||!url))return alert('Para exibir um botão, preencha o nome e o link.');
+      buttons.push({label:label.slice(0,24),url:url||'',enabled:!!(enabled&&label&&url)});
+    }
+    btn.disabled=true;btn.textContent='Salvando...';msg.textContent='';
+    try{
+      await setDoc(doc(db,'appConfig','affiliateMenu'),{buttons,updatedAt:serverTimestamp(),updatedBy:me.uid},{merge:true});
+      msg.textContent='Botões salvos. Eles aparecerão na home do Chama na próxima atualização.';
+    }catch(e){console.error(e);msg.textContent='Não foi possível salvar os botões.'}
+    finally{btn.disabled=false;btn.textContent='Salvar botões do topo'}
+  }
+
   async function load(){
-    if(!me||!(await isAdmin(me))){panel.hidden=true;gate.hidden=false;gate.textContent='Acesso restrito ao administrador do Chama.';return}
+    adminAllowed=!!me&&await isAdmin(me);
+    if(!adminAllowed){panel.hidden=true;gate.hidden=false;gate.textContent='Acesso restrito ao administrador do Chama.';return}
     gate.hidden=true;panel.hidden=false;usersBox.innerHTML='<div class="status">Carregando usuários...</div>';
-    const [uSnap,pSnap]=await Promise.all([getDocs(query(collection(db,'users'),limit(100))),getDocs(query(collection(db,'publicProfiles'),limit(100)))]);
+    const [uSnap,pSnap]=await Promise.all([getDocs(query(collection(db,'users'),limit(100))),getDocs(query(collection(db,'publicProfiles'),limit(100))),loadAffiliateMenu()]);
     const profiles=new Map();pSnap.forEach(d=>profiles.set(d.id,d.data()||{}));
     rows=[];uSnap.forEach(d=>{const p=profiles.get(d.id)||{};rows.push({uid:d.id,...d.data(),cidade:String(p.cidade||''),photoUrl:safePhotoUrl(p.photoUrl||'')})});
     rows.sort((a,b)=>String(a.nome||a.email||'').localeCompare(String(b.nome||b.email||''),'pt-BR'));
@@ -50,12 +101,12 @@
   }
   async function toggle(uid){
     const u=rows.find(x=>x.uid===uid);if(!u||uid===me?.uid)return;
-    if(!(await isAdmin(me)))return alert('Sua conta não tem mais permissão de administrador.');
+    if(!adminAllowed)return alert('Sua conta não tem mais permissão de administrador.');
     const next=u.suspended!==true;if(!confirm(`${next?'Suspender':'Reativar'} ${u.nome||u.email||'este usuário'}?`))return;
     await updateDoc(doc(db,'users',uid),{suspended:next,adminUpdatedAt:serverTimestamp()});u.suspended=next;document.getElementById('suspendedCount').textContent=rows.filter(x=>x.suspended===true).length;render();
   }
-  search.addEventListener('input',render);document.getElementById('refreshBtn').onclick=()=>load().catch(e=>{console.error(e);alert('Não foi possível atualizar o painel.')});
-  onAuthStateChanged(auth,async user=>{me=user||null;if(!user){gate.textContent='Faça login no Chama para acessar o painel.';return}try{await load()}catch(e){console.error(e);gate.textContent='Não foi possível abrir o painel de administrador.'}});
+  search.addEventListener('input',render);document.getElementById('saveAffiliateBtn').onclick=saveAffiliateMenu;document.getElementById('refreshBtn').onclick=()=>load().catch(e=>{console.error(e);alert('Não foi possível atualizar o painel.')});
+  onAuthStateChanged(auth,async user=>{me=user||null;adminAllowed=false;if(!user){gate.textContent='Faça login no Chama para acessar o painel.';return}try{await load()}catch(e){console.error(e);gate.textContent='Não foi possível abrir o painel de administrador.'}});
 </script>
 </body>
 </html>
