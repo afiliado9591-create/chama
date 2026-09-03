@@ -166,7 +166,8 @@
     const list=$("usersList");
     list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando pessoas...</div>';
     try{
-      const q=query(collection(db,"users"),limit(100));
+      // Modo econômico: não carrega até 100 perfis de uma vez ao abrir o Chama.
+      const q=query(collection(db,"users"),limit(20));
       const snap=await getDocs(q);
       if(token!==usersLoadToken || !me) return;
 
@@ -199,14 +200,13 @@
     const ids=[me.uid,u.uid].sort();
     const chatId=ids.join("_");
 
-    try{
-      await setDoc(doc(db,"chats",chatId),{participants:ids,unreadCounts:{[me.uid]:0}},{merge:true});
-    }catch(e){console.warn("Não foi possível zerar não lidas:",e)}
-
+    // Não grava mais no Firestore só por abrir uma conversa.
+    // O contador de não lidas continua sendo atualizado no envio e poderá ser zerado
+    // junto do listener principal sem criar gravações desnecessárias a cada toque.
     if(stopMessages) stopMessages();
 
-    // Só a conversa que está aberta lê mensagens.
-    const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(100));
+    // Modo econômico: abre somente as 20 mensagens mais recentes.
+    const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(20));
     stopMessages=onSnapshot(mq,snap=>{
       const box=$("messages"); box.innerHTML="";
       const docs=[];
