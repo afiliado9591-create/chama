@@ -10,7 +10,7 @@
     *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
     button,input{font:inherit}.top{position:sticky;top:0;z-index:5;background:var(--green);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px}.back{border:0;background:#ffffff18;color:#fff;width:42px;height:42px;border-radius:12px;font-size:22px}.top strong{font-size:18px;flex:1}.refresh{border:0;background:#fff;color:var(--green);border-radius:12px;padding:10px 12px;font-weight:800}
     main{width:min(860px,100%);margin:auto;padding:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}.muted{color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#eef8f3;border-radius:14px;padding:14px}.stat b{display:block;font-size:26px;color:var(--green)}
-    .search{width:100%;border:1px solid #cad5cf;border-radius:13px;padding:12px 14px;outline:none;margin-bottom:12px}.users{display:grid;gap:10px}.user{border:1px solid var(--line);border-radius:15px;padding:13px;background:#fff}.user-top{display:flex;gap:10px;align-items:flex-start}.avatar{width:42px;height:42px;border-radius:50%;background:#dff4ea;color:var(--green);display:grid;place-items:center;font-weight:900;flex:0 0 42px}.user-main{flex:1;min-width:0}.name{font-weight:850}.email{font-size:13px;color:#56645d;overflow-wrap:anywhere;margin-top:2px}.meta{font-size:12px;color:var(--muted);margin-top:5px}.actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}.actions button{border:0;border-radius:10px;padding:9px 11px;font-weight:800}.ok{background:#e6f5ee;color:var(--green)}.danger{background:#fff0f0;color:var(--danger)}.self{font-size:12px;color:var(--muted);padding:7px 0}.status{padding:20px;text-align:center;color:var(--muted)}
+    .search{width:100%;border:1px solid #cad5cf;border-radius:13px;padding:12px 14px;outline:none;margin-bottom:12px}.users{display:grid;gap:10px}.user{border:1px solid var(--line);border-radius:15px;padding:13px;background:#fff}.user-top{display:flex;gap:10px;align-items:flex-start}.avatar{width:42px;height:42px;border-radius:50%;background:#dff4ea;color:var(--green);display:grid;place-items:center;font-weight:900;flex:0 0 42px;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.user-main{flex:1;min-width:0}.name{font-weight:850}.email{font-size:13px;color:#56645d;overflow-wrap:anywhere;margin-top:2px}.meta{font-size:12px;color:var(--muted);margin-top:5px}.actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}.actions button{border:0;border-radius:10px;padding:9px 11px;font-weight:800}.ok{background:#e6f5ee;color:var(--green)}.danger{background:#fff0f0;color:var(--danger)}.self{font-size:12px;color:var(--muted);padding:7px 0}.status{padding:20px;text-align:center;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -30,21 +30,22 @@
   const app=getApps()[0]||initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
   const gate=document.getElementById('gate'),panel=document.getElementById('panel'),usersBox=document.getElementById('users'),search=document.getElementById('search');
   let me=null,rows=[];
-  const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[s]));
+  function safePhotoUrl(value){const v=String(value||'').trim();if(!v)return '';try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}}
   async function isAdmin(user){if(!user)return false;const s=await getDoc(doc(db,'users',user.uid));return s.exists()&&s.data().admin===true}
   async function load(){
     if(!me||!(await isAdmin(me))){panel.hidden=true;gate.hidden=false;gate.textContent='Acesso restrito ao administrador do Chama.';return}
     gate.hidden=true;panel.hidden=false;usersBox.innerHTML='<div class="status">Carregando usuários...</div>';
     const [uSnap,pSnap]=await Promise.all([getDocs(query(collection(db,'users'),limit(100))),getDocs(query(collection(db,'publicProfiles'),limit(100)))]);
-    const cities=new Map();pSnap.forEach(d=>cities.set(d.id,String(d.data()?.cidade||'')));
-    rows=[];uSnap.forEach(d=>rows.push({uid:d.id,...d.data(),cidade:cities.get(d.id)||''}));
+    const profiles=new Map();pSnap.forEach(d=>profiles.set(d.id,d.data()||{}));
+    rows=[];uSnap.forEach(d=>{const p=profiles.get(d.id)||{};rows.push({uid:d.id,...d.data(),cidade:String(p.cidade||''),photoUrl:safePhotoUrl(p.photoUrl||'')})});
     rows.sort((a,b)=>String(a.nome||a.email||'').localeCompare(String(b.nome||b.email||''),'pt-BR'));
     document.getElementById('userCount').textContent=rows.length;document.getElementById('suspendedCount').textContent=rows.filter(x=>x.suspended===true).length;render();
   }
   function render(){
     const q=(search.value||'').trim().toLowerCase();
     const list=q?rows.filter(u=>`${u.nome||''} ${u.email||''} ${u.cidade||''}`.toLowerCase().includes(q)):rows;
-    usersBox.innerHTML=list.map(u=>{const own=u.uid===me?.uid,initial=(u.nome||u.email||'U').trim().charAt(0).toUpperCase();return `<article class="user" data-uid="${esc(u.uid)}"><div class="user-top"><div class="avatar">${esc(initial)}</div><div class="user-main"><div class="name">${esc(u.nome||'Sem nome')}${u.admin===true?' 🛡️':''}</div><div class="email">${esc(u.email||'Sem e-mail')}</div><div class="meta">Cidade: ${esc(u.cidade||'não informada')} • ${u.suspended===true?'Suspenso':'Ativo'}</div></div></div>${own?'<div class="self">Esta é sua conta de administrador.</div>':`<div class="actions"><button class="${u.suspended===true?'ok':'danger'}" data-action="toggle">${u.suspended===true?'Reativar usuário':'Suspender usuário'}</button></div>`}</article>`}).join('')||'<div class="status">Nenhum usuário encontrado.</div>';
+    usersBox.innerHTML=list.map(u=>{const own=u.uid===me?.uid,initial=(u.nome||u.email||'U').trim().charAt(0).toUpperCase(),photo=safePhotoUrl(u.photoUrl||''),avatar=photo?`<img src="${esc(photo)}" alt="Foto de perfil">`:esc(initial);return `<article class="user" data-uid="${esc(u.uid)}"><div class="user-top"><div class="avatar">${avatar}</div><div class="user-main"><div class="name">${esc(u.nome||'Sem nome')}${u.admin===true?' 🛡️':''}</div><div class="email">${esc(u.email||'Sem e-mail')}</div><div class="meta">Cidade: ${esc(u.cidade||'não informada')} • ${u.suspended===true?'Suspenso':'Ativo'}</div></div></div>${own?'<div class="self">Esta é sua conta de administrador.</div>':`<div class="actions"><button class="${u.suspended===true?'ok':'danger'}" data-action="toggle">${u.suspended===true?'Reativar usuário':'Suspender usuário'}</button></div>`}</article>`}).join('')||'<div class="status">Nenhum usuário encontrado.</div>';
     usersBox.querySelectorAll('[data-action="toggle"]').forEach(btn=>btn.onclick=()=>toggle(btn.closest('.user')?.dataset.uid));
   }
   async function toggle(uid){
