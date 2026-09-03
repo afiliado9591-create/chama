@@ -7,7 +7,7 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      #meName,#chatName,#chatAvatar,#usersList .user-name,#usersList .avatar{cursor:pointer}
+      #meName,#chatName,#chatAvatar{cursor:pointer}
       .chama-profile-backdrop{position:fixed;inset:0;background:#0007;z-index:3000;display:grid;place-items:center;padding:18px}
       .chama-profile-card{width:min(390px,100%);background:#fff;border-radius:24px;box-shadow:0 20px 60px #0004;overflow:hidden}
       .chama-profile-head{background:#0b7a53;color:#fff;padding:22px 20px;display:flex;align-items:center;gap:14px}
@@ -113,12 +113,8 @@
 
   function installClicks(){
     document.addEventListener('click',e=>{
-      const rowTarget=e.target.closest?.('#usersList .user-name,#usersList .avatar');
-      if(rowTarget){
-        const row=rowTarget.closest('.user');
-        if(row?.dataset?.uid){e.preventDefault();e.stopPropagation();openProfile(row.dataset.uid)}
-        return;
-      }
+      // Na tela principal, clicar no contato deve abrir a conversa.
+      // O perfil só abre depois, ao tocar no nome ou avatar do cabeçalho da conversa.
       if(e.target.closest?.('#chatName,#chatAvatar')){
         const uid=activeChatUid();
         if(uid){e.preventDefault();e.stopPropagation();openProfile(uid)}
