@@ -1,10 +1,10 @@
 (()=>{
-  if(!/\/admin\.html$/i.test(location.pathname))return;
-  const STYLE_ID='chamaAdminPagesMenuStyleV1';
+  if(!/(^|\/)admin(?:\.html)?\/?$/i.test(location.pathname))return;
+  const STYLE_ID='chamaAdminPagesMenuStyleV2';
   const DEFAULT_ITEMS=[{type:'external',label:'ChatShop',icon:'🛍️',url:'https://alibr.com.br/',enabled:true,highlight:true,title:'',slug:'',content:''}];
   let me=null,db=null,fs=null,allowed=false;
 
-  const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#039;'}[s]));
   const clean=(v,max)=>String(v||'').trim().replace(/\s+/g,' ').slice(0,max);
   const slugify=v=>clean(v,60).toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,48);
   function safeUrl(v){let x=String(v||'').trim();if(!x)return '';if(!/^https?:\/\//i.test(x))x='https://'+x;try{const u=new URL(x);return u.protocol==='https:'?u.href:''}catch{return ''}}
@@ -12,7 +12,8 @@
   function addStyle(){
     if(document.getElementById(STYLE_ID))return;
     const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
-      .pages-menu-card h2{margin:0 0 5px}.pages-menu-help{font-size:13px;color:#68756e;line-height:1.45;margin-bottom:12px}
+      .pages-menu-card{border:2px solid #efd79c!important;background:#fffdf7!important}.pages-menu-card h2{margin:0 0 5px;color:#6e4800}.pages-menu-help{font-size:13px;color:#68756e;line-height:1.45;margin-bottom:12px}
+      .pages-menu-badge{display:inline-flex;align-items:center;gap:6px;background:#fff2c8;color:#805100;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900;margin-bottom:10px}
       .pages-menu-grid{display:grid;gap:10px}.pages-menu-row{border:1px solid #e2e8e5;border-radius:15px;padding:12px;background:#fbfcfb}.pages-menu-row strong{display:block;margin-bottom:9px}
       .pages-menu-fields{display:grid;grid-template-columns:110px 1fr 80px;gap:8px}.pages-menu-fields input,.pages-menu-fields select,.pages-page-fields input,.pages-page-fields textarea{width:100%;border:1px solid #cad5cf;border-radius:11px;padding:10px 11px;font:inherit;outline:none;background:#fff}.pages-menu-fields input:focus,.pages-menu-fields select:focus,.pages-page-fields input:focus,.pages-page-fields textarea:focus{border-color:#0b7a53}
       .pages-page-fields{display:grid;gap:8px;margin-top:8px}.pages-page-fields textarea{min-height:110px;resize:vertical}.pages-menu-options{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:9px;font-size:13px;font-weight:700;color:#405048}.pages-menu-options label{display:flex;align-items:center;gap:6px}.pages-menu-preview{font-size:11px;color:#6f7b75;margin-top:7px;overflow-wrap:anywhere}.pages-menu-save{width:100%;border:0;background:#0b7a53;color:#fff;border-radius:12px;padding:11px 14px;font-weight:850;margin-top:12px}.pages-menu-save:disabled{opacity:.65}.pages-menu-msg{min-height:18px;margin-top:8px;font-size:13px;color:#0b7a53;font-weight:750}
@@ -29,7 +30,7 @@
     if(document.getElementById('pagesMenuCard'))return document.getElementById('pagesMenuCard');
     const panel=document.getElementById('panel');if(!panel)return null;
     const card=document.createElement('div');card.id='pagesMenuCard';card.className='card pages-menu-card';
-    card.innerHTML='<h2>📄 Páginas e menu lateral</h2><div class="pages-menu-help">Crie até 5 itens no menu do Chama. Pode ser um link externo, como o ChatShop, ou uma página interna criada por você. O menu faz apenas uma leitura dessa configuração por sessão, sem listener em tempo real.</div><div id="pagesMenuGrid" class="pages-menu-grid"></div><button id="pagesMenuSave" class="pages-menu-save" type="button">Salvar páginas e menu</button><div id="pagesMenuMsg" class="pages-menu-msg"></div>';
+    card.innerHTML='<div class="pages-menu-badge">📄 GERENCIAR MENU</div><h2>📄 Páginas e menu lateral</h2><div class="pages-menu-help">Aqui você cria os itens que aparecem no menu lateral do Chama. Pode usar um link externo, como o ChatShop, ou criar uma página interna com título e conteúdo.</div><div id="pagesMenuGrid" class="pages-menu-grid"></div><button id="pagesMenuSave" class="pages-menu-save" type="button">Salvar páginas e menu</button><div id="pagesMenuMsg" class="pages-menu-msg"></div>';
     const affiliateCard=document.getElementById('affiliateGrid')?.closest('.card');
     if(affiliateCard)affiliateCard.insertAdjacentElement('afterend',card);else panel.prepend(card);
     card.querySelector('#pagesMenuSave').onclick=save;
@@ -55,6 +56,7 @@
   async function load(){
     if(!allowed||!db||!fs)return;
     try{const snap=await fs.getDoc(fs.doc(db,'appConfig','customPagesMenu'));render(snap.exists()?snap.data()?.items||[]:DEFAULT_ITEMS)}catch(e){console.warn('Chama admin: páginas/menu não carregaram',e);render(DEFAULT_ITEMS)}
+    if(location.hash==='#pagesMenuCard')setTimeout(()=>document.getElementById('pagesMenuCard')?.scrollIntoView({behavior:'smooth',block:'start'}),250);
   }
 
   async function save(){
