@@ -62,7 +62,7 @@
     try{
       const snap=await fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.where(fs.documentId(),'in',ids)));
       const profiles=new Map();snap.forEach(d=>profiles.set(d.id,d.data()||{}));
-      rows.forEach(row=>{const p=profiles.get(row.dataset.uid)||{},avatar=row.querySelector(':scope > .avatar'),name=row.querySelector('.user-name')?.textContent||'U';setAvatar(avatar,p.photoUrl,name)});
+      rows.forEach(row=>{const p=profiles.get(row.dataset.uid)||{},avatar=row.querySelector(':scope > .avatar'),name=row.querySelector('.user-name')?.textContent||'U',photo=safePhotoUrl(p.photoUrl);row.dataset.photoUrl=photo;setAvatar(avatar,photo,name)});
     }catch(e){console.warn('Chama: não foi possível carregar fotos da home',e)}
   }
 
@@ -72,7 +72,7 @@
 
   function ensureBridge(u){
     const list=document.getElementById('usersList');if(!list)return '';const bridgeId='chamaBridge_'+u.uid;let row=document.getElementById(bridgeId);const pseudo=`${u.uid}@chama.local`;
-    if(!row){row=document.createElement('div');row.id=bridgeId;row.className='user chama-search-bridge';row.dataset.uid=u.uid;row.innerHTML=`<div class="user-main"><div class="user-name">${esc(u.nome||'Usuário')}</div><div class="user-email">${esc(pseudo)}</div></div>`;list.appendChild(row)}return pseudo;
+    if(!row){row=document.createElement('div');row.id=bridgeId;row.className='user chama-search-bridge';row.dataset.uid=u.uid;row.dataset.photoUrl=safePhotoUrl(u.photoUrl);row.innerHTML=`<div class="user-main"><div class="user-name">${esc(u.nome||'Usuário')}</div><div class="user-email">${esc(pseudo)}</div></div>`;list.appendChild(row)}return pseudo;
   }
 
   async function runSearch(){
@@ -84,8 +84,8 @@
       const top=document.createElement('div');top.className='chama-home-tools';const label=document.createElement('div');label.style.cssText='flex:1;padding:10px 4px;font-weight:800;color:#34443c';label.textContent=`Resultados: ${items.length}`;const cancel=document.createElement('button');cancel.type='button';cancel.className='chama-home-cancel';cancel.textContent='Voltar';cancel.onclick=showConversations;top.append(label,cancel);results.appendChild(top);
       if(!items.length){const empty=document.createElement('div');empty.className='chama-search-status';empty.textContent='Nenhuma pessoa encontrada. Usuários antigos aparecerão na busca quando acessarem esta nova versão do Chama.';results.appendChild(empty);return}
       for(const u of items){
-        const row=document.createElement('div');row.className='chama-search-user';row.dataset.uid=u.uid;row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||'Cidade não informada')}</div></div>`;setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);
-        row.onclick=()=>{if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');const pseudo=ensureBridge(u);window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo})};results.appendChild(row);
+        const row=document.createElement('div');row.className='chama-search-user';row.dataset.uid=u.uid;row.dataset.photoUrl=u.photoUrl||'';row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||'Cidade não informada')}</div></div>`;setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);
+        row.onclick=()=>{if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');const pseudo=ensureBridge(u);window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo,photoUrl:u.photoUrl||''})};results.appendChild(row);
       }
     }catch(e){console.error(e);results.innerHTML='<div class="chama-search-status">Não foi possível fazer a busca agora.</div>'}
   }
