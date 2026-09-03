@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v99";
+const VERSION="chama-clean-v100";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "99") return;
-        url.searchParams.set("chama_update", "99");
+        if (url.searchParams.get("chama_update") === "100") return;
+        url.searchParams.set("chama_update", "100");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -30,6 +30,7 @@ function injectSafeUi(html) {
   const profileMarker = 'profile-city-safe.js?v=5';
   const homeMarker = 'home-conversations-search.js?v=1';
   const backMarker = 'ui-back-button.js?v=1';
+  const ownAvatarMarker = 'home-own-avatar.js?v=1';
   let out = html;
 
   // Expõe somente a ação de abrir conversa para a busca pública.
@@ -55,6 +56,9 @@ function injectSafeUi(html) {
   }
   if (!out.includes(backMarker)) {
     out = out.replace('</body>', `<script src="./ui-back-button.js?v=1"></script></body>`);
+  }
+  if (!out.includes(ownAvatarMarker)) {
+    out = out.replace('</body>', `<script src="./home-own-avatar.js?v=1"></script></body>`);
   }
   return out;
 }
