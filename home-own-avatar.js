@@ -1,6 +1,6 @@
 (()=>{
-  const STYLE_ID='chamaHomeOwnAvatarStyleV1';
-  let me=null,db=null,fs=null;
+  const STYLE_ID='chamaHomeOwnAvatarStyleV2';
+  let me=null,db=null,fs=null,lastPhoto='';
 
   function addStyle(){
     if(document.getElementById(STYLE_ID))return;
@@ -45,11 +45,18 @@
 
   function render(url=''){
     const avatar=ensureOwnAvatar();if(!avatar)return;
-    const safe=safePhotoUrl(url);avatar.textContent='';
+    const safe=safePhotoUrl(url);
+    if(safe===lastPhoto && ((safe&&avatar.querySelector('img'))||(!safe&&!avatar.querySelector('img'))))return;
+    lastPhoto=safe;
+    avatar.replaceChildren();
     if(safe){
-      const img=document.createElement('img');img.alt='Minha foto de perfil';img.src=safe;img.referrerPolicy='no-referrer';img.onerror=()=>render('');avatar.appendChild(img);return;
+      const img=document.createElement('img');
+      img.alt='Minha foto de perfil';img.src=safe;img.referrerPolicy='no-referrer';
+      img.onerror=()=>{lastPhoto='';render('')};
+      avatar.appendChild(img);return;
     }
-    const label=(me?.displayName||me?.email?.split('@')[0]||'V').trim();avatar.textContent=(label.charAt(0)||'V').toUpperCase();
+    const label=(me?.displayName||me?.email?.split('@')[0]||'V').trim();
+    avatar.textContent=(label.charAt(0)||'V').toUpperCase();
   }
 
   async function loadOwnPhoto(){
@@ -60,17 +67,16 @@
     }catch(e){console.warn('Chama: não foi possível carregar a foto no topo',e);render('')}
   }
 
-  function watchOwnProfilePhoto(){
-    const observer=new MutationObserver(()=>{
-      if(!document.getElementById('chamaProfilePhotoBtn'))return;
-      const img=document.querySelector('#chamaProfileAvatar img');
-      if(img?.src)render(img.src);
+  function listenProfileUpdates(){
+    document.addEventListener('chama-profile-updated',e=>{
+      const detail=e.detail||{};
+      if(!me||detail.uid!==me.uid)return;
+      if('photoUrl' in detail)render(detail.photoUrl||'');
     });
-    observer.observe(document.documentElement,{childList:true,subtree:true});
   }
 
   async function start(){
-    addStyle();ensureOwnAvatar();watchOwnProfilePhoto();
+    addStyle();ensureOwnAvatar();listenProfileUpdates();
     try{
       const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
       let app=appMod.getApps()[0];
@@ -83,7 +89,7 @@
       fs=firestoreMod;db=fs.getFirestore(app);
       const auth=authMod.getAuth(app);
       authMod.onAuthStateChanged(auth,user=>{
-        me=user||null;
+        me=user||null;lastPhoto='';
         if(!user){render('');return}
         loadOwnPhoto();
       });
