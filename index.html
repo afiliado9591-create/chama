@@ -165,7 +165,7 @@
     $("meName").textContent=user.displayName || user.email?.split("@")[0] || "Você";
     $("meEmail").textContent=user.email||"";
     authView.classList.add("hidden"); appView.classList.remove("hidden");
-    listenUsers();
+    const list=$("usersList"); if(list) list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando conversas...</div>';
   });
 
   async function listenUsers(){
