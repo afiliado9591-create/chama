@@ -114,6 +114,6 @@
     }catch(e){console.warn('Chama: Dia do Afiliado não iniciou',e)}
   }
 
-  function start(){addStyle();initFirebase();new MutationObserver(()=>injectMenuButton()).observe(document.body,{childList:true,subtree:true});injectMenuButton();document.addEventListener('chama-open-affiliate-day',openCatalog)}
+  function start(){addStyle();initFirebase();import('./affiliate-profile-catalog.js?v=1').catch(e=>console.warn('Chama: catálogo do perfil não carregou',e));new MutationObserver(()=>injectMenuButton()).observe(document.body,{childList:true,subtree:true});injectMenuButton();document.addEventListener('chama-open-affiliate-day',openCatalog)}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
