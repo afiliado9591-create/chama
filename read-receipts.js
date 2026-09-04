@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaReadReceiptsStyleV2';
+  const STYLE_ID='chamaReadReceiptsStyleV3';
   let fs=null,db=null,me=null,activeOtherUid='',activeChatId='',stopChat=null;
   let ownSeenAt=0,otherSeenAt=0,chatReady=false,markTimer=null,marking=false,recoveryTimer=null,recovering=false,recoveredKey='';
 
@@ -25,9 +25,11 @@
 
   function renderReceipts(){
     for(const b of document.querySelectorAll('#messages .bubble.mine')){
-      b.querySelector('.chama-seen-check')?.remove();
       const created=Number(b.dataset.chamaCreatedMs||0);
-      if(!created||!otherSeenAt||created>otherSeenAt)continue;
+      const shouldShow=!!(created&&otherSeenAt&&created<=otherSeenAt);
+      const existing=b.querySelector('.chama-seen-check');
+      if(!shouldShow){if(existing)existing.remove();continue}
+      if(existing)continue;
       const time=b.querySelector('.time');if(!time)continue;
       const mark=document.createElement('span');mark.className='chama-seen-check';mark.textContent='✓';mark.title='Visto';time.appendChild(mark);
     }
