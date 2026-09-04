@@ -19,31 +19,14 @@
       .chama-count-check{display:flex!important;grid-template-columns:none!important;align-items:center;gap:8px!important}
       .chama-count-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.chama-count-actions button{border:0;border-radius:12px;padding:11px 12px;font-weight:850}.chama-count-cancel{background:#eef4f1;color:#0b7a53}.chama-count-save{background:#0b7a53;color:#fff}
       .chama-count-msg{min-height:18px;margin-top:8px;font-size:12px;color:#0b7a53;font-weight:800}
-      .chama-affday-admin-shortcut{width:100%;border:1px solid #f0ddb0;background:#fff8e8;color:#805100;border-radius:12px;padding:11px 13px;font-weight:900;cursor:pointer;margin:0 0 12px}
     `;
     document.head.appendChild(s);
   }
 
-  function ensureAffiliateDayAdminShortcut(){
-    const existing=document.getElementById('chamaAffdayAdminShortcut');
-    if(!isAdmin){existing?.remove();return}
-    const body=document.querySelector('#chamaAffiliateDayModal .chama-affday-body');
-    if(!body||existing)return;
-    const btn=document.createElement('button');
-    btn.id='chamaAffdayAdminShortcut';
-    btn.type='button';
-    btn.className='chama-affday-admin-shortcut';
-    btn.textContent='✏️ Editar catálogo';
-    btn.onclick=()=>{location.href='./admin.html#chamaAffiliateDayAdminCard'};
-    const status=body.querySelector('.chama-affday-status');
-    if(status)status.insertAdjacentElement('afterend',btn);else body.prepend(btn);
-  }
-
   function render(){
-    const meBox=document.querySelector('.me');
-    if(!meBox){ensureAffiliateDayAdminShortcut();return}
+    const meBox=document.querySelector('.me');if(!meBox)return;
     let wrap=document.getElementById('chamaCommunityCountWrap');
-    if(!currentEnabled&&!isAdmin){wrap?.remove();ensureAffiliateDayAdminShortcut();return}
+    if(!currentEnabled&&!isAdmin){wrap?.remove();return}
     if(!wrap){wrap=document.createElement('div');wrap.id='chamaCommunityCountWrap';wrap.className='chama-community-count-wrap';meBox.appendChild(wrap)}
     wrap.innerHTML='';
     if(currentEnabled||isAdmin){
@@ -53,7 +36,6 @@
       wrap.appendChild(chip);
     }
     if(isAdmin){const edit=document.createElement('button');edit.type='button';edit.className='chama-community-count-edit';edit.textContent='✏️ Editar';edit.onclick=openEditor;wrap.appendChild(edit)}
-    ensureAffiliateDayAdminShortcut();
   }
 
   function openEditor(){
@@ -74,7 +56,6 @@
 
   async function init(){
     addStyle();
-    new MutationObserver(()=>ensureAffiliateDayAdminShortcut()).observe(document.body,{childList:true,subtree:true});
     try{
       const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');let app=appMod.getApps()[0];
       for(let i=0;!app&&i<25;i++){await new Promise(r=>setTimeout(r,100));app=appMod.getApps()[0]}if(!app)return;
