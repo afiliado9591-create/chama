@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v118";
+const VERSION="chama-clean-v119";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "118") return;
-        url.searchParams.set("chama_update", "118");
+        if (url.searchParams.get("chama_update") === "119") return;
+        url.searchParams.set("chama_update", "119");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -29,6 +29,7 @@ function injectSafeUi(html) {
   const unreadMarker = 'unread-badges.js?v=1';
   const profileMarker = 'profile-safe-v6.js?v=1';
   const homeMarker = 'home-conversations-search.js?v=3';
+  const peopleFallbackMarker = 'people-search-fallback.js?v=1';
   const backMarker = 'ui-back-button.js?v=1';
   const ownAvatarMarker = 'home-own-avatar.js?v=2';
   const avatarEverywhereMarker = 'avatar-everywhere.js?v=2';
@@ -55,11 +56,37 @@ function injectSafeUi(html) {
     );
   }
 
+  if (!out.includes('data-chama-chat-loading-v119')) {
+    out = out.replace(
+      '  async function openChat(u){\n    activeUser=u;',
+      '  async function openChat(u){\n    activeUser=u;\n    const openingBox=$("messages"); if(openingBox) openingBox.innerHTML=\'<div data-chama-chat-loading-v119 style="margin:auto;color:#6a756f;padding:20px;text-align:center">Carregando conversa...</div>\';'
+    );
+  }
+
+  if (!out.includes('firstChatCreated')) {
+    out = out.replace(
+      '    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});',
+      '    let firstChatCreated=false;\n    const messageCollection=collection(db,"chats",chatId,"messages");\n    const messageData={text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()};\n    try{\n      await addDoc(messageCollection,messageData);\n    }catch(sendErr){\n      if(!String(sendErr?.code||"").includes("permission-denied")) throw sendErr;\n      await setDoc(doc(db,"chats",chatId),{participants:ids,createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});\n      firstChatCreated=true;\n      await addDoc(messageCollection,messageData);\n    }'
+    );
+    out = out.replace(
+      '      unreadCounts:{[activeUser.uid]:increment(1),[me.uid]:0}\n    },{merge:true});\n  }\n\n  $("composer")',
+      '      unreadCounts:{[activeUser.uid]:increment(1),[me.uid]:0}\n    },{merge:true});\n    if(firstChatCreated&&activeUser)setTimeout(()=>openChat(activeUser),0);\n  }\n\n  $("composer")'
+    );
+  }
+
+  if (!out.includes('chama-first-message-hint-v119')) {
+    out = out.replace(
+      '    },e=>console.error(e));\n  }\n\n  async function saveMessage',
+      '    },e=>{console.error(e);const box=$("messages");if(box)box.innerHTML=\'<div id="chama-first-message-hint-v119" style="margin:auto;color:#6a756f;padding:20px;text-align:center">Conversa ainda não iniciada. Envie a primeira mensagem.</div>\';});\n  }\n\n  async function saveMessage'
+    );
+  }
+
   if (!out.includes(mediaMarker)) out = out.replace('</body>', `<script src="./media-render-safe.js?v=91"></script></body>`);
   if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=8"></script></body>`);
   if (!out.includes(unreadMarker)) out = out.replace('</body>', `<script src="./unread-badges.js?v=1"></script></body>`);
   if (!out.includes(profileMarker)) out = out.replace('</body>', `<script src="./profile-safe-v6.js?v=1"></script></body>`);
   if (!out.includes(homeMarker)) out = out.replace('</body>', `<script src="./home-conversations-search.js?v=3"></script></body>`);
+  if (!out.includes(peopleFallbackMarker)) out = out.replace('</body>', `<script src="./people-search-fallback.js?v=1"></script></body>`);
   if (!out.includes(backMarker)) out = out.replace('</body>', `<script src="./ui-back-button.js?v=1"></script></body>`);
   if (!out.includes(ownAvatarMarker)) out = out.replace('</body>', `<script src="./home-own-avatar.js?v=2"></script></body>`);
   if (!out.includes(avatarEverywhereMarker)) out = out.replace('</body>', `<script src="./avatar-everywhere.js?v=2"></script></body>`);
