@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaUnreadStyleV3';
+  const STYLE_ID='chamaUnreadStyleV4';
   const PAGE_SIZE=20;
   let meUid='';
   let db=null;
@@ -73,10 +73,15 @@
     }
     if(c.lastMessage){const last=document.createElement('span');last.className='chama-last-message';last.textContent=preview(c.lastMessage);side.appendChild(last)}
     if(side.childNodes.length)row.appendChild(side);
-    if(row.dataset.chamaUnreadClick!=='1'){row.dataset.chamaUnreadClick='1';row.addEventListener('click',()=>resetUnread(row))}
   }
 
   function renderAll(){document.querySelectorAll('#usersList .user').forEach(renderRow)}
+
+  function markOpenedLocal(uid){
+    if(!uid)return;const c=conversations.get(uid);if(!c||c.unread<=0)return;
+    c.unread=0;
+    const row=[...document.querySelectorAll('#usersList .user')].find(r=>r.dataset.uid===uid);if(row)renderRow(row);
+  }
 
   function setAvatar(row,photoUrl,name){
     const avatar=row?.querySelector(':scope > .avatar');if(!avatar)return;
@@ -156,13 +161,6 @@
     else{btn.disabled=true;btn.textContent='Todas as conversas carregadas';wrap.hidden=conversations.size===0}
   }
 
-  async function resetUnread(row){
-    const c=conversationForRow(row);if(!c||c.unread<=0||!meUid||!db||!firestore||c.resetting)return;
-    c.resetting=true;const previous=c.unread;c.unread=0;renderRow(row);
-    try{await firestore.updateDoc(firestore.doc(db,'chats',c.chatId),{[`unreadCounts.${meUid}`]:0})}
-    catch(e){console.error('Chama: não foi possível zerar não lidas',e);c.unread=previous;renderRow(row)}finally{c.resetting=false}
-  }
-
   async function getFirebaseApp(attempt=0){
     const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const app=appMod.getApps()[0];if(app)return {app,appMod};if(attempt>=20)return null;await new Promise(r=>setTimeout(r,100));return getFirebaseApp(attempt+1);
   }
@@ -211,7 +209,7 @@
   }
 
   async function start(){
-    addStyle();document.addEventListener('chama-message-sent',handleSent);
+    addStyle();document.addEventListener('chama-message-sent',handleSent);document.addEventListener('chama-chat-opened',e=>markOpenedLocal(String(e?.detail?.uid||'')));
     try{
       const found=await getFirebaseApp();if(!found)return;
       const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');const auth=authMod.getAuth(found.app);
