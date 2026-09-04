@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v122";
+const VERSION="chama-clean-v123";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "122") return;
-        url.searchParams.set("chama_update", "122");
+        if (url.searchParams.get("chama_update") === "123") return;
+        url.searchParams.set("chama_update", "123");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -43,6 +43,7 @@ function injectSafeUi(html) {
   const referralMarker = 'referral-link.js?v=2';
   const adminPagesMenuMarker = 'admin-pages-menu.js?v=2';
   const communityOffersMarker = 'community-offers.js?v=1';
+  const readReceiptMarker = 'read-receipts.js?v=1';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -53,6 +54,13 @@ function injectSafeUi(html) {
     out = out.replace(
       '    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();',
       '    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();\n    const activeEl=$("activeChat"); if(activeEl) activeEl.dataset.uid=u.uid||"";\n    document.dispatchEvent(new CustomEvent("chama-chat-opened",{detail:{uid:u.uid||"",nome:u.nome||"Usuário",photoUrl:u.photoUrl||""}}));'
+    );
+  }
+
+  if (!out.includes('data-chama-message-meta-v123')) {
+    out = out.replace(
+      '        const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs");',
+      '        const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs"); b.dataset.messageId=d.id; b.dataset.chamaCreatedMs=m.createdAt?.toMillis?String(m.createdAt.toMillis()):""; b.dataset.senderId=m.senderId||""; b.setAttribute("data-chama-message-meta-v123","1");'
     );
   }
 
@@ -107,6 +115,7 @@ function injectSafeUi(html) {
   if (!out.includes(referralMarker)) out = out.replace('</body>', `<script src="./referral-link.js?v=2"></script></body>`);
   if (!out.includes(adminPagesMenuMarker)) out = out.replace('</body>', `<script src="./admin-pages-menu.js?v=2"></script></body>`);
   if (!out.includes(communityOffersMarker)) out = out.replace('</body>', `<script src="./community-offers.js?v=1"></script></body>`);
+  if (!out.includes(readReceiptMarker)) out = out.replace('</body>', `<script src="./read-receipts.js?v=1"></script></body>`);
   return out;
 }
 
