@@ -227,7 +227,15 @@
       if(!r.ok)throw new Error(data.error||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`);
       const db=f.getFirestore(f.app),ids=[me.uid,otherUid].sort(),chatId=ids.join('_');
       const text=PREFIX+JSON.stringify({kind,url:data.url,key:data.key});
-      const msgRef=await f.addDoc(f.collection(db,'chats',chatId,'messages'),{text,senderId:me.uid,receiverId:otherUid,createdAt:f.serverTimestamp()});
+      const messageData={text,senderId:me.uid,receiverId:otherUid,createdAt:f.serverTimestamp()};
+      let msgRef;
+      try{
+        msgRef=await f.addDoc(f.collection(db,'chats',chatId,'messages'),messageData);
+      }catch(sendErr){
+        if(!String(sendErr?.code||'').includes('permission-denied'))throw sendErr;
+        await f.setDoc(f.doc(db,'chats',chatId),{participants:ids,createdAt:f.serverTimestamp(),updatedAt:f.serverTimestamp()},{merge:true});
+        msgRef=await f.addDoc(f.collection(db,'chats',chatId,'messages'),messageData);
+      }
       attachMessageIdToBubble(text,msgRef.id);
       await f.setDoc(f.doc(db,'chats',chatId),{participants:ids,lastMessage:kind==='image'?'📷 Imagem':'🎥 Vídeo',lastSenderId:me.uid,updatedAt:f.serverTimestamp(),unreadCounts:{[otherUid]:f.increment(1),[me.uid]:0}},{merge:true});
     }catch(e){alert(e?.message||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`)}finally{hide()}
