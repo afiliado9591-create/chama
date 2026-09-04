@@ -117,7 +117,14 @@
     const title=ownProfile.professionalPromo.title;if(!confirm(`Enviar “${title}” para esta pessoa?`))return;
     try{
       const ids=[me.uid,otherUid].sort(),chatId=ids.join('_'),text=PREFIX+JSON.stringify(ownProfile.professionalPromo);
-      await fs.addDoc(fs.collection(db,'chats',chatId,'messages'),{text,senderId:me.uid,receiverId:otherUid,createdAt:fs.serverTimestamp()});
+      const messageData={text,senderId:me.uid,receiverId:otherUid,createdAt:fs.serverTimestamp()};
+      try{
+        await fs.addDoc(fs.collection(db,'chats',chatId,'messages'),messageData);
+      }catch(sendErr){
+        if(!String(sendErr?.code||'').includes('permission-denied'))throw sendErr;
+        await fs.setDoc(fs.doc(db,'chats',chatId),{participants:ids,createdAt:fs.serverTimestamp(),updatedAt:fs.serverTimestamp()},{merge:true});
+        await fs.addDoc(fs.collection(db,'chats',chatId,'messages'),messageData);
+      }
       await fs.setDoc(fs.doc(db,'chats',chatId),{participants:ids,lastMessage:'🏷️ Divulgação',lastSenderId:me.uid,updatedAt:fs.serverTimestamp(),unreadCounts:{[otherUid]:fs.increment(1),[me.uid]:0}},{merge:true});
     }catch(e){console.error(e);alert('Não foi possível enviar a divulgação agora.')}
   }
