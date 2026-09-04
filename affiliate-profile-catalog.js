@@ -4,7 +4,7 @@
   let fs=null,db=null,me=null;
   let catalogCache=null,catalogAt=0;
   const profileCache=new Map();
-  let dayCatalog=[],dayLinks={},dayUid='';
+  let dayCatalog=[],dayLinks={},dayUid='',dayPreparing=false;
 
   const clean=(v,max)=>String(v||'').trim().slice(0,max);
   const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
@@ -57,7 +57,8 @@
 
   async function prepareDayLinks(){
     const modal=document.getElementById('chamaAffiliateDayModal');if(!modal||!modal.querySelector('#chamaAffdayCustomLink')||!me)return;
-    if(dayUid===me.uid&&dayCatalog.length)return;try{const [products,profile]=await Promise.all([loadCatalog(false),loadProfile(me.uid,false)]);dayCatalog=products;dayLinks={...profile.links};dayUid=me.uid;const box=modal.querySelector('.chama-affday-linkbox');if(box&&!box.querySelector('.chama-affcat-dayhint')){const hint=document.createElement('div');hint.className='chama-affcat-dayhint';hint.style.cssText='font-size:11px;color:#607069;line-height:1.35';hint.textContent='Se você já configurou este produto no seu perfil, o Chama usa seu link automaticamente.';box.appendChild(hint)}}catch(e){console.warn('Chama: links do catálogo do afiliado não carregaram',e)}
+    if(dayUid===me.uid||dayPreparing)return;dayPreparing=true;
+    try{const [products,profile]=await Promise.all([loadCatalog(false),loadProfile(me.uid,false)]);dayCatalog=products;dayLinks={...profile.links};dayUid=me.uid;const box=modal.querySelector('.chama-affday-linkbox');if(box&&!box.querySelector('.chama-affcat-dayhint')){const hint=document.createElement('div');hint.className='chama-affcat-dayhint';hint.style.cssText='font-size:11px;color:#607069;line-height:1.35';hint.textContent='Se você já configurou este produto no seu perfil, o Chama usa seu link automaticamente.';box.appendChild(hint)}}catch(e){console.warn('Chama: links do catálogo do afiliado não carregaram',e)}finally{dayPreparing=false}
   }
 
   function applySavedDayLink(button){
@@ -65,7 +66,7 @@
   }
 
   async function initFirebase(){
-    try{const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');let app=appMod.getApps()[0];for(let i=0;!app&&i<25;i++){await new Promise(r=>setTimeout(r,100));app=appMod.getApps()[0]}if(!app)return;const [authMod,firestoreMod]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')]);fs=firestoreMod;db=fs.getFirestore(app);const auth=authMod.getAuth(app);authMod.onAuthStateChanged(auth,u=>{me=u||null;dayCatalog=[];dayLinks={};dayUid='';if(!u)profileCache.clear()})}catch(e){console.warn('Chama: catálogo do perfil não iniciou',e)}
+    try{const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');let app=appMod.getApps()[0];for(let i=0;!app&&i<25;i++){await new Promise(r=>setTimeout(r,100));app=appMod.getApps()[0]}if(!app)return;const [authMod,firestoreMod]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')]);fs=firestoreMod;db=fs.getFirestore(app);const auth=authMod.getAuth(app);authMod.onAuthStateChanged(auth,u=>{me=u||null;dayCatalog=[];dayLinks={};dayUid='';dayPreparing=false;if(!u)profileCache.clear()})}catch(e){console.warn('Chama: catálogo do perfil não iniciou',e)}
   }
 
   function start(){
