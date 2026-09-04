@@ -62,6 +62,7 @@
     const links=document.createElement('nav');links.className='chama-menu-links';
     addLink(links,'🏠','Início','./');
     addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));
+    addAction(links,'🔥','Achadinhos da Comunidade',()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers')));
 
     for(const item of customItems){
       if(!item.enabled||!item.label)continue;
