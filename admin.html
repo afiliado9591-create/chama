@@ -8,10 +8,12 @@
   <style>
     :root{--green:#0b7a53;--bg:#f3f5f4;--card:#fff;--text:#14221c;--muted:#68756e;--line:#e2e8e5;--danger:#b42318}
     *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    button,input{font:inherit}.top{position:sticky;top:0;z-index:5;background:var(--green);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px}.back{border:0;background:#ffffff18;color:#fff;width:42px;height:42px;border-radius:12px;font-size:22px}.top strong{font-size:18px;flex:1}.refresh{border:0;background:#fff;color:var(--green);border-radius:12px;padding:10px 12px;font-weight:800}
-    main{width:min(860px,100%);margin:auto;padding:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}.muted{color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#eef8f3;border-radius:14px;padding:14px}.stat b{display:block;font-size:26px;color:var(--green)}
+    button,input,select,textarea{font:inherit}.top{position:sticky;top:0;z-index:5;background:var(--green);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px}.back{border:0;background:#ffffff18;color:#fff;width:42px;height:42px;border-radius:12px;font-size:22px}.top strong{font-size:18px;flex:1}.refresh{border:0;background:#fff;color:var(--green);border-radius:12px;padding:10px 12px;font-weight:800}
+    main{width:min(860px,100%);margin:auto;padding:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;scroll-margin-top:82px}.muted{color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#eef8f3;border-radius:14px;padding:14px}.stat b{display:block;font-size:26px;color:var(--green)}
     .search{width:100%;border:1px solid #cad5cf;border-radius:13px;padding:12px 14px;outline:none;margin-bottom:12px}.users{display:grid;gap:10px}.user{border:1px solid var(--line);border-radius:15px;padding:13px;background:#fff}.user-top{display:flex;gap:10px;align-items:flex-start}.avatar{width:42px;height:42px;border-radius:50%;background:#dff4ea;color:var(--green);display:grid;place-items:center;font-weight:900;flex:0 0 42px;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:block}.user-main{flex:1;min-width:0}.name{font-weight:850}.email{font-size:13px;color:#56645d;overflow-wrap:anywhere;margin-top:2px}.meta{font-size:12px;color:var(--muted);margin-top:5px}.actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}.actions button{border:0;border-radius:10px;padding:9px 11px;font-weight:800}.ok{background:#e6f5ee;color:var(--green)}.danger{background:#fff0f0;color:var(--danger)}.self{font-size:12px;color:var(--muted);padding:7px 0}.status{padding:20px;text-align:center;color:var(--muted)}
-    h2{font-size:18px;margin:0 0 5px}.affiliate-grid{display:grid;gap:10px;margin-top:12px}.affiliate-row{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcfb}.affiliate-row.is-featured{border-color:#f1b84b;background:#fffaf0}.affiliate-row strong{display:block;margin-bottom:8px}.affiliate-fields{display:grid;grid-template-columns:minmax(110px,.7fr) minmax(180px,1.6fr);gap:8px;align-items:center}.affiliate-fields input[type="text"],.affiliate-fields input[type="url"]{width:100%;border:1px solid #cad5cf;border-radius:11px;padding:10px 11px;outline:none}.affiliate-fields input:focus{border-color:var(--green)}.affiliate-options{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px}.affiliate-check{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#405048;white-space:nowrap}.affiliate-check.featured{color:#9a5700}.save-links{margin-top:12px;border:0;background:var(--green);color:#fff;border-radius:12px;padding:11px 14px;font-weight:850;width:100%}.save-links:disabled{opacity:.65}.save-msg{min-height:18px;margin-top:8px;font-size:13px;color:var(--green);font-weight:700}.featured-help{margin-top:8px;padding:9px 10px;border-radius:11px;background:#fff6df;color:#855000;font-size:12px}@media(max-width:620px){.affiliate-fields{grid-template-columns:1fr}}
+    h2{font-size:18px;margin:0 0 5px}.affiliate-grid{display:grid;gap:10px;margin-top:12px}.affiliate-row{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcfb}.affiliate-row.is-featured{border-color:#f1b84b;background:#fffaf0}.affiliate-row strong{display:block;margin-bottom:8px}.affiliate-fields{display:grid;grid-template-columns:minmax(110px,.7fr) minmax(180px,1.6fr);gap:8px;align-items:center}.affiliate-fields input[type="text"],.affiliate-fields input[type="url"]{width:100%;border:1px solid #cad5cf;border-radius:11px;padding:10px 11px;outline:none}.affiliate-fields input:focus{border-color:var(--green)}.affiliate-options{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px}.affiliate-check{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#405048;white-space:nowrap}.affiliate-check.featured{color:#9a5700}.save-links{margin-top:12px;border:0;background:var(--green);color:#fff;border-radius:12px;padding:11px 14px;font-weight:850;width:100%}.save-links:disabled{opacity:.65}.save-msg{min-height:18px;margin-top:8px;font-size:13px;color:var(--green);font-weight:700}.featured-help{margin-top:8px;padding:9px 10px;border-radius:11px;background:#fff6df;color:#855000;font-size:12px}
+    .affday-box{margin-top:14px;border:1px solid #f0d28b;background:#fffaf0;border-radius:15px;padding:13px}.affday-box h3{margin:0 0 8px;font-size:16px}.affday-active-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:9px}.affday-label{display:grid;gap:6px;font-size:12px;font-weight:850;color:#405048}.affday-label input,.affday-label select,.affday-label textarea{width:100%;border:1px solid #cad5cf;border-radius:11px;padding:10px 11px;background:#fff;outline:none}.affday-label textarea{min-height:76px;resize:vertical}.affday-enabled{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:13px;font-weight:800;color:#405048}.affday-products{display:grid;gap:11px;margin-top:12px}.affday-product{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcfb}.affday-product-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}.affday-product-head strong{flex:1}.affday-remove{border:0;background:#fff0f0;color:var(--danger);border-radius:9px;padding:7px 9px;font-weight:850}.affday-product-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.affday-product-grid .wide{grid-column:1/-1}.affday-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.affday-add{border:1px dashed #9ecbb7;background:#eef8f3;color:var(--green);border-radius:12px;padding:10px 12px;font-weight:850}.affday-save{border:0;background:var(--green);color:#fff;border-radius:12px;padding:10px 12px;font-weight:850}.affday-note{font-size:12px;color:#6b756f;margin-top:8px;line-height:1.45}
+    @media(max-width:620px){.affiliate-fields,.affday-active-grid,.affday-product-grid,.affday-tools{grid-template-columns:1fr}.affday-product-grid .wide{grid-column:auto}}
   </style>
 </head>
 <body>
@@ -30,6 +32,38 @@
         <div id="affiliateMsg" class="save-msg"></div>
       </div>
 
+      <div id="chamaAffiliateDayAdminCard" class="card">
+        <h2>⭐ Dia do Afiliado — catálogo</h2>
+        <p class="muted">Aqui você escolhe quem será o Afiliado do Dia e cadastra os produtos que ele poderá escolher para divulgar.</p>
+
+        <div class="affday-box">
+          <h3>👤 Afiliado do Dia</h3>
+          <div class="affday-active-grid">
+            <label class="affday-label">Afiliado
+              <select id="affdayUser"><option value="">Selecione um usuário</option></select>
+            </label>
+            <label class="affday-label">Data
+              <input id="affdayDate" type="date">
+            </label>
+          </div>
+          <label class="affday-enabled"><input id="affdayEnabled" type="checkbox"> Ativar destaque do Afiliado do Dia</label>
+          <button id="saveAffdayActive" class="save-links" type="button">Salvar Afiliado do Dia</button>
+          <div id="affdayActiveMsg" class="save-msg"></div>
+        </div>
+
+        <div class="affday-box">
+          <h3>🛍️ Produtos do catálogo</h3>
+          <p class="muted">Cadastre título, loja, preço, imagem e link. O afiliado escolhido poderá selecionar qualquer produto e colar o próprio link de afiliado.</p>
+          <div id="affdayProducts" class="affday-products"></div>
+          <div class="affday-tools">
+            <button id="addAffdayProduct" class="affday-add" type="button">＋ Adicionar produto</button>
+            <button id="saveAffdayCatalog" class="affday-save" type="button">Salvar catálogo</button>
+          </div>
+          <div id="affdayCatalogMsg" class="save-msg"></div>
+          <div class="affday-note">Limite atual: 20 produtos. Não há atualização em tempo real; o catálogo é lido somente quando necessário.</div>
+        </div>
+      </div>
+
       <div class="card"><input id="search" class="search" placeholder="Pesquisar nome, e-mail ou cidade"><div id="users" class="users"></div></div>
     </section>
   </main>
@@ -40,10 +74,12 @@
   const cfg={apiKey:'AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I',authDomain:'chama-cfc28.firebaseapp.com',projectId:'chama-cfc28',storageBucket:'chama-cfc28.firebasestorage.app',messagingSenderId:'680045231088',appId:'1:680045231088:web:8db35684e4b56a320ebb35'};
   const app=getApps()[0]||initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
   const gate=document.getElementById('gate'),panel=document.getElementById('panel'),usersBox=document.getElementById('users'),search=document.getElementById('search');
-  let me=null,rows=[],adminAllowed=false;
+  let me=null,rows=[],adminAllowed=false,affdayActiveData={},affdayCatalog=[];
   const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
   function safePhotoUrl(value){const v=String(value||'').trim();if(!v)return '';try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}}
   function cleanLink(value){let v=String(value||'').trim();if(!v)return '';if(!/^https?:\/\//i.test(v))v='https://'+v;try{const u=new URL(v);return u.protocol==='https:'?u.href:null}catch{return null}}
+  function cleanText(v,max){return String(v||'').trim().slice(0,max)}
+  function todaySP(){const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const g=t=>p.find(x=>x.type===t)?.value||'';return `${g('year')}-${g('month')}-${g('day')}`}
   async function isAdmin(user){if(!user)return false;const s=await getDoc(doc(db,'users',user.uid));return s.exists()&&s.data().admin===true}
 
   function refreshFeaturedRows(){
@@ -101,15 +137,93 @@
     finally{btn.disabled=false;btn.textContent='Salvar botões do topo'}
   }
 
+  function productId(){return `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`}
+  function addAffdayProductRow(item={}){
+    const box=document.getElementById('affdayProducts');
+    if(box.children.length>=20)return alert('O catálogo aceita até 20 produtos.');
+    const row=document.createElement('div');row.className='affday-product';row.dataset.id=cleanText(item.id,80)||productId();
+    row.innerHTML=`<div class="affday-product-head"><strong>Produto</strong><button class="affday-remove" type="button">Excluir</button></div><div class="affday-product-grid"><label class="affday-label">Loja<input class="affday-store" type="text" maxlength="32" placeholder="Shopee, Mercado Livre, Shein..." value="${esc(item.store||'')}"></label><label class="affday-label">Preço<input class="affday-price" type="text" maxlength="32" placeholder="R$ 79,90" value="${esc(item.price||'')}"></label><label class="affday-label wide">Título do produto<input class="affday-title" type="text" maxlength="90" placeholder="Nome do produto" value="${esc(item.title||'')}"></label><label class="affday-label wide">Descrição curta<textarea class="affday-description" maxlength="180" placeholder="Uma descrição curta do produto">${esc(item.description||'')}</textarea></label><label class="affday-label wide">Link da imagem<input class="affday-image" type="url" maxlength="900" placeholder="https://..." value="${esc(item.imageUrl||'')}"></label><label class="affday-label wide">Link padrão da oferta<input class="affday-default" type="url" maxlength="900" placeholder="https://... (opcional)" value="${esc(item.defaultUrl||'')}"></label></div><label class="affday-enabled"><input class="affday-product-enabled" type="checkbox" ${item.enabled!==false?'checked':''}> Exibir este produto no catálogo</label>`;
+    row.querySelector('.affday-remove').onclick=()=>{if(box.children.length===1){row.querySelectorAll('input[type="text"],input[type="url"],textarea').forEach(el=>el.value='');row.querySelector('.affday-product-enabled').checked=true;return}row.remove()};
+    box.appendChild(row);
+  }
+
+  function renderAffdayCatalog(list=[]){
+    const box=document.getElementById('affdayProducts');box.innerHTML='';
+    const products=Array.isArray(list)?list.slice(0,20):[];
+    if(products.length)products.forEach(addAffdayProductRow);else addAffdayProductRow({enabled:true});
+  }
+
+  async function loadAffdayConfig(){
+    const [catSnap,activeSnap]=await Promise.all([getDoc(doc(db,'appConfig','affiliateDayCatalog')),getDoc(doc(db,'appConfig','affiliateDayActive'))]);
+    affdayCatalog=catSnap.exists()&&Array.isArray(catSnap.data()?.products)?catSnap.data().products:[];
+    affdayActiveData=activeSnap.exists()?activeSnap.data()||{}:{};
+    renderAffdayCatalog(affdayCatalog);
+  }
+
+  function renderAffdayActive(){
+    const select=document.getElementById('affdayUser');
+    const current=cleanText(affdayActiveData.affiliateUid,160);
+    select.innerHTML='<option value="">Selecione um usuário</option>'+rows.map(u=>`<option value="${esc(u.uid)}">${esc(u.nome||u.email||'Sem nome')}</option>`).join('');
+    select.value=rows.some(u=>u.uid===current)?current:'';
+    document.getElementById('affdayDate').value=cleanText(affdayActiveData.date,10)||todaySP();
+    document.getElementById('affdayEnabled').checked=affdayActiveData.enabled===true;
+  }
+
+  async function saveAffdayActive(){
+    if(!adminAllowed)return alert('Acesso restrito ao administrador.');
+    const btn=document.getElementById('saveAffdayActive'),msg=document.getElementById('affdayActiveMsg');
+    const uid=document.getElementById('affdayUser').value;
+    const date=document.getElementById('affdayDate').value;
+    const enabled=document.getElementById('affdayEnabled').checked;
+    const user=rows.find(u=>u.uid===uid);
+    if(enabled&&!user)return alert('Selecione o afiliado que ficará em destaque.');
+    if(enabled&&!date)return alert('Escolha a data do Afiliado do Dia.');
+    const data={enabled:!!(enabled&&user&&date),date:date||'',affiliateUid:user?.uid||'',affiliateName:cleanText(user?.nome||user?.email||'',80),updatedAt:serverTimestamp(),updatedBy:me.uid};
+    btn.disabled=true;btn.textContent='Salvando...';msg.textContent='';
+    try{await setDoc(doc(db,'appConfig','affiliateDayActive'),data,{merge:true});affdayActiveData=data;msg.textContent=data.enabled?'Afiliado do Dia ativado.':'Destaque do Afiliado do Dia desativado.'}
+    catch(e){console.error(e);msg.textContent='Não foi possível salvar o Afiliado do Dia.'}
+    finally{btn.disabled=false;btn.textContent='Salvar Afiliado do Dia'}
+  }
+
+  async function saveAffdayCatalog(){
+    if(!adminAllowed)return alert('Acesso restrito ao administrador.');
+    const btn=document.getElementById('saveAffdayCatalog'),msg=document.getElementById('affdayCatalogMsg');
+    const products=[];
+    for(const row of document.querySelectorAll('.affday-product')){
+      const title=cleanText(row.querySelector('.affday-title')?.value,90);
+      const store=cleanText(row.querySelector('.affday-store')?.value,32);
+      const description=cleanText(row.querySelector('.affday-description')?.value,180);
+      const price=cleanText(row.querySelector('.affday-price')?.value,32);
+      const rawImage=(row.querySelector('.affday-image')?.value||'').trim();
+      const rawDefault=(row.querySelector('.affday-default')?.value||'').trim();
+      const imageUrl=rawImage?cleanLink(rawImage):'';
+      const defaultUrl=rawDefault?cleanLink(rawDefault):'';
+      const enabled=!!row.querySelector('.affday-product-enabled')?.checked;
+      if(rawImage&&imageUrl===null)return alert(`O produto “${title||'sem título'}” tem um link de imagem inválido. Use https://`);
+      if(rawDefault&&defaultUrl===null)return alert(`O produto “${title||'sem título'}” tem um link de oferta inválido. Use https://`);
+      const hasAnything=title||store||description||price||rawImage||rawDefault;
+      if(!hasAnything)continue;
+      if(!title)return alert('Todo produto preenchido precisa ter um título.');
+      products.push({id:cleanText(row.dataset.id,80)||productId(),store,title,description,price,imageUrl:imageUrl||'',defaultUrl:defaultUrl||'',enabled});
+    }
+    if(products.length>20)return alert('O catálogo aceita até 20 produtos.');
+    btn.disabled=true;btn.textContent='Salvando...';msg.textContent='';
+    try{await setDoc(doc(db,'appConfig','affiliateDayCatalog'),{products,updatedAt:serverTimestamp(),updatedBy:me.uid},{merge:true});affdayCatalog=products;renderAffdayCatalog(products);msg.textContent=`Catálogo salvo com ${products.length} produto${products.length===1?'':'s'}.`}
+    catch(e){console.error(e);msg.textContent='Não foi possível salvar o catálogo.'}
+    finally{btn.disabled=false;btn.textContent='Salvar catálogo'}
+  }
+
   async function load(){
     adminAllowed=!!me&&await isAdmin(me);
     if(!adminAllowed){panel.hidden=true;gate.hidden=false;gate.textContent='Acesso restrito ao administrador do Chama.';return}
     gate.hidden=true;panel.hidden=false;usersBox.innerHTML='<div class="status">Carregando usuários...</div>';
-    const [uSnap,pSnap]=await Promise.all([getDocs(query(collection(db,'users'),limit(100))),getDocs(query(collection(db,'publicProfiles'),limit(100))),loadAffiliateMenu()]);
+    const [uSnap,pSnap]=await Promise.all([getDocs(query(collection(db,'users'),limit(100))),getDocs(query(collection(db,'publicProfiles'),limit(100))),loadAffiliateMenu(),loadAffdayConfig()]);
     const profiles=new Map();pSnap.forEach(d=>profiles.set(d.id,d.data()||{}));
     rows=[];uSnap.forEach(d=>{const p=profiles.get(d.id)||{};rows.push({uid:d.id,...d.data(),cidade:String(p.cidade||''),photoUrl:safePhotoUrl(p.photoUrl||'')})});
     rows.sort((a,b)=>String(a.nome||a.email||'').localeCompare(String(b.nome||b.email||''),'pt-BR'));
+    renderAffdayActive();
     document.getElementById('userCount').textContent=rows.length;document.getElementById('suspendedCount').textContent=rows.filter(x=>x.suspended===true).length;render();
+    if(location.hash==='#chamaAffiliateDayAdminCard')setTimeout(()=>document.getElementById('chamaAffiliateDayAdminCard')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
   }
   function render(){
     const q=(search.value||'').trim().toLowerCase();
@@ -123,7 +237,12 @@
     const next=u.suspended!==true;if(!confirm(`${next?'Suspender':'Reativar'} ${u.nome||u.email||'este usuário'}?`))return;
     await updateDoc(doc(db,'users',uid),{suspended:next,adminUpdatedAt:serverTimestamp()});u.suspended=next;document.getElementById('suspendedCount').textContent=rows.filter(x=>x.suspended===true).length;render();
   }
-  search.addEventListener('input',render);document.getElementById('saveAffiliateBtn').onclick=saveAffiliateMenu;document.getElementById('refreshBtn').onclick=()=>load().catch(e=>{console.error(e);alert('Não foi possível atualizar o painel.')});
+  search.addEventListener('input',render);
+  document.getElementById('saveAffiliateBtn').onclick=saveAffiliateMenu;
+  document.getElementById('addAffdayProduct').onclick=()=>addAffdayProductRow({enabled:true});
+  document.getElementById('saveAffdayCatalog').onclick=saveAffdayCatalog;
+  document.getElementById('saveAffdayActive').onclick=saveAffdayActive;
+  document.getElementById('refreshBtn').onclick=()=>load().catch(e=>{console.error(e);alert('Não foi possível atualizar o painel.')});
   onAuthStateChanged(auth,async user=>{me=user||null;adminAllowed=false;if(!user){gate.textContent='Faça login no Chama para acessar o painel.';return}try{await load()}catch(e){console.error(e);gate.textContent='Não foi possível abrir o painel de administrador.'}});
 </script>
 </body>
