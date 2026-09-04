@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaUnreadStyleV4';
+  const STYLE_ID='chamaUnreadStyleV5';
   const PAGE_SIZE=20;
   let meUid='';
   let db=null;
@@ -110,7 +110,7 @@
     const name=row.querySelector('.user-name'),email=row.querySelector('.user-email');
     if(name&&(row.classList.contains('chama-conversation-generated')||!name.textContent.trim()))name.textContent=p.nome||'Usuário';
     if(email&&row.classList.contains('chama-conversation-generated'))email.textContent=p.email||'';
-    if(row.classList.contains('chama-conversation-generated'))setAvatar(row,p.photoUrl,p.nome);
+    row.dataset.photoUrl=p.photoUrl||'';setAvatar(row,p.photoUrl,p.nome);
     renderRow(row);return row;
   }
 
