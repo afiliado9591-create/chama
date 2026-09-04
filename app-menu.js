@@ -19,6 +19,7 @@
       .chama-menu-link{display:flex;align-items:center;gap:12px;width:100%;border:0;background:#fff;color:#1d2b24;text-decoration:none;padding:14px 12px;border-radius:13px;font-size:16px;text-align:left;cursor:pointer}
       .chama-menu-link:active,.chama-menu-link:hover{background:#f0f6f3}
       .chama-menu-link.custom-highlight{background:#e7f7ef;color:#0b7a53;font-weight:900;border:1px solid #cbe9da}
+      .chama-menu-link.tutorial{background:#f4f1ff;color:#563a91;font-weight:850;border:1px solid #e2daf7}
       .chama-menu-link.admin{background:#eef3ff;color:#244a9a;font-weight:900;border:1px solid #d8e2ff}
       .chama-menu-link.admin-pages{background:#fff8e8;color:#805100;font-weight:900;border:1px solid #f0ddb0}
       .chama-menu-icon{width:28px;text-align:center;font-size:20px}
@@ -63,6 +64,7 @@
     addLink(links,'🏠','Início','./');
     addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));
     addAction(links,'🔥','Achadinhos da Comunidade',()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers')));
+    const tutorial=addLink(links,'🎓','Como usar o Chama','./como-usar.html');tutorial.classList.add('tutorial');
 
     for(const item of customItems){
       if(!item.enabled||!item.label)continue;
