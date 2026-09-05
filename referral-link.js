@@ -18,6 +18,7 @@
       .chama-referral-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.chama-referral-actions button{border:0;border-radius:11px;padding:11px 9px;font-weight:900;cursor:pointer}
       .chama-referral-copy-btn{background:#fff0c9;color:#805100}.chama-referral-share-btn{background:#17372b;color:#fff}
       .chama-referral-note{font-size:10px;color:#8b7d62;margin-top:9px;line-height:1.4}
+      .chama-referral-mine{margin-top:14px;border-top:1px solid #eee6d1;padding-top:13px}.chama-referral-mine-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:900;color:#3d3320}.chama-referral-count{background:#fff0c9;color:#805100;border-radius:999px;padding:5px 9px;font-size:12px}.chama-referral-list{display:grid;gap:7px;margin-top:9px}.chama-referral-person{display:flex;align-items:center;gap:9px;background:#f7f9f8;border-radius:11px;padding:9px 10px}.chama-referral-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:#0b7a53;font-weight:900;flex:0 0 34px}.chama-referral-person-main{min-width:0;flex:1}.chama-referral-person-name{font-size:13px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chama-referral-person-date{font-size:10px;color:#7b8781;margin-top:2px}.chama-referral-empty{font-size:12px;color:#78837e;background:#f7f9f8;border-radius:11px;padding:11px;margin-top:9px;text-align:center}
       @media(max-width:380px){.chama-referral-actions{grid-template-columns:1fr}}
     `;document.head.appendChild(s);
   }
@@ -41,12 +42,27 @@
 
   function closeReferral(){document.getElementById('chamaReferralModal')?.remove()}
 
+  function esc(v){return String(v||'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]))}
+  function referralDate(v){const d=v?.toDate?.();return d?`Entrou em ${d.toLocaleDateString('pt-BR')}`:'Entrou pelo seu convite'}
+
+  async function loadMyReferrals(){
+    const list=document.getElementById('chamaReferralList'),count=document.getElementById('chamaReferralCount');if(!list||!count||!me||!db||!fs)return;
+    try{
+      const users=fs.collection(db,'users');
+      const [current,legacy]=await Promise.all([fs.getDocs(fs.query(users,fs.where('referredByUid','==',me.uid),fs.limit(50))),fs.getDocs(fs.query(users,fs.where('indicadoPor','==',me.uid),fs.limit(50)))]),found=new Map();
+      const add=s=>s.forEach(d=>{const x=d.data()||{};found.set(d.id,{uid:d.id,nome:String(x.nome||x.name||x.email?.split('@')?.[0]||'Usuário'),date:x.referredAt||x.indicadoEm||null})});add(current);add(legacy);
+      const items=[...found.values()].sort((a,b)=>Number(b.date?.seconds||0)-Number(a.date?.seconds||0));count.textContent=String(items.length);list.innerHTML='';
+      if(!items.length){list.innerHTML='<div class="chama-referral-empty">Você ainda não possui indicações.</div>';return}
+      for(const u of items){const row=document.createElement('div');row.className='chama-referral-person';const initial=(u.nome.trim().charAt(0)||'U').toUpperCase();row.innerHTML=`<div class="chama-referral-avatar">${esc(initial)}</div><div class="chama-referral-person-main"><div class="chama-referral-person-name">${esc(u.nome)}</div><div class="chama-referral-person-date">${esc(referralDate(u.date))}</div></div>`;list.appendChild(row)}
+    }catch(e){console.warn('Chama: indicações não carregaram',e);list.innerHTML='<div class="chama-referral-empty">Não foi possível carregar suas indicações agora.</div>'}
+  }
+
   function openReferral(){
     closeReferral();
     if(!me)return alert('Entre na sua conta para gerar seu link de indicação.');
     const link=referralUrl(me.uid);if(!link)return;
     const back=document.createElement('div');back.id='chamaReferralModal';back.className='chama-referral-backdrop';
-    back.innerHTML=`<section class="chama-referral-card"><div class="chama-referral-top"><div class="chama-referral-icon">🎁</div><div class="chama-referral-title"><strong>Indique o Chama</strong><small>Convide outros afiliados para a comunidade</small></div><button class="chama-referral-close" type="button" aria-label="Fechar">✕</button></div><div class="chama-referral-body"><p>Compartilhe seu link pessoal. Quando uma nova pessoa criar a conta por ele, a indicação fica vinculada a você.</p><div class="chama-referral-url"><input class="chama-referral-input" readonly></div><div class="chama-referral-actions"><button class="chama-referral-copy-btn" type="button">📋 Copiar link</button><button class="chama-referral-share-btn" type="button">📤 Compartilhar</button></div><div class="chama-referral-note">Gerar, copiar e compartilhar não usa Firestore. Só o novo cadastro indicado gera uma gravação adicional.</div></div></section>`;
+    back.innerHTML=`<section class="chama-referral-card"><div class="chama-referral-top"><div class="chama-referral-icon">🎁</div><div class="chama-referral-title"><strong>Indique o Chama</strong><small>Convide outros afiliados para a comunidade</small></div><button class="chama-referral-close" type="button" aria-label="Fechar">✕</button></div><div class="chama-referral-body"><p>Compartilhe seu link pessoal. Quando uma nova pessoa criar a conta por ele, a indicação fica vinculada a você.</p><div class="chama-referral-url"><input class="chama-referral-input" readonly></div><div class="chama-referral-actions"><button class="chama-referral-copy-btn" type="button">📋 Copiar link</button><button class="chama-referral-share-btn" type="button">📤 Compartilhar</button></div><div class="chama-referral-note">Gerar, copiar e compartilhar não usa Firestore. Só o novo cadastro indicado gera uma gravação adicional.</div><div class="chama-referral-mine"><div class="chama-referral-mine-head"><span>Minhas indicações</span><span id="chamaReferralCount" class="chama-referral-count">...</span></div><div id="chamaReferralList" class="chama-referral-list"><div class="chama-referral-empty">Carregando indicações...</div></div></div></div></section>`;
     document.body.appendChild(back);back.querySelector('.chama-referral-input').value=link;
     back.querySelector('.chama-referral-close').onclick=closeReferral;back.addEventListener('click',e=>{if(e.target===back)closeReferral()});
     back.querySelector('.chama-referral-copy-btn').onclick=async()=>{try{await navigator.clipboard.writeText(link);alert('Link de indicação copiado ✓')}catch{const i=back.querySelector('input');i.select();document.execCommand('copy');alert('Link de indicação copiado ✓')}};
@@ -55,6 +71,7 @@
       if(navigator.share){try{await navigator.share({title:'Chama',text,url:link});return}catch(e){if(e?.name==='AbortError')return}}
       try{await navigator.clipboard.writeText(text+'\n'+link);alert('Convite copiado. Agora é só compartilhar ✓')}catch{alert(link)}
     };
+    loadMyReferrals();
   }
 
   function freshAccount(user){
