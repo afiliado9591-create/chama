@@ -7,7 +7,6 @@
   let lastConversationDoc=null;
   let hasMore=true;
   let loadingPage=false;
-  let observer=null;
   const conversations=new Map();
   const profiles=new Map();
 
@@ -153,7 +152,6 @@
     if(!wrap){
       wrap=document.createElement('div');wrap.id='chamaConversationMoreWrap';wrap.className='chama-conversation-more-wrap';
       const btn=document.createElement('button');btn.id='chamaConversationMore';btn.type='button';btn.className='chama-conversation-more';btn.onclick=()=>loadConversationPage(false);wrap.appendChild(btn);list.appendChild(wrap);
-      observer?.disconnect();observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting)&&hasMore&&!loadingPage)loadConversationPage(false)},{root:null,rootMargin:'220px 0px'});observer.observe(wrap);
     }
     const btn=document.getElementById('chamaConversationMore');if(!btn)return;
     if(loadingPage){btn.disabled=true;btn.textContent='Carregando...';wrap.hidden=false}
