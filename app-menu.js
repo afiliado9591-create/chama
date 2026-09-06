@@ -62,6 +62,7 @@
     const close=document.createElement('button');close.type='button';close.className='chama-menu-close';close.setAttribute('aria-label','Fechar menu');close.textContent='✕';close.onclick=closeMenu;head.appendChild(close);
     const links=document.createElement('nav');links.className='chama-menu-links';
     addLink(links,'🏠','Início','./');
+    addAction(links,'🔥','Fale com o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-support')));
     addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));
     addAction(links,'🔥','Achadinhos da Comunidade',()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers')));
     const tutorial=addLink(links,'🎓','Como usar o Chama','./como-usar.html');tutorial.classList.add('tutorial');
