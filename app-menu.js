@@ -25,6 +25,8 @@
       .chama-menu-icon{width:28px;text-align:center;font-size:20px}
       .chama-menu-note{margin-top:auto;padding:14px 10px 4px;color:#738078;font-size:12px;line-height:1.45}
       .chama-auth-privacy{display:block;text-align:center;margin-top:16px;color:#0b7a53;text-decoration:none;font-size:13px;font-weight:700}
+      .chama-chatshop-promo{margin:10px 12px 0;padding:11px 13px;border-radius:13px;background:#6d28d9;color:#fff!important;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:900;box-shadow:0 4px 12px #6d28d933}
+      .chama-chatshop-promo:hover,.chama-chatshop-promo:active{background:#5b21b6}
       #usersList .user-email,#chatEmail{display:none!important}
     `;
     document.head.appendChild(s);
@@ -94,6 +96,11 @@
     const a=document.createElement('a');a.id='chamaAuthPrivacy';a.className='chama-auth-privacy';a.href='./politica-de-privacidade.html';a.textContent='Política de Privacidade';card.appendChild(a);
   }
 
+  function installChatShopPromo(){
+    if(document.getElementById('chamaChatShopPromo'))return;const sidebar=document.querySelector('.sidebar'),me=sidebar?.querySelector('.me');if(!sidebar||!me)return;
+    const a=document.createElement('a');a.id='chamaChatShopPromo';a.className='chama-chatshop-promo';a.href='https://www.alibr.com.br/';a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','Conheça o ChatShop');a.innerHTML='<span aria-hidden="true">🛍️</span><span>Conheça o ChatShop</span>';me.insertAdjacentElement('afterend',a);
+  }
+
   async function waitForFirebase(attempt=0){
     try{const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const app=appMod.getApps()[0];if(app)return app;if(attempt>=20)return null;await new Promise(r=>setTimeout(r,100));return waitForFirebase(attempt+1)}catch{return null}
   }
@@ -119,6 +126,6 @@
     }catch{adminAllowed=false;customItems=DEFAULT_ITEMS.map(normalizeCustom);adminCheckDone=true}
   }
 
-  function start(){addMenuStyles();installTopMenu();installAuthPrivacy();initAdminAccess()}
+  function start(){addMenuStyles();installTopMenu();installAuthPrivacy();installChatShopPromo();initAdminAccess();new MutationObserver(installChatShopPromo).observe(document.body,{childList:true,subtree:true})}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
