@@ -246,5 +246,6 @@
   onAuthStateChanged(auth,async user=>{me=user||null;adminAllowed=false;if(!user){gate.textContent='Faça login no Chama para acessar o painel.';return}try{await load()}catch(e){console.error(e);gate.textContent='Não foi possível abrir o painel de administrador.'}});
 </script>
 <script src="./admin-support.js?v=2"></script>
+<script src="./admin-tutorial-videos.js?v=1"></script>
 </body>
 </html>
