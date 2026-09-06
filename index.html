@@ -38,6 +38,7 @@
     .audio-record{border:0;background:#eef4f1;color:var(--green);width:42px;height:42px;border-radius:50%;font-size:20px;flex:0 0 42px;cursor:pointer}.audio-record.recording{background:#ffe5e5;color:#b42318}
     .audio-player{width:min(280px,65vw);display:block;margin:2px 0}.audio-label{font-size:12px;font-weight:700;color:#4d5b54;margin-bottom:5px}.install{background:#fff;color:var(--green);border:1px solid #ffffff80}
     .audio-toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:100;font-size:14px;white-space:nowrap}
+    .audio-preview-backdrop{position:fixed;inset:0;background:#0008;z-index:900;display:grid;place-items:center;padding:18px}.audio-preview-card{width:min(420px,100%);background:#fff;border-radius:20px;padding:18px;display:grid;gap:14px;box-shadow:0 20px 60px #0004}.audio-preview-card strong{font-size:18px}.audio-preview-card audio{width:100%}.audio-preview-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.audio-preview-delete,.audio-preview-send{border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer}.audio-preview-delete{background:#fff0f0;color:#b42318}.audio-preview-send{background:var(--green);color:#fff}.audio-preview-send:disabled{opacity:.65}
     @media(max-width:700px){
       .layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}
     }
@@ -305,6 +306,17 @@
     await saveMessage(text,"🎤 Áudio");
   }
 
+  function previewAudio(blob,type){
+    document.querySelector(".audio-preview-backdrop")?.remove();
+    const url=URL.createObjectURL(blob),backdrop=document.createElement("div");
+    backdrop.className="audio-preview-backdrop";
+    backdrop.innerHTML='<section class="audio-preview-card"><strong>Ouça antes de enviar</strong><audio controls preload="metadata"></audio><div class="audio-preview-actions"><button type="button" class="audio-preview-delete">Excluir</button><button type="button" class="audio-preview-send">Enviar áudio</button></div></section>';
+    const player=backdrop.querySelector("audio"),remove=()=>{player.pause();URL.revokeObjectURL(url);backdrop.remove()};
+    player.src=url;backdrop.querySelector(".audio-preview-delete").onclick=remove;backdrop.onclick=e=>{if(e.target===backdrop)remove()};
+    backdrop.querySelector(".audio-preview-send").onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;btn.textContent="Enviando...";const hide=showAudioToast("Enviando áudio...");try{await uploadAudio(blob,type);remove()}catch(err){console.error(err);alert(err.message||"Não foi possível enviar o áudio.");btn.disabled=false;btn.textContent="Enviar áudio"}finally{hide()}};
+    document.body.appendChild(backdrop);
+  }
+
   $("audioBtn").onclick=async()=>{
     const btn=$("audioBtn");
     if(recorder&&recorder.state==="recording"){
@@ -322,18 +334,18 @@
       recorder=new MediaRecorder(audioStream,mime?{mimeType:mime}:undefined);
       recorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data)};
       recorder.onstop=async()=>{
-        const hide=showAudioToast("Enviando áudio...");
         try{
           audioStream?.getTracks().forEach(t=>t.stop());
           const type=recorder?.mimeType||"audio/webm";
           const blob=new Blob(audioChunks,{type});
           recorder=null;audioChunks=[];audioStream=null;
-          if(blob.size)await uploadAudio(blob,type);
-        }catch(e){console.error(e);alert(e.message||"Não foi possível enviar o áudio.")}finally{hide()}
+          $("audioToast")?.classList.add("hidden");
+          if(blob.size)previewAudio(blob,type);
+        }catch(e){console.error(e);alert(e.message||"Não foi possível preparar o áudio.")}
       };
       recorder.start();
       btn.classList.add("recording");btn.textContent="■";
-      showAudioToast("Gravando... toque ■ para enviar");
+      showAudioToast("Gravando... toque ■ para revisar");
     }catch(e){
       audioStream?.getTracks().forEach(t=>t.stop());audioStream=null;recorder=null;
       alert("Não foi possível acessar o microfone.");

@@ -66,6 +66,7 @@
       .media-error{font-size:13px;color:#b42318}
       .image-send-btn,.video-send-btn{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:50%;font-size:20px;display:grid;place-items:center;cursor:pointer;flex:0 0 42px}
       .image-upload-toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:120;font-size:14px;white-space:nowrap}
+      .media-preview-backdrop{position:fixed;inset:0;background:#0008;z-index:950;display:grid;place-items:center;padding:18px}.media-preview-card{width:min(460px,100%);max-height:90dvh;overflow:auto;background:#fff;border-radius:20px;padding:16px;display:grid;gap:13px;box-shadow:0 20px 60px #0004}.media-preview-card strong{font-size:18px}.media-preview-file{display:block;width:100%;max-height:62dvh;object-fit:contain;border-radius:13px;background:#101613}.media-preview-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.media-preview-delete,.media-preview-send{border:0;border-radius:12px;padding:12px;font-weight:850;cursor:pointer}.media-preview-delete{background:#fff0f0;color:#b42318}.media-preview-send{background:#0b7a53;color:#fff}.media-preview-send:disabled{opacity:.65}
       .bubble.chama-actions-ready{position:relative;padding-right:34px}
       .chama-msg-menu-btn{position:absolute;top:4px;right:5px;width:25px;height:25px;border:0;border-radius:50%;background:transparent;color:#65736c;font-size:20px;line-height:20px;display:grid;place-items:center;cursor:pointer;padding:0}
       .chama-msg-menu-btn:active{background:#00000010}
@@ -210,12 +211,12 @@
     const expected=kind==='image'?'image/':'video/';
     const max=kind==='image'?5*1024*1024:25*1024*1024;
     const label=kind==='image'?'imagem':'vídeo';
-    if(!file?.type?.startsWith(expected))return alert(`Escolha um ${label}.`);
-    if(file.size>max)return alert(`${kind==='image'?'Imagem':'Vídeo'} muito grande. Limite: ${kind==='image'?'5':'25'} MB.`);
+    if(!file?.type?.startsWith(expected)){alert(`Escolha um ${label}.`);return false}
+    if(file.size>max){alert(`${kind==='image'?'Imagem':'Vídeo'} muito grande. Limite: ${kind==='image'?'5':'25'} MB.`);return false}
     const active=document.getElementById('activeChat');
-    if(!active||active.classList.contains('hidden'))return alert(`Abra uma conversa antes de enviar ${kind==='image'?'a imagem':'o vídeo'}.`);
+    if(!active||active.classList.contains('hidden')){alert(`Abra uma conversa antes de enviar ${kind==='image'?'a imagem':'o vídeo'}.`);return false}
     const otherUid=currentReceiverUid();
-    if(!otherUid)return alert('Não consegui identificar o contato desta conversa.');
+    if(!otherUid){alert('Não consegui identificar o contato desta conversa.');return false}
     const hide=toast(`Enviando ${label}...`);
     try{
       const f=await firebaseParts();
@@ -238,7 +239,20 @@
       }
       attachMessageIdToBubble(text,msgRef.id);
       await f.setDoc(f.doc(db,'chats',chatId),{participants:ids,lastMessage:kind==='image'?'📷 Imagem':'🎥 Vídeo',lastSenderId:me.uid,updatedAt:f.serverTimestamp(),unreadCounts:{[otherUid]:f.increment(1),[me.uid]:0}},{merge:true});
-    }catch(e){alert(e?.message||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`)}finally{hide()}
+      return true;
+    }catch(e){alert(e?.message||`Não foi possível enviar ${kind==='image'?'a imagem':'o vídeo'}.`);return false}finally{hide()}
+  }
+
+  function previewMedia(file,kind){
+    const expected=kind==='image'?'image/':'video/',label=kind==='image'?'imagem':'vídeo';
+    if(!file?.type?.startsWith(expected))return alert(`Escolha um ${label}.`);
+    document.querySelector('.media-preview-backdrop')?.remove();
+    const url=URL.createObjectURL(file),backdrop=document.createElement('div');backdrop.className='media-preview-backdrop';
+    backdrop.innerHTML=`<section class="media-preview-card"><strong>Confira ${kind==='image'?'a imagem':'o vídeo'} antes de enviar</strong><div class="media-preview-view"></div><div class="media-preview-actions"><button type="button" class="media-preview-delete">Excluir</button><button type="button" class="media-preview-send">Enviar ${label}</button></div></section>`;
+    const media=document.createElement(kind==='image'?'img':'video');media.className='media-preview-file';media.src=url;if(kind==='image')media.alt='Prévia da imagem';else{media.controls=true;media.preload='metadata';media.playsInline=true}backdrop.querySelector('.media-preview-view').appendChild(media);
+    const remove=()=>{if(kind==='video')media.pause();URL.revokeObjectURL(url);backdrop.remove()};backdrop.querySelector('.media-preview-delete').onclick=remove;backdrop.onclick=e=>{if(e.target===backdrop)remove()};
+    backdrop.querySelector('.media-preview-send').onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;btn.textContent='Enviando...';const sent=await sendMedia(file,kind);if(sent)remove();else if(btn.isConnected){btn.disabled=false;btn.textContent=`Enviar ${label}`}};
+    document.body.appendChild(backdrop);
   }
 
   function parseMediaMeta(raw){
@@ -392,7 +406,7 @@
       btn.onclick=()=>{
         const pick=document.createElement('input');
         pick.type='file';pick.accept='image/*';pick.hidden=true;document.body.appendChild(pick);
-        pick.onchange=async()=>{const f=pick.files?.[0];pick.remove();if(f)await sendMedia(f,'image')};
+        pick.onchange=()=>{const f=pick.files?.[0];pick.remove();if(f)previewMedia(f,'image')};
         pick.click();
       };
       form.insertBefore(btn,input);
@@ -403,7 +417,7 @@
       btn.onclick=()=>{
         const pick=document.createElement('input');
         pick.type='file';pick.accept='video/*';pick.hidden=true;document.body.appendChild(pick);
-        pick.onchange=async()=>{const f=pick.files?.[0];pick.remove();if(f)await sendMedia(f,'video')};
+        pick.onchange=()=>{const f=pick.files?.[0];pick.remove();if(f)previewMedia(f,'video')};
         pick.click();
       };
       form.insertBefore(btn,input);
