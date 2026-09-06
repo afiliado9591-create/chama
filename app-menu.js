@@ -31,7 +31,7 @@
       .chama-quick-item{min-width:0;border:0;background:#f3f7f5;color:#284238;text-decoration:none;border-radius:10px;padding:7px 3px 6px;display:grid;justify-items:center;gap:2px;font-size:10px;font-weight:800;line-height:1.1;cursor:pointer;position:relative}
       .chama-quick-item span:first-child{font-size:18px;line-height:1}.chama-quick-item:active{background:#e4efe9}.chama-quick-item.chatshop{background:#f0eafe;color:#5b21b6}
       .chama-support-quick-badge{position:absolute;top:2px;right:8px;background:#d92d20;color:#fff;border-radius:999px;min-width:17px;height:17px;padding:0 4px;display:grid;place-items:center;font-size:9px}.chama-support-quick-badge:empty{display:none}
-      #chamaAffiliateDayTop,#chamaAffiliateToolsEntry,#chamaSupportEntry,#chamaChatShopPromo{display:none!important}
+      #chamaAffiliateToolsEntry,#chamaSupportEntry,#chamaChatShopPromo{display:none!important}
       .chama-affiliate-menu{padding:6px 9px!important}.chama-affiliate-btn{min-height:38px!important;padding:7px 6px!important;font-size:12px!important;border-radius:10px!important}.chama-affiliate-btn.featured{padding-top:18px!important}.chama-affiliate-btn.featured::before{top:3px!important}
       #usersList .user-email,#chatEmail{display:none!important}
     `;

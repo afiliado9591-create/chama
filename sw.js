@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v139";
+const VERSION="chama-clean-v140";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "139") return;
-        url.searchParams.set("chama_update", "139");
+        if (url.searchParams.get("chama_update") === "140") return;
+        url.searchParams.set("chama_update", "140");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -25,7 +25,7 @@ self.addEventListener("activate", event => {
 
 function injectSafeUi(html) {
   const mediaMarker = 'media-render-safe.js?v=93';
-  const menuMarker = 'app-menu.js?v=12';
+  const menuMarker = 'app-menu.js?v=13';
   const supportMarker = 'chama-support.js?v=3';
   const unreadMarker = 'unread-badges.js?v=6';
   const profileMarker = 'profile-safe-v6.js?v=1';
@@ -103,7 +103,7 @@ function injectSafeUi(html) {
   }
 
   if (!out.includes(mediaMarker)) out = out.replace('</body>', `<script src="./media-render-safe.js?v=93"></script></body>`);
-  if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=12"></script></body>`);
+  if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=13"></script></body>`);
   if (!out.includes(supportMarker)) out = out.replace('</body>', `<script src="./chama-support.js?v=3"></script></body>`);
   if (!out.includes(unreadMarker)) out = out.replace('</body>', `<script src="./unread-badges.js?v=6"></script></body>`);
   if (!out.includes(profileMarker)) out = out.replace('</body>', `<script src="./profile-safe-v6.js?v=1"></script></body>`);
