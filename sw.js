@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v145";
+const VERSION="chama-clean-v146";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "145") return;
-        url.searchParams.set("chama_update", "145");
+        if (url.searchParams.get("chama_update") === "146") return;
+        url.searchParams.set("chama_update", "146");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -44,7 +44,7 @@ function injectSafeUi(html) {
   const affiliateToolsMarker = 'affiliate-tools.js?v=2';
   const referralMarker = 'referral-link.js?v=3';
   const adminPagesMenuMarker = 'admin-pages-menu.js?v=2';
-  const communityOffersMarker = 'community-offers.js?v=4';
+  const communityOffersMarker = 'community-offers.js?v=5';
   const readReceiptMarker = 'read-receipts.js?v=1';
   const communityCountMarker = 'community-count.js?v=2';
   const adminCommunityCountMarker = 'admin-community-count.js?v=1';
@@ -126,7 +126,7 @@ function injectSafeUi(html) {
   if (!out.includes(affiliateToolsMarker)) out = out.replace('</body>', `<script src="./affiliate-tools.js?v=2"></script></body>`);
   if (!out.includes(referralMarker)) out = out.replace('</body>', `<script src="./referral-link.js?v=3"></script></body>`);
   if (!out.includes(adminPagesMenuMarker)) out = out.replace('</body>', `<script src="./admin-pages-menu.js?v=2"></script></body>`);
-  if (!out.includes(communityOffersMarker)) out = out.replace('</body>', `<script src="./community-offers.js?v=4"></script></body>`);
+  if (!out.includes(communityOffersMarker)) out = out.replace('</body>', `<script src="./community-offers.js?v=5"></script></body>`);
   if (!out.includes(readReceiptMarker)) out = out.replace('</body>', `<script src="./read-receipts.js?v=1"></script></body>`);
   if (!out.includes(communityCountMarker)) out = out.replace('</body>', `<script src="./community-count.js?v=2"></script></body>`);
   if (!out.includes(adminCommunityCountMarker)) out = out.replace('</body>', `<script src="./admin-community-count.js?v=1"></script></body>`);
