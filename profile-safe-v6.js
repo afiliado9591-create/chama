@@ -33,10 +33,10 @@
     `;document.head.appendChild(s);
   }
 
-  function cleanChatShopLink(value){
+  function cleanProfileLink(value){
     let v=String(value||'').trim();if(!v)return '';
     if(!/^https?:\/\//i.test(v))v='https://'+v;
-    try{const u=new URL(v);const h=u.hostname.toLowerCase();if(u.protocol!=='https:'||(h!=='alibr.com.br'&&!h.endsWith('.alibr.com.br')))return null;return u.href}catch{return null}
+    try{const u=new URL(v);if(u.protocol!=='https:'||!u.hostname)return null;return u.href}catch{return null}
   }
 
   function safePhotoUrl(value){
@@ -91,7 +91,7 @@
     }
   }
 
-  function shopButton(link){const safe=cleanChatShopLink(link);return safe?`<a class="chama-shop-public" href="${safe}" target="_blank" rel="noopener noreferrer">🛍️ Ver minha vitrine</a>`:''}
+  function shopButton(link){const safe=cleanProfileLink(link);return safe?`<a class="chama-shop-public" href="${safe}" target="_blank" rel="noopener noreferrer">🔗 Acessar meu link</a>`:''}
   function renderAvatar(el,url){if(!el)return;const safe=safePhotoUrl(url);el.textContent='';if(!safe){el.textContent='👤';return}const img=document.createElement('img');img.alt='Foto de perfil';img.loading='lazy';img.src=safe;img.onerror=()=>{el.textContent='👤'};el.appendChild(img)}
   function closeProfile(){document.getElementById('chamaProfileModal')?.remove()}
 
@@ -119,7 +119,7 @@
 
   async function openProfile(uid){
     if(!uid)return;closeProfile();const own=!!me&&uid===me.uid;
-    const card=document.createElement('section');card.className='chama-profile-card';card.innerHTML=`<div class="chama-profile-head"><div class="chama-profile-avatar" id="chamaProfileAvatar">👤</div><div class="chama-profile-title"><strong id="chamaProfileNameText">${own?'Meu perfil':'Perfil do Chama'}</strong><small>${own?'Complete seu perfil':'Perfil público'}</small></div><button type="button" class="chama-profile-close" aria-label="Fechar">✕</button></div><div class="chama-profile-body">${own?`<div class="chama-photo-actions"><button id="chamaProfilePhotoBtn" class="chama-photo-btn" type="button">Colocar foto</button><span class="chama-photo-help">JPG, PNG ou WebP • até 5 MB</span><input id="chamaProfilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>`:''}<div class="chama-profile-location" style="margin-top:${own?'14px':'0'}"><small>Cidade</small><strong id="chamaProfileCityText">${own&&ownProfile?.cidade?ownProfile.cidade:'Carregando...'}</strong></div><div id="chamaProfileShopArea"></div>${own?`<div id="chamaProfileRequiredNote" class="chama-profile-required-note">🔴 Para concluir seu perfil, informe sua cidade.</div><a class="chama-shop-create" href="${CHATSHOP_HOME}" target="_blank" rel="noopener noreferrer">🛍️ Venda seu produto no ChatShop</a><div class="chama-profile-edit"><label for="chamaProfileCityInput">Cidade *</label><input id="chamaProfileCityInput" maxlength="80" placeholder="Ex.: São Paulo"><label for="chamaProfileShopInput">Link ChatShop (opcional)</label><input id="chamaProfileShopInput" maxlength="500" placeholder="Cole aqui o link do seu catálogo"><button id="chamaProfileSave" class="chama-profile-save" type="button">Salvar perfil</button></div>`:''}<div class="chama-profile-note">Seu e-mail não aparece no perfil público. O link do ChatShop e a foto são opcionais.</div><div id="chamaProfileLoadError" class="chama-profile-load-error" hidden>Não consegui atualizar os dados agora. Você pode fechar e abrir o perfil novamente.</div></div>`;
+    const card=document.createElement('section');card.className='chama-profile-card';card.innerHTML=`<div class="chama-profile-head"><div class="chama-profile-avatar" id="chamaProfileAvatar">👤</div><div class="chama-profile-title"><strong id="chamaProfileNameText">${own?'Meu perfil':'Perfil do Chama'}</strong><small>${own?'Complete seu perfil':'Perfil público'}</small></div><button type="button" class="chama-profile-close" aria-label="Fechar">✕</button></div><div class="chama-profile-body">${own?`<div class="chama-photo-actions"><button id="chamaProfilePhotoBtn" class="chama-photo-btn" type="button">Colocar foto</button><span class="chama-photo-help">JPG, PNG ou WebP • até 5 MB</span><input id="chamaProfilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>`:''}<div class="chama-profile-location" style="margin-top:${own?'14px':'0'}"><small>Cidade</small><strong id="chamaProfileCityText">${own&&ownProfile?.cidade?ownProfile.cidade:'Carregando...'}</strong></div><div id="chamaProfileShopArea"></div>${own?`<div id="chamaProfileRequiredNote" class="chama-profile-required-note">🔴 Para concluir seu perfil, informe sua cidade.</div><a class="chama-shop-create" href="${CHATSHOP_HOME}" target="_blank" rel="noopener noreferrer">🛍️ Venda seu produto no ChatShop</a><div class="chama-profile-edit"><label for="chamaProfileCityInput">Cidade *</label><input id="chamaProfileCityInput" maxlength="80" placeholder="Ex.: São Paulo"><label for="chamaProfileShopInput">Seu link (opcional)</label><input id="chamaProfileShopInput" maxlength="500" inputmode="url" placeholder="Link de afiliado, loja, catálogo ou rede social"><button id="chamaProfileSave" class="chama-profile-save" type="button">Salvar perfil</button></div>`:''}<div class="chama-profile-note">Seu e-mail não aparece no perfil público. A foto e o seu link são opcionais.</div><div id="chamaProfileLoadError" class="chama-profile-load-error" hidden>Não consegui atualizar os dados agora. Você pode fechar e abrir o perfil novamente.</div></div>`;
     const backdrop=document.createElement('div');backdrop.id='chamaProfileModal';backdrop.className='chama-profile-backdrop';backdrop.appendChild(card);document.body.appendChild(backdrop);
     card.querySelector('.chama-profile-close').onclick=closeProfile;backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeProfile()});
 
@@ -130,7 +130,7 @@
       photoBtn.onclick=()=>photoInput.click();photoInput.onchange=()=>{const file=photoInput.files?.[0];if(file)uploadPhoto(file,current,card.querySelector('#chamaProfileAvatar'),photoBtn);photoInput.value=''};
       save.onclick=async()=>{
         const cidade=(city.value||'').trim().replace(/\s+/g,' ');if(!cidade)return alert('Informe sua cidade para concluir o perfil.');if(cidade.length>80)return alert('Digite somente o nome da cidade.');
-        const link=cleanChatShopLink(shop.value);if(link===null)return alert('Use somente um link do ChatShop em alibr.com.br.');save.disabled=true;save.textContent='Salvando...';
+        const link=cleanProfileLink(shop.value);if(link===null)return alert('Digite um link seguro e válido. Exemplo: https://sualoja.com.br');save.disabled=true;save.textContent='Salvando...';
         try{
           const nome=(me.displayName||me.email?.split('@')[0]||'Usuário').trim();await wait(fs.setDoc(fs.doc(db,'publicProfiles',me.uid),{uid:me.uid,nome,nomeBusca:norm(nome),cidade,cidadeBusca:norm(cidade),chatshopLink:link||'',updatedAt:fs.serverTimestamp()},{merge:true}),5000);
           current={...current,nome,cidade,chatshopLink:link||''};ownProfile=current;writeLocal(me.uid,current);applyProfile(card,current,true);renderRequiredBadge(cidade);save.textContent='Perfil salvo ✓';document.dispatchEvent(new CustomEvent('chama-profile-updated',{detail:{uid:me.uid,cidade,chatshopLink:link||''}}));setTimeout(()=>{if(save.isConnected){save.textContent='Salvar perfil';save.disabled=false}},900);
