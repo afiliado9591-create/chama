@@ -100,6 +100,6 @@
     }catch(e){if(e?.name!=='AbortError')alert('Não foi possível compartilhar agora.')}
   }
 
-  function start(){addStyle();ensureEntry();setTimeout(ensureEntry,400);setTimeout(ensureEntry,1200)}
+  function start(){addStyle();ensureEntry();setTimeout(ensureEntry,400);setTimeout(ensureEntry,1200);document.addEventListener('chama-open-affiliate-tools',openModal)}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();

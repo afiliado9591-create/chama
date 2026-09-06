@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v138";
+const VERSION="chama-clean-v139";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "138") return;
-        url.searchParams.set("chama_update", "138");
+        if (url.searchParams.get("chama_update") === "139") return;
+        url.searchParams.set("chama_update", "139");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -25,8 +25,8 @@ self.addEventListener("activate", event => {
 
 function injectSafeUi(html) {
   const mediaMarker = 'media-render-safe.js?v=93';
-  const menuMarker = 'app-menu.js?v=11';
-  const supportMarker = 'chama-support.js?v=2';
+  const menuMarker = 'app-menu.js?v=12';
+  const supportMarker = 'chama-support.js?v=3';
   const unreadMarker = 'unread-badges.js?v=6';
   const profileMarker = 'profile-safe-v6.js?v=1';
   const homeMarker = 'home-conversations-search.js?v=5';
@@ -41,7 +41,7 @@ function injectSafeUi(html) {
   const socialVideoMarker = 'social-video-links.js?v=1';
   const clickableLinksMarker = 'clickable-links.js?v=1';
   const professionalPromoMarker = 'professional-promo.js?v=2';
-  const affiliateToolsMarker = 'affiliate-tools.js?v=1';
+  const affiliateToolsMarker = 'affiliate-tools.js?v=2';
   const referralMarker = 'referral-link.js?v=3';
   const adminPagesMenuMarker = 'admin-pages-menu.js?v=2';
   const communityOffersMarker = 'community-offers.js?v=1';
@@ -103,8 +103,8 @@ function injectSafeUi(html) {
   }
 
   if (!out.includes(mediaMarker)) out = out.replace('</body>', `<script src="./media-render-safe.js?v=93"></script></body>`);
-  if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=11"></script></body>`);
-  if (!out.includes(supportMarker)) out = out.replace('</body>', `<script src="./chama-support.js?v=2"></script></body>`);
+  if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=12"></script></body>`);
+  if (!out.includes(supportMarker)) out = out.replace('</body>', `<script src="./chama-support.js?v=3"></script></body>`);
   if (!out.includes(unreadMarker)) out = out.replace('</body>', `<script src="./unread-badges.js?v=6"></script></body>`);
   if (!out.includes(profileMarker)) out = out.replace('</body>', `<script src="./profile-safe-v6.js?v=1"></script></body>`);
   if (!out.includes(homeMarker)) out = out.replace('</body>', `<script src="./home-conversations-search.js?v=5"></script></body>`);
@@ -119,7 +119,7 @@ function injectSafeUi(html) {
   if (!out.includes(socialVideoMarker)) out = out.replace('</body>', `<script src="./social-video-links.js?v=1"></script></body>`);
   if (!out.includes(clickableLinksMarker)) out = out.replace('</body>', `<script src="./clickable-links.js?v=1"></script></body>`);
   if (!out.includes(professionalPromoMarker)) out = out.replace('</body>', `<script src="./professional-promo.js?v=2"></script></body>`);
-  if (!out.includes(affiliateToolsMarker)) out = out.replace('</body>', `<script src="./affiliate-tools.js?v=1"></script></body>`);
+  if (!out.includes(affiliateToolsMarker)) out = out.replace('</body>', `<script src="./affiliate-tools.js?v=2"></script></body>`);
   if (!out.includes(referralMarker)) out = out.replace('</body>', `<script src="./referral-link.js?v=3"></script></body>`);
   if (!out.includes(adminPagesMenuMarker)) out = out.replace('</body>', `<script src="./admin-pages-menu.js?v=2"></script></body>`);
   if (!out.includes(communityOffersMarker)) out = out.replace('</body>', `<script src="./community-offers.js?v=1"></script></body>`);

@@ -27,6 +27,12 @@
       .chama-auth-privacy{display:block;text-align:center;margin-top:16px;color:#0b7a53;text-decoration:none;font-size:13px;font-weight:700}
       .chama-chatshop-promo{margin:10px 12px 0;padding:11px 13px;border-radius:13px;background:#6d28d9;color:#fff!important;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:900;box-shadow:0 4px 12px #6d28d933}
       .chama-chatshop-promo:hover,.chama-chatshop-promo:active{background:#5b21b6}
+      .chama-quick-menu{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:7px 9px;background:#fff;border-bottom:1px solid #e7ece9;position:relative;z-index:3}
+      .chama-quick-item{min-width:0;border:0;background:#f3f7f5;color:#284238;text-decoration:none;border-radius:10px;padding:7px 3px 6px;display:grid;justify-items:center;gap:2px;font-size:10px;font-weight:800;line-height:1.1;cursor:pointer;position:relative}
+      .chama-quick-item span:first-child{font-size:18px;line-height:1}.chama-quick-item:active{background:#e4efe9}.chama-quick-item.chatshop{background:#f0eafe;color:#5b21b6}
+      .chama-support-quick-badge{position:absolute;top:2px;right:8px;background:#d92d20;color:#fff;border-radius:999px;min-width:17px;height:17px;padding:0 4px;display:grid;place-items:center;font-size:9px}.chama-support-quick-badge:empty{display:none}
+      #chamaAffiliateDayTop,#chamaAffiliateToolsEntry,#chamaSupportEntry,#chamaChatShopPromo{display:none!important}
+      .chama-affiliate-menu{padding:6px 9px!important}.chama-affiliate-btn{min-height:38px!important;padding:7px 6px!important;font-size:12px!important;border-radius:10px!important}.chama-affiliate-btn.featured{padding-top:18px!important}.chama-affiliate-btn.featured::before{top:3px!important}
       #usersList .user-email,#chatEmail{display:none!important}
     `;
     document.head.appendChild(s);
@@ -101,6 +107,16 @@
     const a=document.createElement('a');a.id='chamaChatShopPromo';a.className='chama-chatshop-promo';a.href='https://www.alibr.com.br/';a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','Conheça o ChatShop');a.innerHTML='<span aria-hidden="true">🛍️</span><span>Conheça o ChatShop</span>';me.insertAdjacentElement('afterend',a);
   }
 
+  function installQuickMenu(){
+    if(document.getElementById('chamaQuickMenu'))return;const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
+    const nav=document.createElement('nav');nav.id='chamaQuickMenu';nav.className='chama-quick-menu';nav.setAttribute('aria-label','Atalhos do Chama');
+    nav.innerHTML='<button type="button" class="chama-quick-item" data-action="day"><span>⭐</span><span>Dia</span></button><button type="button" class="chama-quick-item" data-action="tools"><span>🧰</span><span>Ferramentas</span></button><button type="button" class="chama-quick-item" data-action="support"><span>🔥</span><span>Ajuda</span><i class="chama-support-quick-badge"></i></button><a class="chama-quick-item chatshop" href="https://www.alibr.com.br/" target="_blank" rel="noopener noreferrer"><span>🛍️</span><span>ChatShop</span></a>';
+    nav.querySelector('[data-action="day"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-day'));
+    nav.querySelector('[data-action="tools"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-tools'));
+    nav.querySelector('[data-action="support"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-support'));
+    sidebar.insertBefore(nav,sidebar.firstChild);
+  }
+
   async function waitForFirebase(attempt=0){
     try{const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const app=appMod.getApps()[0];if(app)return app;if(attempt>=20)return null;await new Promise(r=>setTimeout(r,100));return waitForFirebase(attempt+1)}catch{return null}
   }
@@ -126,6 +142,6 @@
     }catch{adminAllowed=false;customItems=DEFAULT_ITEMS.map(normalizeCustom);adminCheckDone=true}
   }
 
-  function start(){addMenuStyles();installTopMenu();installAuthPrivacy();installChatShopPromo();initAdminAccess();new MutationObserver(installChatShopPromo).observe(document.body,{childList:true,subtree:true})}
+  function start(){addMenuStyles();installTopMenu();installAuthPrivacy();installQuickMenu();initAdminAccess();new MutationObserver(installQuickMenu).observe(document.body,{childList:true,subtree:true})}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
