@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaAffiliateMenuStyleV2';
+  const STYLE_ID='chamaAffiliateMenuStyleV3';
   let db=null,fs=null,loaded=false;
 
   function addStyle(){
@@ -10,6 +10,9 @@
       .chama-affiliate-menu{display:flex;gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid #edf0ee}
       .chama-affiliate-btn{flex:1;min-width:0;min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;background:#fff;color:#0b7a53;border:1px solid #d8e7df;border-radius:14px;padding:10px 8px;font-size:13px;font-weight:850;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 7px #14221c0a;position:relative}
       .chama-affiliate-btn:active{transform:scale(.98);background:#eef7f2}
+      .chama-affiliate-btn.dridalia{background:linear-gradient(135deg,#8b633f 0%,#6f492e 100%)!important;color:#fff!important;border-color:#684229!important;box-shadow:0 3px 10px #5f3d2426!important}
+      .chama-affiliate-help{flex:0 0 34%;min-width:92px;min-height:48px;border:1px solid #cfe4d9;background:#edf7f2;color:#0b7a53;border-radius:14px;padding:9px 7px;font-size:13px;font-weight:900;cursor:pointer}
+      .chama-affiliate-help:active{background:#deefe6;transform:scale(.98)}
       .chama-affiliate-btn.featured{background:linear-gradient(135deg,#fff7e6 0%,#ffedc2 100%)!important;color:#8b4b00!important;border:1px solid #f4b94f!important;box-shadow:0 4px 12px #d88a001c!important;padding-top:22px!important}
       .chama-affiliate-btn.featured::before{content:'🔥 DESTAQUE';position:absolute;top:5px;left:7px;font-size:9px;font-weight:950;letter-spacing:.04em;color:#a55a00}
       @media(max-width:380px){.chama-affiliate-menu{gap:6px;padding:9px 8px}.chama-affiliate-btn{font-size:12px;padding:9px 5px}.chama-affiliate-btn.featured{padding-top:21px!important}}
@@ -47,6 +50,7 @@
     for(const item of valid){
       const a=document.createElement('a');
       a.className='chama-affiliate-btn';
+      if(/dridalia/i.test(item.label.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))a.classList.add('dridalia');
       if(item.featured&&!featuredUsed){a.classList.add('featured');featuredUsed=true}
       a.href=item.url;
       a.target='_blank';
@@ -55,6 +59,7 @@
       a.title=item.featured?`Destaque: ${item.label}`:item.label;
       box.appendChild(a);
     }
+    const help=document.createElement('button');help.type='button';help.className='chama-affiliate-help';help.innerHTML='🔥 Ajuda';help.setAttribute('aria-label','Fale com o Chama');help.onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-support'));box.appendChild(help);
     sidebar.insertBefore(box,sidebar.firstChild);
   }
 
