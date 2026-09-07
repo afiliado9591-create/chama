@@ -1,6 +1,7 @@
 (()=>{
   const STYLE_ID='chamaHomeSearchStyleV3';
-  let me=null,db=null,fs=null,suggestionsLoadedFor='';
+  let me=null,db=null,fs=null,suggestionsLoadedFor='',myInterest='';
+  const INTEREST_LABELS={religiao:'Religião',namoro:'Namoro (18+)',amizade:'Amizade',negocios:'Negócios'};
 
   const norm=v=>String(v||'').trim().toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const esc=v=>String(v||'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
@@ -51,7 +52,7 @@
     try{
       const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const app=appMod.getApps()[0];if(!app){if(attempt>=20)return null;await new Promise(r=>setTimeout(r,100));return getFirebase(attempt+1)}
       const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');fs=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');db=fs.getFirestore(app);const auth=authMod.getAuth(app);
-      authMod.onAuthStateChanged(auth,u=>{me=u||null;if(!me){suggestionsLoadedFor='';document.getElementById('chamaSuggestions')?.remove();return}loadSuggestions()});return true;
+      authMod.onAuthStateChanged(auth,async u=>{me=u||null;myInterest='';if(!me){suggestionsLoadedFor='';document.getElementById('chamaSuggestions')?.remove();return}try{const own=await fs.getDoc(fs.doc(db,'users',me.uid));myInterest=String(own.data()?.conversationInterest||'')}catch(_){}suggestionsLoadedFor='';loadSuggestions()});return true;
     }catch(e){console.error('Chama: busca não iniciou',e);return null}
   }
 
@@ -78,7 +79,8 @@
     document.getElementById('chamaSuggestions')?.remove();const list=document.getElementById('usersList');if(!list||!items.length)return;
     const box=document.createElement('section');box.id='chamaSuggestions';box.className='chama-suggestions';box.innerHTML='<div class="chama-suggestions-head">Sugestões para conversar</div><div class="chama-suggestions-note">Conheça pessoas da comunidade. A conversa só começa quando você tocar e enviar uma mensagem.</div>';
     for(const u of items.slice(0,20)){
-      const row=document.createElement('div');row.className='chama-suggestion-user';row.dataset.uid=u.uid;row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||u.tipoPerfil||'Usuário do Chama')}</div></div><span class="chama-suggestion-badge">Conversar</span>`;
+      const detail=[INTEREST_LABELS[u.conversationInterest]||'',u.cidade||u.tipoPerfil||''].filter(Boolean).join(' • ')||'Usuário do Chama';
+      const row=document.createElement('div');row.className='chama-suggestion-user';row.dataset.uid=u.uid;row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(detail)}</div></div><span class="chama-suggestion-badge">Conversar</span>`;
       setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);row.onclick=()=>openSuggested(u);box.appendChild(row);
     }
     list.insertAdjacentElement('afterend',box);
@@ -87,10 +89,11 @@
   async function loadSuggestions(){
     if(!me||!db||!fs||suggestionsLoadedFor===me.uid)return;suggestionsLoadedFor=me.uid;
     try{
-      const found=new Map(),add=snap=>snap.forEach(d=>{if(d.id===me.uid||found.has(d.id))return;const x=d.data()||{};found.set(d.id,{uid:d.id,nome:String(x.nome||x.name||x.email?.split('@')?.[0]||'Usuário'),cidade:String(x.cidade||''),tipoPerfil:String(x.tipoPerfil||''),photoUrl:safePhotoUrl(x.photoUrl)})});
+      const found=new Map(),add=snap=>snap.forEach(d=>{if(d.id===me.uid||found.has(d.id))return;const x=d.data()||{};found.set(d.id,{uid:d.id,nome:String(x.nome||x.name||x.email?.split('@')?.[0]||'Usuário'),cidade:String(x.cidade||''),tipoPerfil:String(x.tipoPerfil||''),conversationInterest:String(x.conversationInterest||''),photoUrl:safePhotoUrl(x.photoUrl)})});
+      if(INTEREST_LABELS[myInterest]){const matching=await fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.where('conversationInterest','==',myInterest),fs.limit(21)));add(matching)}
       const profiles=await fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.limit(21)));add(profiles);
       if(found.size<20){const users=await fs.getDocs(fs.query(fs.collection(db,'users'),fs.limit(21)));add(users)}
-      const items=[...found.values()].sort((a,b)=>dailyOrder(a.uid)-dailyOrder(b.uid)).slice(0,20);renderSuggestions(items);
+      const items=[...found.values()].sort((a,b)=>Number(b.conversationInterest===myInterest)-Number(a.conversationInterest===myInterest)||dailyOrder(a.uid)-dailyOrder(b.uid)).slice(0,20);renderSuggestions(items);
     }catch(e){console.warn('Chama: sugestões não carregaram',e);suggestionsLoadedFor=''}
   }
 
@@ -99,11 +102,12 @@
     const list=document.getElementById('usersList'),results=document.getElementById('chamaPeopleResults');if(!list||!results)return;list.hidden=true;document.getElementById('chamaSuggestions')?.setAttribute('hidden','');results.hidden=false;results.innerHTML='<div class="chama-search-status">Buscando pessoas...</div>';
     try{
       const [byName,byCity]=await Promise.all([queryField('nomeBusca',term),queryField('cidadeBusca',term)]),found=new Map();
-      const add=snap=>snap.forEach(d=>{const x=d.data()||{};if(d.id!==me.uid)found.set(d.id,{uid:d.id,nome:String(x.nome||'Usuário'),cidade:String(x.cidade||''),photoUrl:safePhotoUrl(x.photoUrl)})});add(byName);add(byCity);const items=[...found.values()].slice(0,30);results.innerHTML='';
+      const add=snap=>snap.forEach(d=>{const x=d.data()||{};if(d.id!==me.uid)found.set(d.id,{uid:d.id,nome:String(x.nome||'Usuário'),cidade:String(x.cidade||''),conversationInterest:String(x.conversationInterest||''),photoUrl:safePhotoUrl(x.photoUrl)})});add(byName);add(byCity);const items=[...found.values()].slice(0,30);results.innerHTML='';
       const top=document.createElement('div');top.className='chama-home-tools';const label=document.createElement('div');label.style.cssText='flex:1;padding:10px 4px;font-weight:800;color:#34443c';label.textContent=`Resultados: ${items.length}`;const cancel=document.createElement('button');cancel.type='button';cancel.className='chama-home-cancel';cancel.textContent='Voltar';cancel.onclick=showConversations;top.append(label,cancel);results.appendChild(top);
       if(!items.length){const empty=document.createElement('div');empty.className='chama-search-status';empty.textContent='Nenhuma pessoa encontrada. Usuários antigos aparecerão na busca quando acessarem esta nova versão do Chama.';results.appendChild(empty);return}
       for(const u of items){
-        const row=document.createElement('div');row.className='chama-search-user';row.dataset.uid=u.uid;row.dataset.photoUrl=u.photoUrl||'';row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||'Cidade não informada')}</div></div>`;setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);
+        const detail=[INTEREST_LABELS[u.conversationInterest]||'',u.cidade||''].filter(Boolean).join(' • ')||'Cidade não informada';
+        const row=document.createElement('div');row.className='chama-search-user';row.dataset.uid=u.uid;row.dataset.photoUrl=u.photoUrl||'';row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(detail)}</div></div>`;setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);
         row.onclick=()=>{if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');const pseudo=ensureBridge(u);window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo,photoUrl:u.photoUrl||''})};results.appendChild(row);
       }
     }catch(e){console.error(e);results.innerHTML='<div class="chama-search-status">Não foi possível fazer a busca agora.</div>'}
@@ -113,6 +117,7 @@
 
   async function start(){
     addStyle();ensureUi();await getFirebase();const list=document.getElementById('usersList');
+    document.addEventListener('chama-conversation-interest',e=>{myInterest=String(e.detail?.value||'');suggestionsLoadedFor='';loadSuggestions()});
     if(list)new MutationObserver(()=>setTimeout(refreshConversationRows,0)).observe(list,{childList:true,subtree:true});
     setTimeout(refreshConversationRows,800);setTimeout(refreshConversationRows,1800);
   }
