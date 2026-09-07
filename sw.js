@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v166";
+const VERSION="chama-clean-v167";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "166") return;
-        url.searchParams.set("chama_update", "166");
+        if (url.searchParams.get("chama_update") === "167") return;
+        url.searchParams.set("chama_update", "167");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -36,7 +36,7 @@ function injectSafeUi(html) {
   const avatarEverywhereMarker = 'avatar-everywhere.js?v=2';
   const affiliateMenuMarker = 'affiliate-menu.js?v=2';
   const layoutRefreshMarker = 'layout-refresh.js?v=1';
-  const profileHomeMessageMarker = 'profile-home-message.js?v=1';
+  const profileHomeMessageMarker = 'profile-home-message.js?v=2';
   const homeProfileMessageMarker = 'home-profile-message.js?v=1';
   const socialVideoMarker = 'social-video-links.js?v=1';
   const clickableLinksMarker = 'clickable-links.js?v=1';
@@ -122,7 +122,7 @@ function injectSafeUi(html) {
   if (!out.includes(avatarEverywhereMarker)) out = out.replace('</body>', `<script src="./avatar-everywhere.js?v=2"></script></body>`);
   if (!out.includes(affiliateMenuMarker)) out = out.replace('</body>', `<script src="./affiliate-menu.js?v=2"></script></body>`);
   if (!out.includes(layoutRefreshMarker)) out = out.replace('</body>', `<script src="./layout-refresh.js?v=1"></script></body>`);
-  if (!out.includes(profileHomeMessageMarker)) out = out.replace('</body>', `<script src="./profile-home-message.js?v=1"></script></body>`);
+  if (!out.includes(profileHomeMessageMarker)) out = out.replace('</body>', `<script src="./profile-home-message.js?v=2"></script></body>`);
   if (!out.includes(homeProfileMessageMarker)) out = out.replace('</body>', `<script src="./home-profile-message.js?v=1"></script></body>`);
   if (!out.includes(socialVideoMarker)) out = out.replace('</body>', `<script src="./social-video-links.js?v=1"></script></body>`);
   if (!out.includes(clickableLinksMarker)) out = out.replace('</body>', `<script src="./clickable-links.js?v=1"></script></body>`);
