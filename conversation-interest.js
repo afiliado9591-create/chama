@@ -58,10 +58,12 @@
     let box=body.querySelector('#chamaInterestProfile');
     if(!box){
       box=document.createElement('div');box.id='chamaInterestProfile';box.className='chama-interest-profile';
+      box.innerHTML='<div class="chama-interest-profile-main"><small>Público que quero conversar</small><strong></strong></div><button type="button" class="chama-interest-change">Alterar</button>';
+      box.querySelector('.chama-interest-change').onclick=()=>openChooser(false);
       const location=body.querySelector('.chama-profile-location');(location||body.firstElementChild)?.insertAdjacentElement(location?'afterend':'beforebegin',box);
     }
-    box.innerHTML=`<div class="chama-interest-profile-main"><small>Público que quero conversar</small><strong>${ICONS[current]||'💬'} ${label(current)}</strong></div><button type="button" class="chama-interest-change">Alterar</button>`;
-    box.querySelector('.chama-interest-change').onclick=()=>openChooser(false);
+    const text=`${ICONS[current]||'💬'} ${label(current)}`,strong=box.querySelector('strong');
+    if(strong&&strong.textContent!==text)strong.textContent=text;
   }
 
   async function loadInterest(){
@@ -81,7 +83,7 @@
       if(!app){if(attempt<30)setTimeout(()=>start(attempt+1),150);return}
       const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');fs=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');db=fs.getFirestore(app);
       authMod.onAuthStateChanged(authMod.getAuth(app),user=>{me=user||null;current='';closeChooser();if(me)loadInterest()});
-      if(!profileObserver){profileObserver=new MutationObserver(updateProfileControl);profileObserver.observe(document.body,{childList:true,subtree:true})}
+      if(!profileObserver){profileObserver=new MutationObserver(mutations=>{if(mutations.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.id==='chamaProfileModal'||n.querySelector?.('#chamaProfileModal')))))updateProfileControl()});profileObserver.observe(document.body,{childList:true,subtree:true})}
     }catch(e){console.error('Chama: escolha de público não iniciou',e)}
   }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>start(),{once:true}):start();
