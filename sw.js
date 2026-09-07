@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v164";
+const VERSION="chama-clean-v166";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "164") return;
-        url.searchParams.set("chama_update", "164");
+        if (url.searchParams.get("chama_update") === "166") return;
+        url.searchParams.set("chama_update", "166");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -29,10 +29,10 @@ function injectSafeUi(html) {
   const supportMarker = 'chama-support.js?v=4';
   const unreadMarker = 'unread-badges.js?v=6';
   const profileMarker = 'profile-safe-v6.js?v=3';
-  const homeMarker = 'home-conversations-search.js?v=7';
+  const homeMarker = 'home-conversations-search.js?v=8';
   const peopleFallbackMarker = 'people-search-fallback.js?v=1';
   const backMarker = 'ui-back-button.js?v=1';
-  const ownAvatarMarker = 'home-own-avatar.js?v=5';
+  const ownAvatarMarker = 'home-own-avatar.js?v=6';
   const avatarEverywhereMarker = 'avatar-everywhere.js?v=2';
   const affiliateMenuMarker = 'affiliate-menu.js?v=2';
   const layoutRefreshMarker = 'layout-refresh.js?v=1';
@@ -115,10 +115,10 @@ function injectSafeUi(html) {
   if (!out.includes(supportMarker)) out = out.replace('</body>', `<script src="./chama-support.js?v=4"></script></body>`);
   if (!out.includes(unreadMarker)) out = out.replace('</body>', `<script src="./unread-badges.js?v=6"></script></body>`);
   if (!out.includes(profileMarker)) out = out.replace('</body>', `<script src="./profile-safe-v6.js?v=3"></script></body>`);
-  if (!out.includes(homeMarker)) out = out.replace('</body>', `<script src="./home-conversations-search.js?v=7"></script></body>`);
+  if (!out.includes(homeMarker)) out = out.replace('</body>', `<script src="./home-conversations-search.js?v=8"></script></body>`);
   if (!out.includes(peopleFallbackMarker)) out = out.replace('</body>', `<script src="./people-search-fallback.js?v=1"></script></body>`);
   if (!out.includes(backMarker)) out = out.replace('</body>', `<script src="./ui-back-button.js?v=1"></script></body>`);
-  if (!out.includes(ownAvatarMarker)) out = out.replace('</body>', `<script src="./home-own-avatar.js?v=5"></script></body>`);
+  if (!out.includes(ownAvatarMarker)) out = out.replace('</body>', `<script src="./home-own-avatar.js?v=6"></script></body>`);
   if (!out.includes(avatarEverywhereMarker)) out = out.replace('</body>', `<script src="./avatar-everywhere.js?v=2"></script></body>`);
   if (!out.includes(affiliateMenuMarker)) out = out.replace('</body>', `<script src="./affiliate-menu.js?v=2"></script></body>`);
   if (!out.includes(layoutRefreshMarker)) out = out.replace('</body>', `<script src="./layout-refresh.js?v=1"></script></body>`);
