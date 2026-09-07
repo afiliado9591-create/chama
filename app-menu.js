@@ -27,7 +27,8 @@
       .chama-auth-privacy{display:block;text-align:center;margin-top:16px;color:#0b7a53;text-decoration:none;font-size:13px;font-weight:700}
       .chama-chatshop-promo{margin:10px 12px 0;padding:11px 13px;border-radius:13px;background:#6d28d9;color:#fff!important;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:900;box-shadow:0 4px 12px #6d28d933}
       .chama-chatshop-promo:hover,.chama-chatshop-promo:active{background:#5b21b6}
-      .chama-quick-menu{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:7px 9px;background:#fff;border-bottom:1px solid #e7ece9;position:relative;z-index:3}
+      .chama-quick-menu{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;padding:7px 9px;background:#fff;border-bottom:1px solid #e7ece9;position:relative;z-index:3}
+      .chama-quick-menu:empty{display:none!important}
       .chama-quick-item{min-width:0;border:0;background:#f3f7f5;color:#284238;text-decoration:none;border-radius:10px;padding:7px 3px 6px;display:grid;justify-items:center;gap:2px;font-size:10px;font-weight:800;line-height:1.1;cursor:pointer;position:relative}
       .chama-quick-item span:first-child{font-size:18px;line-height:1}.chama-quick-item:active{background:#e4efe9}.chama-quick-item.chatshop{background:#f0eafe;color:#5b21b6}
       .chama-support-quick-badge{position:absolute;top:2px;right:8px;background:#d92d20;color:#fff;border-radius:999px;min-width:17px;height:17px;padding:0 4px;display:grid;place-items:center;font-size:9px}.chama-support-quick-badge:empty{display:none}
@@ -71,6 +72,9 @@
     const links=document.createElement('nav');links.className='chama-menu-links';
     addLink(links,'🏠','Início','./');
     addAction(links,'🔥','Fale com o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-support')));
+    const day=addAction(links,'⭐','Dia do Afiliado',()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-day')));day.id='chamaAffiliateDayMenuLink';
+    const tools=addAction(links,'🧰','Ferramentas',()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-tools')));tools.dataset.professionalOnly='true';
+    const chatshop=addLink(links,'🛍️','ChatShop','https://www.alibr.com.br/');chatshop.dataset.professionalOnly='true';chatshop.target='_blank';chatshop.rel='noopener noreferrer';chatshop.classList.add('custom-highlight');
     const referral=addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));referral.dataset.professionalOnly='true';
     addAction(links,'🔥','Achadinhos da Comunidade',()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers')));
     const tutorial=addLink(links,'🎓','Como usar o Chama','./como-usar.html');tutorial.classList.add('tutorial');
@@ -78,6 +82,7 @@
     for(const item of customItems){
       if(!item.enabled||!item.label)continue;
       const href=item.type==='page'&&item.slug?`./pagina.html?p=${encodeURIComponent(item.slug)}`:item.url;
+      if(/chatshop/i.test(item.label)||(/^https:\/\/(www\.)?alibr\.com\.br\/?$/i.test(href)))continue;
       if(!href)continue;const a=addLink(links,item.icon,item.label,href);a.dataset.professionalOnly='true';if(item.highlight)a.classList.add('custom-highlight');if(item.type==='external'){a.target='_blank';a.rel='noopener noreferrer'}
     }
 
@@ -110,11 +115,8 @@
   function installQuickMenu(){
     if(document.getElementById('chamaQuickMenu'))return;const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
     const nav=document.createElement('nav');nav.id='chamaQuickMenu';nav.className='chama-quick-menu';nav.setAttribute('aria-label','Atalhos do Chama');
-    nav.innerHTML='<button type="button" class="chama-quick-item" data-action="day"><span>⭐</span><span>Dia</span></button><button type="button" class="chama-quick-item" data-action="finds"><span>🔥</span><span>Achadinhos</span></button><button type="button" class="chama-quick-item" data-action="tools"><span>🧰</span><span>Ferramentas</span></button><button type="button" class="chama-quick-item" data-action="support"><span>🔥</span><span>Ajuda</span><i class="chama-support-quick-badge"></i></button><a class="chama-quick-item chatshop" href="https://www.alibr.com.br/" target="_blank" rel="noopener noreferrer"><span>🛍️</span><span>ChatShop</span></a>';
-    nav.querySelector('[data-action="day"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-day'));
+    nav.innerHTML='<button type="button" class="chama-quick-item" data-action="finds"><span>🔥</span><span>Achadinhos</span></button>';
     nav.querySelector('[data-action="finds"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers'));
-    nav.querySelector('[data-action="tools"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-tools'));
-    nav.querySelector('[data-action="support"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-support'));
     sidebar.insertBefore(nav,sidebar.firstChild);
   }
 
