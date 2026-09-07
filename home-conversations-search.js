@@ -43,7 +43,7 @@
 
   function refreshConversationRows(){
     const list=document.getElementById('usersList');if(!list)return;let count=0;
-    list.querySelectorAll('.user:not(.chama-search-bridge)').forEach(row=>{const has=!!row.querySelector('.chama-conversation-side');row.classList.toggle('chama-has-conversation',has);if(has)count++});
+    list.querySelectorAll('.user:not(.chama-search-bridge):not(.chama-own-list-row)').forEach(row=>{const has=!!row.querySelector('.chama-conversation-side');row.classList.toggle('chama-has-conversation',has);if(has)count++});
     document.getElementById('chamaEmptyConversations')?.remove();
     if(count===0&&list.classList.contains('chama-conversations-mode')){const empty=document.createElement('div');empty.id='chamaEmptyConversations';empty.className='chama-empty-conversations';empty.textContent='Nenhuma conversa ainda. Use a busca acima para encontrar uma pessoa.';list.appendChild(empty)}
   }
