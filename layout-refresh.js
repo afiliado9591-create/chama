@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaLayoutRefreshV2';
+  const STYLE_ID='chamaLayoutRefreshV3';
 
   function apply(){
     if(document.getElementById(STYLE_ID))return;
@@ -66,10 +66,24 @@
       .chama-home-tools{background:#fff!important}
       .chama-home-search-btn{box-shadow:0 3px 9px #0b7a5320!important}
 
+      /* Tipografia da tela principal inspirada nas proporções do WhatsApp. */
+      .topbar h2{font-size:23px!important;line-height:1.15!important}
+      .topbar .chama-community-count{font-size:13px!important;font-variant-numeric:tabular-nums}
+      #logoutBtn{font-size:16px!important}
+      .chama-home-tools input{font-size:17px!important;line-height:1.3!important;color:#26332d!important}
+      #usersList .user-name{font-size:18px!important;line-height:1.22!important;font-weight:750!important;letter-spacing:-.01em!important}
+      #usersList .conversation-preview{font-size:15px!important;line-height:1.28!important;color:#66716c!important}
+      #usersList .chama-profile-home-message,#usersList .chama-own-description{font-size:14px!important;line-height:1.3!important}
+      #usersList .conversation-time,.chama-last-message{font-size:12px!important;font-variant-numeric:tabular-nums}
+      #usersList .conversation-unread,.chama-unread-badge{font-size:12px!important;font-variant-numeric:tabular-nums}
+      .chama-affiliate-day-kicker{font-size:12px!important}.chama-affiliate-day-name{font-size:18px!important}
+      .chama-affiliate-day-title,.chama-affiliate-day-cta{font-size:14px!important}
+      .chama-engagement button,.chama-engagement [data-k=views]{font-size:13px!important;font-variant-numeric:tabular-nums}
+
       @media(max-width:700px){
         #appView.shell{max-width:100%!important;margin:0!important}
         .topbar{height:62px!important;min-height:62px!important;padding-left:16px!important;padding-right:10px!important;gap:8px!important}
-        .topbar h2{font-size:20px!important;gap:9px!important}
+        .topbar h2{font-size:23px!important;gap:9px!important}
         .topbar .chama-community-count-wrap{min-width:0!important}
         .topbar .chama-community-count{padding:5px 8px!important}
         .chama-main-menu-btn{width:40px!important;height:40px!important;flex-basis:40px!important}
