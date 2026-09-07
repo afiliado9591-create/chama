@@ -7,7 +7,7 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      .me.chama-me-with-photo{display:flex;align-items:center;gap:12px;padding:14px 16px}
+      .me.chama-me-with-photo{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f5fbf8;border-top:1px solid #edf2ef;border-bottom:1px solid #edf2ef}
       .chama-me-avatar{width:56px;height:56px;border-radius:50%;background:#dff4ea;color:#0b7a53;display:grid;place-items:center;font-size:20px;font-weight:900;overflow:hidden;flex:0 0 56px;border:2px solid #cbe9da;cursor:pointer;box-shadow:0 2px 8px #0b7a5314}
       .chama-me-avatar img{width:100%;height:100%;object-fit:cover;display:block}
       .chama-me-info{min-width:0;flex:1}.chama-me-info #meName{font-size:18px}.chama-me-info #meEmail{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -23,8 +23,9 @@
   function ensureOwnAvatar(){
     const box=document.querySelector('.me');
     if(!box)return null;
+    const title=box.parentElement?.querySelector('.section-title');if(title&&title.nextElementSibling!==box)title.insertAdjacentElement('afterend',box);
     let avatar=document.getElementById('chamaMeAvatar');
-    if(avatar)return avatar;
+    if(avatar){const name=document.getElementById('meName');if(name)name.textContent='Eu';return avatar}
 
     const info=document.createElement('div');
     info.className='chama-me-info';
@@ -40,6 +41,7 @@
 
     box.classList.add('chama-me-with-photo');
     box.append(avatar,info);
+    const name=document.getElementById('meName');if(name)name.textContent='Eu';
     return avatar;
   }
 
@@ -91,6 +93,7 @@
       authMod.onAuthStateChanged(auth,user=>{
         me=user||null;lastPhoto='';
         if(!user){render('');return}
+        const name=document.getElementById('meName');if(name)name.textContent='Eu';
         loadOwnPhoto();
       });
     }catch(e){console.warn('Chama: foto do topo não iniciou',e)}
