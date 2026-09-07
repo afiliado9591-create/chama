@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaAffiliateMenuStyleV6';
+  const STYLE_ID='chamaAffiliateMenuStyleV7';
   let db=null,fs=null,loaded=false;
 
   function addStyle(){
@@ -31,7 +31,9 @@
   }
 
   function decorateExisting(){
-    const box=document.getElementById('chamaAffiliateMenu');if(!box)return;
+    const sidebar=document.querySelector('.sidebar'),box=document.getElementById('chamaAffiliateMenu');if(!sidebar)return;
+    const day=document.getElementById('chamaAffiliateDayTop');if(day&&day.parentNode===sidebar&&sidebar.firstElementChild!==day)sidebar.insertBefore(day,sidebar.firstElementChild);
+    if(!box)return;const users=document.getElementById('usersList');if(users&&users.parentNode===sidebar&&users.nextElementSibling!==box)users.insertAdjacentElement('afterend',box);
     box.querySelectorAll('.chama-affiliate-btn').forEach(a=>{if(/dridalia/i.test(a.textContent.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))a.classList.add('dridalia')});
     if(!box.querySelector('.chama-affiliate-help')){const help=document.createElement('button');help.type='button';help.className='chama-affiliate-help';help.innerHTML='🔥 Ajuda';help.setAttribute('aria-label','Fale com o Chama');help.onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-support'));box.appendChild(help)}
   }
