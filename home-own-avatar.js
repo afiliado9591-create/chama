@@ -23,7 +23,7 @@
   function ensureOwnAvatar(){
     const box=document.querySelector('.me');
     if(!box)return null;
-    const title=box.parentElement?.querySelector('.section-title');if(title&&title.nextElementSibling!==box)title.insertAdjacentElement('afterend',box);
+    const list=document.getElementById('usersList');if(list&&list.previousElementSibling!==box)list.insertAdjacentElement('beforebegin',box);
     let avatar=document.getElementById('chamaMeAvatar');
     if(avatar){const name=document.getElementById('meName');if(name)name.textContent='Eu';return avatar}
 
