@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v168";
+const VERSION="chama-clean-v169";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "168") return;
-        url.searchParams.set("chama_update", "168");
+        if (url.searchParams.get("chama_update") === "169") return;
+        url.searchParams.set("chama_update", "169");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -54,7 +54,7 @@ function injectSafeUi(html) {
   const conversationInterestMarker = 'conversation-interest.js?v=2';
   const targetedBannerMarker = 'targeted-banner.js?v=3';
   const adminTargetedBannerMarker = 'admin-targeted-banner.js?v=3';
-  const engagementMarker = 'engagement.js?v=1';
+  const engagementMarker = 'engagement.js?v=2';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -141,7 +141,7 @@ function injectSafeUi(html) {
   if (!out.includes(conversationInterestMarker)) out = out.replace('</body>', `<script src="./conversation-interest.js?v=2"></script></body>`);
   if (!out.includes(targetedBannerMarker)) out = out.replace('</body>', `<script src="./targeted-banner.js?v=3"></script></body>`);
   if (!out.includes(adminTargetedBannerMarker)) out = out.replace('</body>', `<script src="./admin-targeted-banner.js?v=3"></script></body>`);
-  if (!out.includes(engagementMarker)) out = out.replace('</body>', `<script src="./engagement.js?v=1"></script></body>`);
+  if (!out.includes(engagementMarker)) out = out.replace('</body>', `<script src="./engagement.js?v=2"></script></body>`);
   return out;
 }
 
