@@ -23,7 +23,7 @@
     };
   }
   function normalizeProfile(d={}){
-    return {profileType:d.profileType==='professional'?'professional':'social',professionalPromo:normalizePromo(d.professionalPromo||{})};
+    return {profileType:d.profileType==='professional'||d.tipoPerfil==='profissional'?'professional':'social',professionalPromo:normalizePromo(d.professionalPromo||{})};
   }
   function promoReady(p){return !!(p?.title&&p?.affiliateUrl)}
 
@@ -59,7 +59,7 @@
   async function readProfile(uid,force=false){
     if(!uid||!db||!fs)return normalizeProfile({});
     if(!force&&profileCache.has(uid))return profileCache.get(uid);
-    try{const snap=await fs.getDoc(fs.doc(db,'publicProfiles',uid));const p=normalizeProfile(snap.exists()?snap.data()||{}:{});profileCache.set(uid,p);return p}catch{return normalizeProfile({})}
+    try{const [publicSnap,userSnap]=await Promise.all([fs.getDoc(fs.doc(db,'publicProfiles',uid)),fs.getDoc(fs.doc(db,'users',uid))]);const publicData=publicSnap.exists()?publicSnap.data()||{}:{},userData=userSnap.exists()?userSnap.data()||{}:{};const p=normalizeProfile({...userData,...publicData,tipoPerfil:userData.tipoPerfil||publicData.tipoPerfil});profileCache.set(uid,p);return p}catch{return normalizeProfile({})}
   }
 
   function setType(box,type){
@@ -70,7 +70,7 @@
 
   async function injectEditor(){
     const modal=document.getElementById('chamaProfileModal');
-    if(!me||!modal||!modal.querySelector('#chamaProfilePhotoBtn')||modal.querySelector('#chamaProfessionalPromoBox'))return;
+    if(!me||document.body.dataset.profileType!=='profissional'||!modal||!modal.querySelector('#chamaProfilePhotoBtn')||modal.querySelector('#chamaProfessionalPromoBox'))return;
     const edit=modal.querySelector('.chama-profile-edit'),saveProfile=modal.querySelector('#chamaProfileSave');if(!edit||!saveProfile)return;
     const p=await readProfile(me.uid,true);ownProfile=p;
     const promo=p.professionalPromo;
@@ -105,7 +105,7 @@
 
   function removeSendButton(){document.getElementById('chamaPromoSendBtn')?.remove()}
   function installSendButton(){
-    removeSendButton();if(!me||ownProfile?.profileType!=='professional'||!promoReady(ownProfile.professionalPromo))return;
+    removeSendButton();if(!me||document.body.dataset.profileType!=='profissional'||ownProfile?.profileType!=='professional'||!promoReady(ownProfile.professionalPromo))return;
     const composer=document.getElementById('composer'),input=document.getElementById('messageInput');if(!composer||!input)return;
     const btn=document.createElement('button');btn.id='chamaPromoSendBtn';btn.type='button';btn.className='chama-promo-send-btn';btn.title='Enviar minha divulgação';btn.setAttribute('aria-label','Enviar minha divulgação');btn.textContent='🏷️';
     composer.insertBefore(btn,input);btn.onclick=sendOwnPromo;
@@ -153,7 +153,7 @@
   async function showPinned(detail={}){
     document.getElementById('chamaPinnedProfessionalPromo')?.remove();
     const uid=String(detail.uid||'');if(!uid)return;
-    const p=await readProfile(uid,true);if(p.profileType!=='professional'||!p.professionalPromo.pinned||!promoReady(p.professionalPromo))return;
+    const p=await readProfile(uid,true);if(p.profileType!=='professional'||!promoReady(p.professionalPromo))return;
     const active=document.getElementById('activeChat');if(!active||active.dataset.uid!==uid)return;
     const head=active.querySelector('.chat-head');if(!head)return;const card=buildCard(p.professionalPromo,true);card.id='chamaPinnedProfessionalPromo';head.insertAdjacentElement('afterend',card);
   }
