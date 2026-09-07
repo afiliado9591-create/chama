@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v151";
+const VERSION="chama-clean-v152";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "151") return;
-        url.searchParams.set("chama_update", "151");
+        if (url.searchParams.get("chama_update") === "152") return;
+        url.searchParams.set("chama_update", "152");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -48,9 +48,9 @@ function injectSafeUi(html) {
   const readReceiptMarker = 'read-receipts.js?v=1';
   const communityCountMarker = 'community-count.js?v=2';
   const adminCommunityCountMarker = 'admin-community-count.js?v=1';
-  const affiliateDayMarker = 'affiliate-day.js?v=2';
+  const affiliateDayMarker = 'affiliate-day.js?v=3';
   const adminAffiliateDayMarker = 'admin-affiliate-day.js?v=1';
-  const accountAccessMarker = 'account-access.js?v=3';
+  const accountAccessMarker = 'account-access.js?v=4';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -131,9 +131,9 @@ function injectSafeUi(html) {
   if (!out.includes(readReceiptMarker)) out = out.replace('</body>', `<script src="./read-receipts.js?v=1"></script></body>`);
   if (!out.includes(communityCountMarker)) out = out.replace('</body>', `<script src="./community-count.js?v=2"></script></body>`);
   if (!out.includes(adminCommunityCountMarker)) out = out.replace('</body>', `<script src="./admin-community-count.js?v=1"></script></body>`);
-  if (!out.includes(affiliateDayMarker)) out = out.replace('</body>', `<script src="./affiliate-day.js?v=2"></script></body>`);
+  if (!out.includes(affiliateDayMarker)) out = out.replace('</body>', `<script src="./affiliate-day.js?v=3"></script></body>`);
   if (!out.includes(adminAffiliateDayMarker)) out = out.replace('</body>', `<script src="./admin-affiliate-day.js?v=1"></script></body>`);
-  if (!out.includes(accountAccessMarker)) out = out.replace('</body>', `<script src="./account-access.js?v=3"></script></body>`);
+  if (!out.includes(accountAccessMarker)) out = out.replace('</body>', `<script src="./account-access.js?v=4"></script></body>`);
   return out;
 }
 
