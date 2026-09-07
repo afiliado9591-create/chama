@@ -29,7 +29,7 @@
   }
 
   function installUpgrade(){
-    document.getElementById('chamaUpgradeAccount')?.remove();if(professional()||!me)return;
+    const old=document.getElementById('chamaUpgradeAccount');if(professional()||!me){old?.remove();return}if(old)return;
     const sidebar=document.querySelector('.sidebar'),quick=document.getElementById('chamaQuickMenu');if(!sidebar)return;
     const b=document.createElement('button');b.id='chamaUpgradeAccount';b.type='button';b.className='chama-upgrade-entry';b.innerHTML='<span>💼</span><span>Migrar para conta profissional<small>Libere catálogo, links e ferramentas comerciais</small></span>';
     b.onclick=upgrade;(quick||sidebar.firstElementChild)?.insertAdjacentElement('afterend',b);
