@@ -65,10 +65,10 @@
 
     const box=document.createElement('div');box.id='chamaHomeMessageBox';box.className='chama-home-message-box';
     cached=readLocal(me.uid);
-    box.innerHTML=`<div class="chama-home-message-title">Mensagem abaixo do seu nome na home</div><div class="chama-home-message-options"><button type="button" class="chama-home-message-type" data-type="social">💬 Social</button><button type="button" class="chama-home-message-type" data-type="commercial">🛍️ Comercial</button></div><input class="chama-home-message-input" maxlength="70" placeholder="Ex.: Bom dia! Deus abençoe 🙏" value=""><div class="chama-home-message-help">Social: recado pessoal. Comercial: promoção, serviço ou divulgação. Deixe vazio para não exibir mensagem.</div><button type="button" class="chama-home-message-save">Salvar mensagem da home</button><div class="chama-home-message-msg"></div>`;
+    box.innerHTML=`<div class="chama-home-message-title">Minha descrição ou nicho</div><div class="chama-home-message-options"><button type="button" class="chama-home-message-type" data-type="social">💬 Pessoal</button><button type="button" class="chama-home-message-type" data-type="commercial">🛍️ Profissional</button></div><input class="chama-home-message-input" maxlength="70" placeholder="Ex.: Deus seja louvado 🙏" value=""><div class="chama-home-message-help">Este texto aparece abaixo do seu nome. Escreva sua atividade, seu nicho ou uma frase pessoal.</div><button type="button" class="chama-home-message-save">Salvar minha descrição</button><div class="chama-home-message-msg"></div>`;
     edit.insertBefore(box,saveProfile);
     const input=box.querySelector('.chama-home-message-input');input.value=cached.text;setActive(box,cached.type);
-    box.querySelectorAll('.chama-home-message-type').forEach(btn=>btn.onclick=()=>{cached.type=cleanType(btn.dataset.type);setActive(box,cached.type);input.placeholder=cached.type==='commercial'?'Ex.: 🛍️ Ofertas novas na minha vitrine':'Ex.: Bom dia! Deus abençoe 🙏'});
+    box.querySelectorAll('.chama-home-message-type').forEach(btn=>btn.onclick=()=>{cached.type=cleanType(btn.dataset.type);setActive(box,cached.type);input.placeholder=cached.type==='commercial'?'Ex.: Moda feminina e acessórios':'Ex.: Deus seja louvado 🙏'});
     const save=box.querySelector('.chama-home-message-save'),msg=box.querySelector('.chama-home-message-msg');
     save.onclick=async()=>{
       if(!me||!db||!fs)return;
@@ -78,7 +78,7 @@
         cached={type,text};writeLocal(me.uid,cached);msg.textContent=text?'Mensagem salva ✓':'Mensagem removida ✓';
         document.dispatchEvent(new CustomEvent('chama-profile-message-updated',{detail:{uid:me.uid,type,text}}));
       }catch(e){console.error(e);msg.textContent='Não foi possível salvar agora.'}
-      finally{save.disabled=false;save.textContent='Salvar mensagem da home'}
+      finally{save.disabled=false;save.textContent='Salvar minha descrição'}
     };
     loadServer(box);
   }
