@@ -45,7 +45,7 @@
   }
 
   function normalizeProfile(d={}){
-    return {nome:String(d.nome||'').trim(),cidade:String(d.cidade||'').trim(),chatshopLink:String(d.chatshopLink||'').trim(),photoUrl:safePhotoUrl(d.photoUrl),photoKey:String(d.photoKey||'').trim()};
+    return {nome:String(d.nome||d.name||d.email?.split('@')?.[0]||'').trim(),cidade:String(d.cidade||'').trim(),chatshopLink:String(d.chatshopLink||'').trim(),photoUrl:safePhotoUrl(d.photoUrl),photoKey:String(d.photoKey||'').trim()};
   }
 
   function cacheKey(uid){return CACHE_PREFIX+uid}
@@ -65,8 +65,9 @@
   async function readServer(uid,timeout=4500){
     if(!db||!fs||!uid)return emptyProfile();
     try{
-      const snap=await wait(fs.getDoc(fs.doc(db,'publicProfiles',uid)),timeout);
-      const p=snap.exists()?normalizeProfile(snap.data()||{}):emptyProfile();writeLocal(uid,p);return p;
+      const [publicSnap,userSnap]=await wait(Promise.all([fs.getDoc(fs.doc(db,'publicProfiles',uid)),fs.getDoc(fs.doc(db,'users',uid))]),timeout);
+      const basic=userSnap.exists()?userSnap.data()||{}:{},published=publicSnap.exists()?publicSnap.data()||{}:{};
+      const p=normalizeProfile({...basic,...published});writeLocal(uid,p);return p;
     }catch(e){
       if(e?.message!=='timeout')console.warn('Chama: perfil não carregou',e);
       return readLocal(uid);
@@ -139,7 +140,7 @@
       return;
     }
 
-    const fresh=await readServer(uid,4500);if(!document.body.contains(card))return;current=fresh;applyProfile(card,current,false);if(!fresh.nome&&!fresh.cidade)card.querySelector('#chamaProfileLoadError').hidden=false;
+    const fresh=await readServer(uid,4500);if(!document.body.contains(card))return;current=fresh;applyProfile(card,current,false);card.querySelector('#chamaProfileLoadError').hidden=true;
   }
 
   function activeChatUid(){
