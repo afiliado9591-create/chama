@@ -15,8 +15,7 @@
       body[data-profile-type="social"] .chama-community-editor,
       body[data-profile-type="social"] .chama-affcat-edit{display:none!important}
       body[data-profile-type="profissional"] #chamaQuickMenu [data-action="finds"]{display:none!important}
-      .chama-upgrade-entry{margin:9px 12px;border:1px solid #ecd48d;background:#fff8df;color:#684c00;border-radius:14px;padding:11px 12px;display:flex;align-items:center;gap:9px;font-weight:900;cursor:pointer;width:calc(100% - 24px);text-align:left}
-      .chama-upgrade-entry span{font-size:20px}.chama-upgrade-entry small{display:block;font-size:11px;font-weight:600;color:#7a681f;margin-top:2px}
+      #chamaUpgradeAccount{color:#795600;background:#fff8df;border-color:#ecd48d}
     `;document.head.appendChild(s)
   }
 
@@ -30,9 +29,9 @@
 
   function installUpgrade(){
     const old=document.getElementById('chamaUpgradeAccount');if(professional()||!me){old?.remove();return}if(old)return;
-    const sidebar=document.querySelector('.sidebar'),quick=document.getElementById('chamaQuickMenu');if(!sidebar)return;
-    const b=document.createElement('button');b.id='chamaUpgradeAccount';b.type='button';b.className='chama-upgrade-entry';b.innerHTML='<span>💼</span><span>Migrar para conta profissional<small>Libere catálogo, links e ferramentas comerciais</small></span>';
-    b.onclick=upgrade;(quick||sidebar.firstElementChild)?.insertAdjacentElement('afterend',b);
+    const quick=document.getElementById('chamaQuickMenu');if(!quick)return;
+    const b=document.createElement('button');b.id='chamaUpgradeAccount';b.type='button';b.className='chama-quick-item';b.innerHTML='<span>💼</span><span>Profissional</span>';b.title='Migrar para conta profissional';
+    b.onclick=upgrade;const finds=quick.querySelector('[data-action="finds"]');if(finds)finds.insertAdjacentElement('afterend',b);else quick.appendChild(b);
   }
 
   async function upgrade(){
@@ -40,7 +39,7 @@
     if(!confirm('Migrar para conta profissional e liberar catálogo, links e ferramentas comerciais?'))return;
     const b=document.getElementById('chamaUpgradeAccount');if(b){b.disabled=true;b.textContent='Ativando conta profissional...'}
     try{await fs.setDoc(fs.doc(db,'users',me.uid),{tipoPerfil:'profissional',professionalSince:fs.serverTimestamp()},{merge:true});type='profissional';apply();alert('Conta profissional ativada ✓')}
-    catch(e){console.error(e);if(b){b.disabled=false;b.innerHTML='<span>💼</span><span>Migrar para conta profissional<small>Libere catálogo, links e ferramentas comerciais</small></span>'}alert('Não foi possível migrar a conta agora.')}
+    catch(e){console.error(e);if(b){b.disabled=false;b.innerHTML='<span>💼</span><span>Profissional</span>'}alert('Não foi possível migrar a conta agora.')}
   }
 
   function apply(){
