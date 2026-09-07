@@ -71,14 +71,14 @@
     const links=document.createElement('nav');links.className='chama-menu-links';
     addLink(links,'🏠','Início','./');
     addAction(links,'🔥','Fale com o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-support')));
-    addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));
+    const referral=addAction(links,'🎁','Indique o Chama',()=>document.dispatchEvent(new CustomEvent('chama-open-referral')));referral.dataset.professionalOnly='true';
     addAction(links,'🔥','Achadinhos da Comunidade',()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers')));
     const tutorial=addLink(links,'🎓','Como usar o Chama','./como-usar.html');tutorial.classList.add('tutorial');
 
     for(const item of customItems){
       if(!item.enabled||!item.label)continue;
       const href=item.type==='page'&&item.slug?`./pagina.html?p=${encodeURIComponent(item.slug)}`:item.url;
-      if(!href)continue;const a=addLink(links,item.icon,item.label,href);if(item.highlight)a.classList.add('custom-highlight');if(item.type==='external'){a.target='_blank';a.rel='noopener noreferrer'}
+      if(!href)continue;const a=addLink(links,item.icon,item.label,href);a.dataset.professionalOnly='true';if(item.highlight)a.classList.add('custom-highlight');if(item.type==='external'){a.target='_blank';a.rel='noopener noreferrer'}
     }
 
     if(adminAllowed){
@@ -110,8 +110,9 @@
   function installQuickMenu(){
     if(document.getElementById('chamaQuickMenu'))return;const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
     const nav=document.createElement('nav');nav.id='chamaQuickMenu';nav.className='chama-quick-menu';nav.setAttribute('aria-label','Atalhos do Chama');
-    nav.innerHTML='<button type="button" class="chama-quick-item" data-action="day"><span>⭐</span><span>Dia</span></button><button type="button" class="chama-quick-item" data-action="tools"><span>🧰</span><span>Ferramentas</span></button><button type="button" class="chama-quick-item" data-action="support"><span>🔥</span><span>Ajuda</span><i class="chama-support-quick-badge"></i></button><a class="chama-quick-item chatshop" href="https://www.alibr.com.br/" target="_blank" rel="noopener noreferrer"><span>🛍️</span><span>ChatShop</span></a>';
+    nav.innerHTML='<button type="button" class="chama-quick-item" data-action="day"><span>⭐</span><span>Dia</span></button><button type="button" class="chama-quick-item" data-action="finds"><span>🔥</span><span>Achadinhos</span></button><button type="button" class="chama-quick-item" data-action="tools"><span>🧰</span><span>Ferramentas</span></button><button type="button" class="chama-quick-item" data-action="support"><span>🔥</span><span>Ajuda</span><i class="chama-support-quick-badge"></i></button><a class="chama-quick-item chatshop" href="https://www.alibr.com.br/" target="_blank" rel="noopener noreferrer"><span>🛍️</span><span>ChatShop</span></a>';
     nav.querySelector('[data-action="day"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-day'));
+    nav.querySelector('[data-action="finds"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers'));
     nav.querySelector('[data-action="tools"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-affiliate-tools'));
     nav.querySelector('[data-action="support"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-support'));
     sidebar.insertBefore(nav,sidebar.firstChild);

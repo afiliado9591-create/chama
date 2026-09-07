@@ -31,6 +31,7 @@
   function storeLabel(v){return ({shopee:'Shopee',mercadolivre:'Mercado Livre',shein:'Shein',outra:'Oferta'})[v]||'Oferta'}
 
   function ensureEntry(){
+    if(document.body.dataset.profileType!=='profissional'){document.getElementById('chamaAffiliateToolsEntry')?.remove();return}
     if(document.getElementById('chamaAffiliateToolsEntry'))return;
     const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
     const box=document.createElement('section');box.id='chamaAffiliateToolsEntry';box.className='chama-aff-tools-entry';
@@ -40,6 +41,7 @@
   }
 
   function openModal(){
+    if(document.body.dataset.profileType!=='profissional')return alert('Esta ferramenta está disponível somente para contas profissionais.');
     document.getElementById('chamaAffiliateToolsModal')?.remove();
     const back=document.createElement('div');back.id='chamaAffiliateToolsModal';back.className='chama-aff-tools-backdrop';
     back.innerHTML=`<section class="chama-aff-tools-modal"><header class="chama-aff-tools-head"><b>🧰 Ferramentas do Afiliado</b><button class="chama-aff-tools-close" type="button">✕</button></header><div class="chama-aff-tools-body"><div class="chama-aff-tools-card"><h3>Criador de Oferta</h3><div class="chama-aff-tools-muted">Preencha os dados. Tudo é gerado no seu navegador e não é salvo automaticamente no Firebase.</div><div class="chama-aff-tools-grid"><label>Loja<select id="chamaAffStore"><option value="shopee">Shopee</option><option value="mercadolivre">Mercado Livre</option><option value="shein">Shein</option><option value="outra">Outra</option></select></label><label>Link da imagem<input id="chamaAffImage" inputmode="url" placeholder="https://...imagem.jpg"></label><label>Nome do produto<input id="chamaAffTitle" maxlength="100" placeholder="Ex.: Tênis feminino confortável"></label><div class="chama-aff-tools-two"><label>Preço anterior (opcional)<input id="chamaAffOldPrice" maxlength="30" placeholder="149,90"></label><label>Preço atual<input id="chamaAffPrice" maxlength="30" placeholder="99,90"></label></div><label>Cupom (opcional)<input id="chamaAffCoupon" maxlength="50" placeholder="Ex.: CUPOM10"></label><label>Link de afiliado<input id="chamaAffLink" inputmode="url" placeholder="https://seu-link-de-afiliado..."></label></div><button id="chamaAffGenerate" class="chama-aff-tools-generate" type="button">✨ Gerar oferta</button></div><div id="chamaAffResult" class="chama-aff-tools-card chama-aff-tools-result" hidden><h3>Oferta pronta</h3><div id="chamaAffPreview" class="chama-aff-tools-preview"></div><textarea id="chamaAffText" class="chama-aff-tools-text" readonly></textarea><div class="chama-aff-tools-actions"><button id="chamaAffCopy" class="chama-aff-copy" type="button">📋 Copiar texto</button><button id="chamaAffShare" class="chama-aff-share" type="button">📤 Compartilhar</button><button id="chamaAffDownload" class="chama-aff-download" type="button">⬇️ Baixar banner</button></div><div class="chama-aff-tools-note">Alguns sites bloqueiam o uso da imagem em arquivos baixados. Se isso acontecer, o Chama gera o banner sem a foto, mas mantém produto, preço e loja.</div></div></div></section>`;
@@ -100,6 +102,6 @@
     }catch(e){if(e?.name!=='AbortError')alert('Não foi possível compartilhar agora.')}
   }
 
-  function start(){addStyle();ensureEntry();setTimeout(ensureEntry,400);setTimeout(ensureEntry,1200);document.addEventListener('chama-open-affiliate-tools',openModal)}
+  function start(){addStyle();ensureEntry();setTimeout(ensureEntry,400);setTimeout(ensureEntry,1200);document.addEventListener('chama-profile-type',ensureEntry);document.addEventListener('chama-open-affiliate-tools',openModal)}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
