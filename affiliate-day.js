@@ -47,7 +47,7 @@
   }
   function renderTop(){
     document.getElementById('chamaAffiliateDayTop')?.remove();if(!me||!isToday())return;
-    const box=document.createElement('section');box.id='chamaAffiliateDayTop';box.className='chama-affiliate-day-top';
+    const box=document.createElement('section');box.id='chamaAffiliateDayTop';box.className='chama-affiliate-day-top';box.dataset.engagementId=`affiliate_day_${active.date}_${active.affiliateUid}`;
     const kicker=document.createElement('div');kicker.className='chama-affiliate-day-kicker';kicker.textContent='⭐ Afiliado do Dia';
     const name=document.createElement('div');name.className='chama-affiliate-day-name';name.textContent=`Hoje é o dia de ${active.affiliateName||'um afiliado do Chama'}`;box.append(kicker,name);
     if(validSelection()){
