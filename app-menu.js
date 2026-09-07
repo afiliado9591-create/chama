@@ -97,9 +97,9 @@
   }
 
   function installTopMenu(){
-    if(document.getElementById('chamaMainMenuBtn'))return;const topbar=document.querySelector('.topbar');if(!topbar)return;
-    const btn=document.createElement('button');btn.id='chamaMainMenuBtn';btn.type='button';btn.className='chama-main-menu-btn';btn.title='Menu';btn.setAttribute('aria-label','Abrir menu');btn.textContent='☰';
-    const logout=document.getElementById('logoutBtn');if(logout)topbar.insertBefore(btn,logout);else topbar.appendChild(btn);btn.onclick=()=>openMenu();
+    const topbar=document.querySelector('.topbar');if(!topbar)return;let btn=document.getElementById('chamaMainMenuBtn');
+    if(!btn){btn=document.createElement('button');btn.id='chamaMainMenuBtn';btn.type='button';btn.className='chama-main-menu-btn';btn.title='Menu';btn.setAttribute('aria-label','Abrir menu');btn.textContent='☰';const logout=document.getElementById('logoutBtn');if(logout)topbar.insertBefore(btn,logout);else topbar.appendChild(btn)}
+    btn.onclick=()=>openMenu();
   }
 
   function installAuthPrivacy(){
@@ -113,8 +113,9 @@
   }
 
   function installQuickMenu(){
-    if(document.getElementById('chamaQuickMenu'))return;const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
+    const sidebar=document.querySelector('.sidebar');if(!sidebar)return;const current=document.getElementById('chamaQuickMenu');if(current?.dataset?.layout==='compact-v15')return;current?.remove();
     const nav=document.createElement('nav');nav.id='chamaQuickMenu';nav.className='chama-quick-menu';nav.setAttribute('aria-label','Atalhos do Chama');
+    nav.dataset.layout='compact-v15';
     nav.innerHTML='<button type="button" class="chama-quick-item" data-action="finds"><span>🔥</span><span>Achadinhos</span></button>';
     nav.querySelector('[data-action="finds"]').onclick=()=>document.dispatchEvent(new CustomEvent('chama-open-community-offers'));
     sidebar.insertBefore(nav,sidebar.firstChild);
