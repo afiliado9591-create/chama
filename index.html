@@ -277,6 +277,15 @@
     const chatId=ids.join("_");
     if(stopMessages) stopMessages();
 
+    // Uma conversa nova precisa existir antes da primeira escuta/gravação.
+    // Sem isso, algumas regras do Firestore encerram o listener vazio e a
+    // primeira mensagem só aparece quando o usuário reabre o chat.
+    try{
+      await setDoc(doc(db,"chats",chatId),{participants:ids},{merge:true});
+    }catch(e){
+      console.warn("Não foi possível preparar a conversa antes da escuta.",e);
+    }
+
     const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(20));
     stopMessages=onSnapshot(mq,snap=>{
       const box=$("messages"); box.innerHTML="";
@@ -296,6 +305,9 @@
   async function saveMessage(text,label=text){
     if(!me||!activeUser)return;
     const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
+    // Cria/atualiza primeiro o documento pai para que o listener da primeira
+    // mensagem permaneça autorizado e ativo desde o início da conversa.
+    await setDoc(doc(db,"chats",chatId),{participants:ids},{merge:true});
     await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
     await setDoc(doc(db,"chats",chatId),{
       participants:ids,
@@ -311,7 +323,21 @@
     const text=$("messageInput").value.trim();
     if(!text || !activeUser) return;
     $("messageInput").value="";
-    try{await saveMessage(text,text)}catch(e){console.error(e);alert("Não foi possível enviar a mensagem.")}
+    const box=$("messages");
+    const pending=document.createElement("div");
+    pending.className="bubble mine";
+    pending.dataset.chamaPending="1";
+    renderMessage(pending,{text},new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}));
+    box.querySelector("[data-chama-empty], .chama-empty-message")?.remove();
+    box.appendChild(pending);
+    box.scrollTop=box.scrollHeight;
+    try{
+      await saveMessage(text,text);
+    }catch(e){
+      pending.remove();
+      console.error(e);
+      alert("Não foi possível enviar a mensagem.");
+    }
   });
 
   function showAudioToast(text){
