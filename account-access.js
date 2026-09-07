@@ -9,9 +9,16 @@
       body[data-profile-type="social"] #chamaAffiliateToolsModal,
       body[data-profile-type="social"] #chamaAffiliateMenu,
       body[data-profile-type="social"] #chamaChatShopPromo,
+      body[data-profile-type="social"] #chamaAffiliateDayTop,
+      body[data-profile-type="social"] #chamaAffiliateDayModal,
+      body[data-profile-type="social"] #chamaAffiliateDayMenuLink,
+      body[data-profile-type="social"] #chamaQuickMenu [data-action="day"],
       body[data-profile-type="social"] #chamaQuickMenu [data-action="tools"],
       body[data-profile-type="social"] #chamaQuickMenu .chatshop,
       body[data-profile-type="social"] [data-professional-only="true"],
+      body[data-profile-type="social"] #chamaPinnedProfessionalPromo,
+      body[data-profile-type="social"] .chama-pinned-promo,
+      body[data-profile-type="social"] .chama-promo-card,
       body[data-profile-type="social"] .chama-community-editor,
       body[data-profile-type="social"] .chama-affcat-edit{display:none!important}
       body[data-profile-type="profissional"] #chamaQuickMenu [data-action="finds"]{display:none!important}
