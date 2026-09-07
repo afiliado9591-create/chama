@@ -328,7 +328,7 @@
     pending.className="bubble mine";
     pending.dataset.chamaPending="1";
     renderMessage(pending,{text},new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}));
-    box.querySelector("[data-chama-empty], .chama-empty-message")?.remove();
+    if(!box.querySelector(".bubble"))box.innerHTML="";
     box.appendChild(pending);
     box.scrollTop=box.scrollHeight;
     try{
