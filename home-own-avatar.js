@@ -1,103 +1,13 @@
 (()=>{
-  const STYLE_ID='chamaHomeOwnAvatarStyleV2';
-  let me=null,db=null,fs=null,lastPhoto='';
-
-  function addStyle(){
-    if(document.getElementById(STYLE_ID))return;
-    const s=document.createElement('style');
-    s.id=STYLE_ID;
-    s.textContent=`
-      .me.chama-me-with-photo{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f5fbf8;border-top:1px solid #edf2ef;border-bottom:1px solid #edf2ef}
-      .chama-me-avatar{width:56px;height:56px;border-radius:50%;background:#dff4ea;color:#0b7a53;display:grid;place-items:center;font-size:20px;font-weight:900;overflow:hidden;flex:0 0 56px;border:2px solid #cbe9da;cursor:pointer;box-shadow:0 2px 8px #0b7a5314}
-      .chama-me-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-      .chama-me-info{min-width:0;flex:1}.chama-me-info #meName{font-size:18px}.chama-me-info #meEmail{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    `;
-    document.head.appendChild(s);
-  }
-
-  function safePhotoUrl(value){
-    const v=String(value||'').trim();if(!v)return '';
-    try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}
-  }
-
-  function ensureOwnAvatar(){
-    const box=document.querySelector('.me');
-    if(!box)return null;
-    const list=document.getElementById('usersList');if(list&&list.previousElementSibling!==box)list.insertAdjacentElement('beforebegin',box);
-    let avatar=document.getElementById('chamaMeAvatar');
-    if(avatar){const name=document.getElementById('meName');if(name)name.textContent='Eu';return avatar}
-
-    const info=document.createElement('div');
-    info.className='chama-me-info';
-    while(box.firstChild)info.appendChild(box.firstChild);
-
-    avatar=document.createElement('button');
-    avatar.id='chamaMeAvatar';
-    avatar.type='button';
-    avatar.className='chama-me-avatar';
-    avatar.setAttribute('aria-label','Abrir meu perfil');
-    avatar.title='Abrir meu perfil';
-    avatar.onclick=e=>{e.preventDefault();e.stopPropagation();document.dispatchEvent(new CustomEvent('chama-open-my-profile'))};
-
-    box.classList.add('chama-me-with-photo');
-    box.append(avatar,info);
-    const name=document.getElementById('meName');if(name)name.textContent='Eu';
-    return avatar;
-  }
-
-  function render(url=''){
-    const avatar=ensureOwnAvatar();if(!avatar)return;
-    const safe=safePhotoUrl(url);
-    if(safe===lastPhoto && ((safe&&avatar.querySelector('img'))||(!safe&&!avatar.querySelector('img'))))return;
-    lastPhoto=safe;
-    avatar.replaceChildren();
-    if(safe){
-      const img=document.createElement('img');
-      img.alt='Minha foto de perfil';img.src=safe;img.referrerPolicy='no-referrer';
-      img.onerror=()=>{lastPhoto='';render('')};
-      avatar.appendChild(img);return;
-    }
-    const label=(me?.displayName||me?.email?.split('@')[0]||'V').trim();
-    avatar.textContent=(label.charAt(0)||'V').toUpperCase();
-  }
-
-  async function loadOwnPhoto(){
-    if(!me||!db||!fs)return render('');
-    try{
-      const snap=await fs.getDoc(fs.doc(db,'publicProfiles',me.uid));
-      render(snap.exists()?snap.data()?.photoUrl||'':'');
-    }catch(e){console.warn('Chama: não foi possível carregar a foto no topo',e);render('')}
-  }
-
-  function listenProfileUpdates(){
-    document.addEventListener('chama-profile-updated',e=>{
-      const detail=e.detail||{};
-      if(!me||detail.uid!==me.uid)return;
-      if('photoUrl' in detail)render(detail.photoUrl||'');
-    });
-  }
-
-  async function start(){
-    addStyle();ensureOwnAvatar();listenProfileUpdates();
-    try{
-      const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
-      let app=appMod.getApps()[0];
-      for(let i=0;!app&&i<20;i++){await new Promise(r=>setTimeout(r,100));app=appMod.getApps()[0]}
-      if(!app)return;
-      const [authMod,firestoreMod]=await Promise.all([
-        import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),
-        import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')
-      ]);
-      fs=firestoreMod;db=fs.getFirestore(app);
-      const auth=authMod.getAuth(app);
-      authMod.onAuthStateChanged(auth,user=>{
-        me=user||null;lastPhoto='';
-        if(!user){render('');return}
-        const name=document.getElementById('meName');if(name)name.textContent='Eu';
-        loadOwnPhoto();
-      });
-    }catch(e){console.warn('Chama: foto do topo não iniciou',e)}
-  }
-
-  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
+  const STYLE_ID='chamaHomeOwnAvatarStyleV4';
+  let me=null,db=null,fs=null,profile={};
+  function addStyle(){if(document.getElementById(STYLE_ID))return;const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`.sidebar>.me{display:none!important}#usersList .chama-own-list-row{display:flex!important;min-height:68px;background:#f8fcfa}#usersList .chama-own-list-row .avatar{width:44px;height:44px;flex:0 0 44px;overflow:hidden;border:1px solid #cbe9da}#usersList .chama-own-list-row .avatar img{width:100%;height:100%;object-fit:cover;display:block}.chama-own-description{font-size:12px;color:#68756e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;max-width:220px}.chama-own-description.commercial{color:#996000;font-weight:750}.chama-own-label{margin-left:auto;color:#0b7a53;font-size:12px;font-weight:900;background:#e7f6ef;border-radius:999px;padding:5px 9px;flex:0 0 auto}`;document.head.appendChild(s)}
+  function safePhotoUrl(value){const v=String(value||'').trim();if(!v)return '';try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}}
+  function clean(v,max=70){return String(v||'').trim().replace(/\s+/g,' ').slice(0,max)}
+  function ensureRow(){const list=document.getElementById('usersList');if(!list||!me)return null;let row=document.getElementById('chamaOwnListRow');if(!row){row=document.createElement('div');row.id='chamaOwnListRow';row.className='user chama-own-list-row';row.dataset.uid=me.uid;row.innerHTML='<div class="avatar"></div><div class="user-main"><div class="user-name"></div><div class="chama-own-description"></div></div><span class="chama-own-label">Eu</span>';row.onclick=e=>{e.preventDefault();e.stopPropagation();document.dispatchEvent(new CustomEvent('chama-open-my-profile'))}}const firstUser=[...list.children].find(x=>x.classList?.contains('user')&&!x.classList.contains('chama-own-list-row'));if(row.parentElement!==list)firstUser?list.insertBefore(row,firstUser):list.appendChild(row);else if(firstUser&&row.nextElementSibling!==firstUser)list.insertBefore(row,firstUser);renderRow(row);return row}
+  function renderRow(row){row=row||document.getElementById('chamaOwnListRow');if(!row||!me)return;const name=clean(profile.nome||me.displayName||me.email?.split('@')[0]||'Meu perfil',80),description=clean(profile.homeMessage||'',70),photo=safePhotoUrl(profile.photoUrl);row.querySelector('.user-name').textContent=name;const desc=row.querySelector('.chama-own-description');desc.textContent=description||'Meu perfil';desc.classList.toggle('commercial',profile.homeMessageType==='commercial');const avatar=row.querySelector('.avatar');avatar.replaceChildren();if(photo){const img=document.createElement('img');img.alt='Minha foto de perfil';img.src=photo;img.referrerPolicy='no-referrer';img.onerror=()=>{avatar.textContent=(name.charAt(0)||'E').toUpperCase()};avatar.appendChild(img)}else avatar.textContent=(name.charAt(0)||'E').toUpperCase()}
+  async function load(){if(!me||!db||!fs)return ensureRow();try{const snap=await fs.getDoc(fs.doc(db,'publicProfiles',me.uid));profile=snap.exists()?snap.data()||{}:{};ensureRow()}catch(e){console.warn('Chama: não foi possível carregar meu item na lista',e);ensureRow()}}
+  function watch(){const list=document.getElementById('usersList');if(!list)return;new MutationObserver(()=>{if(me&&!document.getElementById('chamaOwnListRow'))queueMicrotask(ensureRow)}).observe(list,{childList:true});document.addEventListener('chama-profile-updated',e=>{if(me&&e.detail?.uid===me.uid){profile={...profile,...e.detail};renderRow()}});document.addEventListener('chama-profile-message-updated',e=>{if(me&&e.detail?.uid===me.uid){profile.homeMessage=e.detail.text||'';profile.homeMessageType=e.detail.type||'social';renderRow()}})}
+  async function start(attempt=0){addStyle();watch();try{const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js'),app=appMod.getApps()[0];if(!app){if(attempt<30)setTimeout(()=>start(attempt+1),150);return}const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');fs=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');db=fs.getFirestore(app);authMod.onAuthStateChanged(authMod.getAuth(app),u=>{me=u||null;profile={};document.getElementById('chamaOwnListRow')?.remove();if(me)load()})}catch(e){console.warn('Chama: meu item da lista não iniciou',e)}}
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',()=>start(),{once:true}):start();
 })();
