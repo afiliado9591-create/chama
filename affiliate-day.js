@@ -42,8 +42,7 @@
 
   function validSelection(){return !!selection&&isToday()&&selection.date===active.date&&!!selection.productId&&!!selection.affiliateUrl}
   function placeTop(el){
-    const sidebar=document.querySelector('.sidebar');if(!sidebar||!el)return;const affiliate=document.getElementById('chamaAffiliateMenu');
-    if(affiliate&&affiliate.parentNode===sidebar){if(el.nextSibling!==affiliate)sidebar.insertBefore(el,affiliate)}else if(sidebar.firstChild!==el)sidebar.insertBefore(el,sidebar.firstChild);
+    const sidebar=document.querySelector('.sidebar');if(!sidebar||!el)return;if(sidebar.firstChild!==el)sidebar.insertBefore(el,sidebar.firstChild);
   }
   function renderTop(){
     document.getElementById('chamaAffiliateDayTop')?.remove();if(!me||!isToday())return;
@@ -142,6 +141,6 @@
     }catch(e){console.warn('Chama: Dia do Afiliado não iniciou',e)}
   }
 
-  function start(){addStyle();initFirebase();import('./affiliate-profile-catalog.js?v=2').catch(e=>console.warn('Chama: catálogo do perfil não carregou',e));new MutationObserver(()=>injectMenuButton()).observe(document.body,{childList:true,subtree:true});injectMenuButton();document.addEventListener('chama-open-affiliate-day',openCatalog)}
+  function start(){addStyle();initFirebase();import('./affiliate-profile-catalog.js?v=3').catch(e=>console.warn('Chama: catálogo do perfil não carregou',e));new MutationObserver(()=>injectMenuButton()).observe(document.body,{childList:true,subtree:true});injectMenuButton();document.addEventListener('chama-open-affiliate-day',openCatalog)}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
