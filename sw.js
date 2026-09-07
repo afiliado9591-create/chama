@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v171";
+const VERSION="chama-clean-v172";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "171") return;
-        url.searchParams.set("chama_update", "171");
+        if (url.searchParams.get("chama_update") === "172") return;
+        url.searchParams.set("chama_update", "172");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -25,7 +25,7 @@ self.addEventListener("activate", event => {
 
 function injectSafeUi(html) {
   const mediaMarker = 'media-render-safe.js?v=93';
-  const menuMarker = 'app-menu.js?v=13';
+  const menuMarker = 'app-menu.js?v=14';
   const supportMarker = 'chama-support.js?v=4';
   const unreadMarker = 'unread-badges.js?v=6';
   const profileMarker = 'profile-safe-v6.js?v=3';
@@ -34,7 +34,7 @@ function injectSafeUi(html) {
   const backMarker = 'ui-back-button.js?v=1';
   const ownAvatarMarker = 'home-own-avatar.js?v=6';
   const avatarEverywhereMarker = 'avatar-everywhere.js?v=2';
-  const affiliateMenuMarker = 'affiliate-menu.js?v=2';
+  const affiliateMenuMarker = 'affiliate-menu.js?v=3';
   const layoutRefreshMarker = 'layout-refresh.js?v=2';
   const profileHomeMessageMarker = 'profile-home-message.js?v=2';
   const homeProfileMessageMarker = 'home-profile-message.js?v=1';
@@ -112,7 +112,7 @@ function injectSafeUi(html) {
   }
 
   if (!out.includes(mediaMarker)) out = out.replace('</body>', `<script src="./media-render-safe.js?v=93"></script></body>`);
-  if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=13"></script></body>`);
+  if (!out.includes(menuMarker)) out = out.replace('</body>', `<script src="./app-menu.js?v=14"></script></body>`);
   if (!out.includes(supportMarker)) out = out.replace('</body>', `<script src="./chama-support.js?v=4"></script></body>`);
   if (!out.includes(unreadMarker)) out = out.replace('</body>', `<script src="./unread-badges.js?v=6"></script></body>`);
   if (!out.includes(profileMarker)) out = out.replace('</body>', `<script src="./profile-safe-v6.js?v=3"></script></body>`);
@@ -121,7 +121,7 @@ function injectSafeUi(html) {
   if (!out.includes(backMarker)) out = out.replace('</body>', `<script src="./ui-back-button.js?v=1"></script></body>`);
   if (!out.includes(ownAvatarMarker)) out = out.replace('</body>', `<script src="./home-own-avatar.js?v=6"></script></body>`);
   if (!out.includes(avatarEverywhereMarker)) out = out.replace('</body>', `<script src="./avatar-everywhere.js?v=2"></script></body>`);
-  if (!out.includes(affiliateMenuMarker)) out = out.replace('</body>', `<script src="./affiliate-menu.js?v=2"></script></body>`);
+  if (!out.includes(affiliateMenuMarker)) out = out.replace('</body>', `<script src="./affiliate-menu.js?v=3"></script></body>`);
   if (!out.includes(layoutRefreshMarker)) out = out.replace('</body>', `<script src="./layout-refresh.js?v=2"></script></body>`);
   if (!out.includes(profileHomeMessageMarker)) out = out.replace('</body>', `<script src="./profile-home-message.js?v=2"></script></body>`);
   if (!out.includes(homeProfileMessageMarker)) out = out.replace('</body>', `<script src="./home-profile-message.js?v=1"></script></body>`);
