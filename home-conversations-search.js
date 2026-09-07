@@ -34,7 +34,7 @@
 
   function ensureUi(){
     const sidebar=document.querySelector('.sidebar'),list=document.getElementById('usersList');if(!sidebar||!list||document.getElementById('chamaHomeTools'))return;
-    const title=sidebar.querySelector('.section-title');if(title)title.textContent='Conversas';
+    const title=sidebar.querySelector('.section-title');if(title)title.remove();
     const tools=document.createElement('div');tools.id='chamaHomeTools';tools.className='chama-home-tools';tools.innerHTML='<input id="chamaPeopleSearch" maxlength="60" placeholder="Buscar pessoa ou cidade"><button id="chamaPeopleSearchBtn" class="chama-home-search-btn" type="button" aria-label="Buscar">🔍</button>';list.insertAdjacentElement('beforebegin',tools);
     const results=document.createElement('div');results.id='chamaPeopleResults';results.hidden=true;list.insertAdjacentElement('afterend',results);
     document.getElementById('chamaPeopleSearchBtn').onclick=runSearch;document.getElementById('chamaPeopleSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runSearch()}});
@@ -47,6 +47,8 @@
     document.getElementById('chamaEmptyConversations')?.remove();
     if(count===0&&list.classList.contains('chama-conversations-mode')){const empty=document.createElement('div');empty.id='chamaEmptyConversations';empty.className='chama-empty-conversations';empty.textContent='Nenhuma conversa ainda. Use a busca acima para encontrar uma pessoa.';list.appendChild(empty)}
   }
+
+  function removeLoadingLabels(){const list=document.getElementById('usersList');if(!list)return;[...list.children].forEach(el=>{if(!el.classList.contains('user')&&/^Carregando (conversas|pessoas)/i.test((el.textContent||'').trim()))el.remove()})}
 
   async function getFirebase(attempt=0){
     try{
@@ -118,8 +120,8 @@
   async function start(){
     addStyle();ensureUi();await getFirebase();const list=document.getElementById('usersList');
     document.addEventListener('chama-conversation-interest',e=>{myInterest=String(e.detail?.value||'');suggestionsLoadedFor='';loadSuggestions()});
-    if(list)new MutationObserver(()=>setTimeout(refreshConversationRows,0)).observe(list,{childList:true,subtree:true});
-    setTimeout(refreshConversationRows,800);setTimeout(refreshConversationRows,1800);
+    if(list)new MutationObserver(()=>setTimeout(()=>{removeLoadingLabels();refreshConversationRows()},0)).observe(list,{childList:true,subtree:true});
+    removeLoadingLabels();setTimeout(()=>{removeLoadingLabels();refreshConversationRows()},800);setTimeout(()=>{removeLoadingLabels();refreshConversationRows()},1800);
   }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
