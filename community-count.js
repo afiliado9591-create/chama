@@ -7,10 +7,10 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      .chama-community-count-wrap{margin-top:10px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-      .chama-community-count{display:inline-flex;align-items:center;gap:7px;background:#eef8f3;border:1px solid #d8ebe1;color:#0b7a53;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:850}
+      .topbar:has(#chamaCommunityCountWrap)>h2{flex:0 0 auto}.topbar .chama-community-count-wrap{margin:0 auto 0 0;display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
+      .topbar .chama-community-count{display:inline-flex;align-items:center;gap:6px;background:#eef8f3;border:1px solid #d8ebe1;color:#0b7a53;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;white-space:nowrap}
       .chama-community-count-dot{width:8px;height:8px;border-radius:50%;background:#16a36a;box-shadow:0 0 0 3px #16a36a1f}
-      .chama-community-count-edit{border:0;background:#fff8e8;color:#805100;border:1px solid #f0ddb0;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:850;cursor:pointer}
+      .chama-community-count-edit{border:0;background:#fff8e8;color:#805100;border:1px solid #f0ddb0;border-radius:999px;width:30px;height:30px;padding:0;font-size:12px;font-weight:850;cursor:pointer}
       .chama-count-backdrop{position:fixed;inset:0;background:#0007;z-index:3900;display:grid;place-items:center;padding:16px}
       .chama-count-modal{width:min(380px,100%);background:#fff;border-radius:20px;padding:18px;box-shadow:0 22px 60px #0004}
       .chama-count-modal h3{margin:0 0 6px}.chama-count-modal p{margin:0 0 14px;color:#68756e;font-size:13px;line-height:1.45}
@@ -24,18 +24,18 @@
   }
 
   function render(){
-    const meBox=document.querySelector('.me');if(!meBox)return;
+    const top=document.querySelector('.topbar'),brand=top?.querySelector('h2');if(!top||!brand)return;
     let wrap=document.getElementById('chamaCommunityCountWrap');
     if(!currentEnabled&&!isAdmin){wrap?.remove();return}
-    if(!wrap){wrap=document.createElement('div');wrap.id='chamaCommunityCountWrap';wrap.className='chama-community-count-wrap';meBox.appendChild(wrap)}
+    if(!wrap){wrap=document.createElement('div');wrap.id='chamaCommunityCountWrap';wrap.className='chama-community-count-wrap';brand.insertAdjacentElement('afterend',wrap)}
     wrap.innerHTML='';
     if(currentEnabled||isAdmin){
       const chip=document.createElement('div');chip.className='chama-community-count';chip.innerHTML='<span class="chama-community-count-dot"></span><span></span>';
-      chip.querySelector('span:last-child').textContent=`${Math.max(0,currentCount).toLocaleString('pt-BR')} pessoas no Chama`;
+      chip.querySelector('span:last-child').textContent=Math.max(0,currentCount).toLocaleString('pt-BR');chip.title=`${Math.max(0,currentCount).toLocaleString('pt-BR')} pessoas no Chama`;chip.setAttribute('aria-label',chip.title);
       if(!currentEnabled&&isAdmin)chip.style.opacity='.65';
       wrap.appendChild(chip);
     }
-    if(isAdmin){const edit=document.createElement('button');edit.type='button';edit.className='chama-community-count-edit';edit.textContent='✏️ Editar';edit.onclick=openEditor;wrap.appendChild(edit)}
+    if(isAdmin){const edit=document.createElement('button');edit.type='button';edit.className='chama-community-count-edit';edit.textContent='✏️';edit.title='Editar contador';edit.setAttribute('aria-label','Editar contador');edit.onclick=openEditor;wrap.appendChild(edit)}
   }
 
   function openEditor(){
