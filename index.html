@@ -40,7 +40,15 @@
     .audio-toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:100;font-size:14px;white-space:nowrap}
     .audio-preview-backdrop{position:fixed;inset:0;background:#0008;z-index:900;display:grid;place-items:center;padding:18px}.audio-preview-card{width:min(420px,100%);background:#fff;border-radius:20px;padding:18px;display:grid;gap:14px;box-shadow:0 20px 60px #0004}.audio-preview-card strong{font-size:18px}.audio-preview-card audio{width:100%}.audio-preview-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.audio-preview-delete,.audio-preview-send{border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer}.audio-preview-delete{background:#fff0f0;color:#b42318}.audio-preview-send{background:var(--green);color:#fff}.audio-preview-send:disabled{opacity:.65}
     @media(max-width:700px){
-      .layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}
+      html.chat-open,body.chat-open{overflow:hidden!important;overscroll-behavior:none!important;touch-action:none}
+      body.chat-open{position:fixed!important;left:0;right:0;width:100%}
+      .layout{grid-template-columns:1fr}.sidebar{border-right:0}
+      .chat{position:fixed;inset:0;z-index:1000;width:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+      .chat.hidden-mobile{display:none}
+      #activeChat{height:100dvh!important;min-height:0!important;max-height:100dvh;overflow:hidden}
+      .chat-head,.composer{flex:0 0 auto}
+      .messages{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+      .back{display:inline-block!important}
     }
     .back{display:none}
   </style>
@@ -112,6 +120,23 @@
   const authView=$("authView"), appView=$("appView"), authMsg=$("authMsg");
   let me=null, activeUser=null, stopMessages=null, usersLoadToken=0, installPrompt=null;
   let recorder=null, audioChunks=[], audioStream=null;
+  let chatScrollY=0;
+
+  function lockPageForChat(){
+    if(!window.matchMedia("(max-width:700px)").matches)return;
+    chatScrollY=window.scrollY||document.documentElement.scrollTop||0;
+    document.documentElement.classList.add("chat-open");
+    document.body.classList.add("chat-open");
+    document.body.style.top=`-${chatScrollY}px`;
+  }
+
+  function unlockPageFromChat(){
+    const wasLocked=document.body.classList.contains("chat-open");
+    document.documentElement.classList.remove("chat-open");
+    document.body.classList.remove("chat-open");
+    document.body.style.top="";
+    if(wasLocked)window.scrollTo(0,chatScrollY);
+  }
 
   function friendlyError(e){
     const c=e?.code||"";
@@ -171,11 +196,15 @@
   };
 
   $("logoutBtn").onclick=()=>signOut(auth);
-  $("backBtn").onclick=()=> $("chatPanel").classList.add("hidden-mobile");
+  $("backBtn").onclick=()=>{
+    $("chatPanel").classList.add("hidden-mobile");
+    unlockPageFromChat();
+  };
 
   onAuthStateChanged(auth, async user=>{
     if(!user){
       me=null; activeUser=null;
+      unlockPageFromChat();
       if(stopMessages){stopMessages();stopMessages=null}
       authView.classList.remove("hidden"); appView.classList.add("hidden"); return;
     }
@@ -242,6 +271,7 @@
     $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||"";
     $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();
     $("emptyState").classList.add("hidden"); $("activeChat").classList.remove("hidden"); $("chatPanel").classList.remove("hidden-mobile");
+    lockPageForChat();
 
     const ids=[me.uid,u.uid].sort();
     const chatId=ids.join("_");
