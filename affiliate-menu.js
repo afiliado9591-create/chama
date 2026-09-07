@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaAffiliateMenuStyleV7';
+  const STYLE_ID='chamaAffiliateMenuStyleV8';
   let db=null,fs=null,loaded=false;
 
   function addStyle(){
@@ -7,7 +7,7 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      .chama-affiliate-menu{display:flex;gap:8px;padding:12px;background:#fff;border-top:1px solid #edf0ee;border-bottom:0;margin-top:8px}
+      .chama-affiliate-menu{display:flex;gap:8px;padding:10px 12px max(10px,env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e3e9e6;border-bottom:0;margin-top:8px;position:sticky;bottom:0;z-index:20;box-shadow:0 -5px 16px #14221c12}
       .chama-affiliate-btn{flex:1;min-width:0;min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;background:#fff;color:#0b7a53;border:1px solid #d8e7df;border-radius:14px;padding:10px 8px;font-size:13px;font-weight:850;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 7px #14221c0a;position:relative}
       .chama-affiliate-btn:active{transform:scale(.98);background:#eef7f2}
       .chama-affiliate-btn.dridalia{background:#fff!important;color:#0b7a53!important;border-color:#d8e7df!important;box-shadow:0 2px 7px #14221c0a!important}
