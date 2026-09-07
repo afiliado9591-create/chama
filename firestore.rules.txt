@@ -62,7 +62,7 @@ service cloud.firestore {
     match /bannedUsers/{userId} { allow read, create, update, delete: if isAdmin(); }
     match /engagement/{contentId} {
       allow read: if activeUser();
-      allow create: if activeUser() && !request.resource.data.keys().hasAny(['admin','adminUpdatedBy']);
+      allow create: if isAdmin() || (activeUser() && !request.resource.data.keys().hasAny(['admin','adminUpdatedBy']));
       allow update: if isAdmin() || (activeUser() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','shares','views','updatedAt']));
       allow delete: if isAdmin();
       match /likes/{userId} {
