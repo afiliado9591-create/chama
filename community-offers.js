@@ -73,7 +73,7 @@
   }
 
   function cardFor(item){
-    const card=document.createElement('article');card.className='chama-community-card';
+    const card=document.createElement('article');card.className='chama-community-card';card.dataset.engagementId=`community_${item.uid}`;
     if(item.imageUrl){const img=document.createElement('img');img.className='chama-community-img';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=item.imageUrl;img.alt='Imagem da oferta';img.onerror=()=>img.remove();card.appendChild(img)}
     const body=document.createElement('div');body.className='chama-community-cardbody';
     const owner=document.createElement('div');owner.className='chama-community-owner';owner.textContent=`👤 Anunciante: ${item.nome||'Afiliado'}`;
