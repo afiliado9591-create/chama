@@ -98,6 +98,7 @@
 
   async function openCatalog(){
     if(!me)return alert('Faça login para abrir o catálogo.');
+    if(document.body.dataset.profileType==='social')return alert('O Dia do Afiliado está disponível para contas profissionais.');
     try{await loadActive(true);await loadCatalog(true)}catch(e){console.error(e);return alert('Não foi possível abrir o catálogo agora.')}
     closeModal();const wrap=document.createElement('div');wrap.id='chamaAffiliateDayModal';wrap.className='chama-affday-backdrop';const modal=document.createElement('section');modal.className='chama-affday-modal';
     const head=document.createElement('div');head.className='chama-affday-head';const title=document.createElement('strong');title.textContent='⭐ Dia do Afiliado';const x=document.createElement('button');x.type='button';x.className='chama-affday-close';x.textContent='✕';x.onclick=closeModal;head.append(title,x);const body=document.createElement('div');body.className='chama-affday-body';
