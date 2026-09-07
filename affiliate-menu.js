@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaAffiliateMenuStyleV8';
+  const STYLE_ID='chamaAffiliateMenuStyleV9';
   let db=null,fs=null,loaded=false;
 
   function addStyle(){
@@ -13,6 +13,7 @@
       .chama-affiliate-btn.dridalia{background:#fff!important;color:#0b7a53!important;border-color:#d8e7df!important;box-shadow:0 2px 7px #14221c0a!important}
       .chama-affiliate-help{flex:0 0 34%;min-width:92px;min-height:48px;border:1px solid #cfe4d9;background:#edf7f2;color:#0b7a53;border-radius:14px;padding:9px 7px;font-size:13px;font-weight:900;cursor:pointer}
       .chama-affiliate-help:active{background:#deefe6;transform:scale(.98)}
+      body.chama-chat-active #chamaAffiliateMenu,body.chama-chat-active #chamaPartnersFloat{display:none!important}
       .chama-affiliate-btn.featured{background:linear-gradient(135deg,#fff7e6 0%,#ffedc2 100%)!important;color:#8b4b00!important;border:1px solid #f4b94f!important;box-shadow:0 4px 12px #d88a001c!important;padding-top:22px!important}
       .chama-affiliate-btn.featured::before{content:'🔥 DESTAQUE';position:absolute;top:5px;left:7px;font-size:9px;font-weight:950;letter-spacing:.04em;color:#a55a00}
       @media(max-width:380px){.chama-affiliate-menu{gap:6px;padding:9px 8px}.chama-affiliate-btn{font-size:12px;padding:9px 5px}.chama-affiliate-btn.featured{padding-top:21px!important}}
@@ -29,6 +30,8 @@
       return u.protocol==='https:'?u.href:'';
     }catch{return ''}
   }
+
+  function syncScreen(){const chat=document.getElementById('chatPanel'),inside=!!chat&&matchMedia('(max-width:700px)').matches&&!chat.classList.contains('hidden-mobile');document.body.classList.toggle('chama-chat-active',inside)}
 
   function decorateExisting(){
     const sidebar=document.querySelector('.sidebar'),box=document.getElementById('chamaAffiliateMenu');if(!sidebar)return;
@@ -95,6 +98,6 @@
     }catch(e){console.warn('Chama: menu de afiliados não iniciou',e)}
   }
 
-  const start=()=>{init();new MutationObserver(decorateExisting).observe(document.body,{childList:true,subtree:true})};
+  const start=()=>{init();syncScreen();document.addEventListener('chama-chat-opened',()=>{document.body.classList.add('chama-chat-active')});window.addEventListener('resize',syncScreen);new MutationObserver(()=>{decorateExisting();syncScreen()}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})};
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
