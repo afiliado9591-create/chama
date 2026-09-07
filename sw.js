@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v167";
+const VERSION="chama-clean-v168";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "167") return;
-        url.searchParams.set("chama_update", "167");
+        if (url.searchParams.get("chama_update") === "168") return;
+        url.searchParams.set("chama_update", "168");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -44,16 +44,17 @@ function injectSafeUi(html) {
   const affiliateToolsMarker = 'affiliate-tools.js?v=2';
   const referralMarker = 'referral-link.js?v=3';
   const adminPagesMenuMarker = 'admin-pages-menu.js?v=2';
-  const communityOffersMarker = 'community-offers.js?v=5';
+  const communityOffersMarker = 'community-offers.js?v=6';
   const readReceiptMarker = 'read-receipts.js?v=1';
   const communityCountMarker = 'community-count.js?v=3';
   const adminCommunityCountMarker = 'admin-community-count.js?v=1';
-  const affiliateDayMarker = 'affiliate-day.js?v=3';
+  const affiliateDayMarker = 'affiliate-day.js?v=4';
   const adminAffiliateDayMarker = 'admin-affiliate-day.js?v=1';
   const accountAccessMarker = 'account-access.js?v=6';
   const conversationInterestMarker = 'conversation-interest.js?v=2';
-  const targetedBannerMarker = 'targeted-banner.js?v=2';
-  const adminTargetedBannerMarker = 'admin-targeted-banner.js?v=2';
+  const targetedBannerMarker = 'targeted-banner.js?v=3';
+  const adminTargetedBannerMarker = 'admin-targeted-banner.js?v=3';
+  const engagementMarker = 'engagement.js?v=1';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -130,16 +131,17 @@ function injectSafeUi(html) {
   if (!out.includes(affiliateToolsMarker)) out = out.replace('</body>', `<script src="./affiliate-tools.js?v=2"></script></body>`);
   if (!out.includes(referralMarker)) out = out.replace('</body>', `<script src="./referral-link.js?v=3"></script></body>`);
   if (!out.includes(adminPagesMenuMarker)) out = out.replace('</body>', `<script src="./admin-pages-menu.js?v=2"></script></body>`);
-  if (!out.includes(communityOffersMarker)) out = out.replace('</body>', `<script src="./community-offers.js?v=5"></script></body>`);
+  if (!out.includes(communityOffersMarker)) out = out.replace('</body>', `<script src="./community-offers.js?v=6"></script></body>`);
   if (!out.includes(readReceiptMarker)) out = out.replace('</body>', `<script src="./read-receipts.js?v=1"></script></body>`);
   if (!out.includes(communityCountMarker)) out = out.replace('</body>', `<script src="./community-count.js?v=3"></script></body>`);
   if (!out.includes(adminCommunityCountMarker)) out = out.replace('</body>', `<script src="./admin-community-count.js?v=1"></script></body>`);
-  if (!out.includes(affiliateDayMarker)) out = out.replace('</body>', `<script src="./affiliate-day.js?v=3"></script></body>`);
+  if (!out.includes(affiliateDayMarker)) out = out.replace('</body>', `<script src="./affiliate-day.js?v=4"></script></body>`);
   if (!out.includes(adminAffiliateDayMarker)) out = out.replace('</body>', `<script src="./admin-affiliate-day.js?v=1"></script></body>`);
   if (!out.includes(accountAccessMarker)) out = out.replace('</body>', `<script src="./account-access.js?v=6"></script></body>`);
   if (!out.includes(conversationInterestMarker)) out = out.replace('</body>', `<script src="./conversation-interest.js?v=2"></script></body>`);
-  if (!out.includes(targetedBannerMarker)) out = out.replace('</body>', `<script src="./targeted-banner.js?v=2"></script></body>`);
-  if (!out.includes(adminTargetedBannerMarker)) out = out.replace('</body>', `<script src="./admin-targeted-banner.js?v=2"></script></body>`);
+  if (!out.includes(targetedBannerMarker)) out = out.replace('</body>', `<script src="./targeted-banner.js?v=3"></script></body>`);
+  if (!out.includes(adminTargetedBannerMarker)) out = out.replace('</body>', `<script src="./admin-targeted-banner.js?v=3"></script></body>`);
+  if (!out.includes(engagementMarker)) out = out.replace('</body>', `<script src="./engagement.js?v=1"></script></body>`);
   return out;
 }
 
