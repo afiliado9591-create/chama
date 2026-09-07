@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaLayoutRefreshV1';
+  const STYLE_ID='chamaLayoutRefreshV2';
 
   function apply(){
     if(document.getElementById(STYLE_ID))return;
@@ -7,7 +7,12 @@
     s.id=STYLE_ID;
     s.textContent=`
       /* Cabeçalho mais leve: o verde fica como destaque, não como bloco inteiro. */
+      html,body{width:100%;max-width:100%;overflow-x:hidden}
+      #appView.shell{width:100%!important;max-width:900px!important;overflow-x:hidden!important}
       .topbar{
+        width:100%!important;
+        max-width:100%!important;
+        box-sizing:border-box!important;
         background:linear-gradient(180deg,#ffffff 0%,#f7faf8 100%)!important;
         color:#14221c!important;
         border-bottom:1px solid #dfe7e2!important;
@@ -62,7 +67,13 @@
       .chama-home-search-btn{box-shadow:0 3px 9px #0b7a5320!important}
 
       @media(max-width:700px){
-        .topbar{padding-left:18px!important;padding-right:14px!important}
+        #appView.shell{max-width:100%!important;margin:0!important}
+        .topbar{height:62px!important;min-height:62px!important;padding-left:16px!important;padding-right:10px!important;gap:8px!important}
+        .topbar h2{font-size:20px!important;gap:9px!important}
+        .topbar .chama-community-count-wrap{min-width:0!important}
+        .topbar .chama-community-count{padding:5px 8px!important}
+        .chama-main-menu-btn{width:40px!important;height:40px!important;flex-basis:40px!important}
+        #logoutBtn{padding:9px 11px!important;flex:0 0 auto!important}
         .sidebar>.me{margin:10px 12px 6px!important}
       }
     `;
