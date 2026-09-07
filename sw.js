@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v155";
+const VERSION="chama-clean-v157";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "155") return;
-        url.searchParams.set("chama_update", "155");
+        if (url.searchParams.get("chama_update") === "157") return;
+        url.searchParams.set("chama_update", "157");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -40,7 +40,7 @@ function injectSafeUi(html) {
   const homeProfileMessageMarker = 'home-profile-message.js?v=1';
   const socialVideoMarker = 'social-video-links.js?v=1';
   const clickableLinksMarker = 'clickable-links.js?v=1';
-  const professionalPromoMarker = 'professional-promo.js?v=2';
+  const professionalPromoMarker = 'professional-promo.js?v=3';
   const affiliateToolsMarker = 'affiliate-tools.js?v=2';
   const referralMarker = 'referral-link.js?v=3';
   const adminPagesMenuMarker = 'admin-pages-menu.js?v=2';
@@ -50,7 +50,7 @@ function injectSafeUi(html) {
   const adminCommunityCountMarker = 'admin-community-count.js?v=1';
   const affiliateDayMarker = 'affiliate-day.js?v=3';
   const adminAffiliateDayMarker = 'admin-affiliate-day.js?v=1';
-  const accountAccessMarker = 'account-access.js?v=4';
+  const accountAccessMarker = 'account-access.js?v=5';
   const conversationInterestMarker = 'conversation-interest.js?v=2';
   let out = html;
 
@@ -124,7 +124,7 @@ function injectSafeUi(html) {
   if (!out.includes(homeProfileMessageMarker)) out = out.replace('</body>', `<script src="./home-profile-message.js?v=1"></script></body>`);
   if (!out.includes(socialVideoMarker)) out = out.replace('</body>', `<script src="./social-video-links.js?v=1"></script></body>`);
   if (!out.includes(clickableLinksMarker)) out = out.replace('</body>', `<script src="./clickable-links.js?v=1"></script></body>`);
-  if (!out.includes(professionalPromoMarker)) out = out.replace('</body>', `<script src="./professional-promo.js?v=2"></script></body>`);
+  if (!out.includes(professionalPromoMarker)) out = out.replace('</body>', `<script src="./professional-promo.js?v=3"></script></body>`);
   if (!out.includes(affiliateToolsMarker)) out = out.replace('</body>', `<script src="./affiliate-tools.js?v=2"></script></body>`);
   if (!out.includes(referralMarker)) out = out.replace('</body>', `<script src="./referral-link.js?v=3"></script></body>`);
   if (!out.includes(adminPagesMenuMarker)) out = out.replace('</body>', `<script src="./admin-pages-menu.js?v=2"></script></body>`);
@@ -134,7 +134,7 @@ function injectSafeUi(html) {
   if (!out.includes(adminCommunityCountMarker)) out = out.replace('</body>', `<script src="./admin-community-count.js?v=1"></script></body>`);
   if (!out.includes(affiliateDayMarker)) out = out.replace('</body>', `<script src="./affiliate-day.js?v=3"></script></body>`);
   if (!out.includes(adminAffiliateDayMarker)) out = out.replace('</body>', `<script src="./admin-affiliate-day.js?v=1"></script></body>`);
-  if (!out.includes(accountAccessMarker)) out = out.replace('</body>', `<script src="./account-access.js?v=4"></script></body>`);
+  if (!out.includes(accountAccessMarker)) out = out.replace('</body>', `<script src="./account-access.js?v=5"></script></body>`);
   if (!out.includes(conversationInterestMarker)) out = out.replace('</body>', `<script src="./conversation-interest.js?v=2"></script></body>`);
   return out;
 }
