@@ -21,7 +21,7 @@
   <main>
     <section id="gate" class="card status">Verificando permissão de administrador...</section>
     <section id="panel" hidden>
-      <div class="card"><div class="stats"><div class="stat"><b id="userCount">0</b><span>Usuários carregados</span></div><div class="stat"><b id="suspendedCount">0</b><span>Suspensos</span></div></div><p class="muted">Este painel não carrega nem exibe conversas. Ele consulta os usuários somente quando o administrador abre ou atualiza esta página.</p></div>
+      <div class="card"><h2>💬 Público escolhido</h2><div class="stats"><div class="stat"><b id="interestReligiao">0</b><span>🙏 Religião</span></div><div class="stat"><b id="interestNamoro">0</b><span>❤️ Namoro (18+)</span></div><div class="stat"><b id="interestAmizade">0</b><span>🤝 Amizade</span></div><div class="stat"><b id="interestNegocios">0</b><span>💼 Negócios</span></div><div class="stat"><b id="interestPending">0</b><span>Ainda não escolheram</span></div><div class="stat"><b id="userCount">0</b><span>Usuários carregados</span></div><div class="stat"><b id="suspendedCount">0</b><span>Suspensos</span></div></div><p class="muted">O interesse aparece também no cadastro de cada usuário abaixo.</p></div>
 
       <div class="card">
         <h2>💰 Links de afiliado no topo</h2>
@@ -74,6 +74,7 @@
   const cfg={apiKey:'AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I',authDomain:'chama-cfc28.firebaseapp.com',projectId:'chama-cfc28',storageBucket:'chama-cfc28.firebasestorage.app',messagingSenderId:'680045231088',appId:'1:680045231088:web:8db35684e4b56a320ebb35'};
   const app=getApps()[0]||initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
   const gate=document.getElementById('gate'),panel=document.getElementById('panel'),usersBox=document.getElementById('users'),search=document.getElementById('search');
+  const interestLabels={religiao:'🙏 Religião',namoro:'❤️ Namoro (18+)',amizade:'🤝 Amizade',negocios:'💼 Negócios'};
   let me=null,rows=[],adminAllowed=false,affdayActiveData={},affdayCatalog=[];
   const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
   function safePhotoUrl(value){const v=String(value||'').trim();if(!v)return '';try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}}
@@ -222,13 +223,15 @@
     rows=[];uSnap.forEach(d=>{const p=profiles.get(d.id)||{};rows.push({uid:d.id,...d.data(),cidade:String(p.cidade||''),photoUrl:safePhotoUrl(p.photoUrl||'')})});
     rows.sort((a,b)=>String(a.nome||a.email||'').localeCompare(String(b.nome||b.email||''),'pt-BR'));
     renderAffdayActive();
+    const counts={religiao:0,namoro:0,amizade:0,negocios:0,pending:0};rows.forEach(u=>{if(counts[u.conversationInterest]!==undefined)counts[u.conversationInterest]++;else counts.pending++});
+    document.getElementById('interestReligiao').textContent=counts.religiao;document.getElementById('interestNamoro').textContent=counts.namoro;document.getElementById('interestAmizade').textContent=counts.amizade;document.getElementById('interestNegocios').textContent=counts.negocios;document.getElementById('interestPending').textContent=counts.pending;
     document.getElementById('userCount').textContent=rows.length;document.getElementById('suspendedCount').textContent=rows.filter(x=>x.suspended===true).length;render();
     if(location.hash==='#chamaAffiliateDayAdminCard')setTimeout(()=>document.getElementById('chamaAffiliateDayAdminCard')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
   }
   function render(){
     const q=(search.value||'').trim().toLowerCase();
     const list=q?rows.filter(u=>`${u.nome||''} ${u.email||''} ${u.cidade||''}`.toLowerCase().includes(q)):rows;
-    usersBox.innerHTML=list.map(u=>{const own=u.uid===me?.uid,initial=(u.nome||u.email||'U').trim().charAt(0).toUpperCase(),photo=safePhotoUrl(u.photoUrl||''),avatar=photo?`<img src="${esc(photo)}" alt="Foto de perfil">`:esc(initial);return `<article class="user" data-uid="${esc(u.uid)}"><div class="user-top"><div class="avatar">${avatar}</div><div class="user-main"><div class="name">${esc(u.nome||'Sem nome')}${u.admin===true?' 🛡️':''}</div><div class="email">${esc(u.email||'Sem e-mail')}</div><div class="meta">Cidade: ${esc(u.cidade||'não informada')} • ${u.suspended===true?'Suspenso':'Ativo'}</div></div></div>${own?'<div class="self">Esta é sua conta de administrador.</div>':`<div class="actions"><button class="${u.suspended===true?'ok':'danger'}" data-action="toggle">${u.suspended===true?'Reativar usuário':'Suspender usuário'}</button></div>`}</article>`}).join('')||'<div class="status">Nenhum usuário encontrado.</div>';
+    usersBox.innerHTML=list.map(u=>{const own=u.uid===me?.uid,initial=(u.nome||u.email||'U').trim().charAt(0).toUpperCase(),photo=safePhotoUrl(u.photoUrl||''),avatar=photo?`<img src="${esc(photo)}" alt="Foto de perfil">`:esc(initial),interest=interestLabels[u.conversationInterest]||'Ainda não escolheu o público';return `<article class="user" data-uid="${esc(u.uid)}"><div class="user-top"><div class="avatar">${avatar}</div><div class="user-main"><div class="name">${esc(u.nome||'Sem nome')}${u.admin===true?' 🛡️':''}</div><div class="email">${esc(u.email||'Sem e-mail')}</div><div class="meta">Cidade: ${esc(u.cidade||'não informada')} • ${u.suspended===true?'Suspenso':'Ativo'}<br>💬 ${esc(interest)}</div></div></div>${own?'<div class="self">Esta é sua conta de administrador.</div>':`<div class="actions"><button class="${u.suspended===true?'ok':'danger'}" data-action="toggle">${u.suspended===true?'Reativar usuário':'Suspender usuário'}</button></div>`}</article>`}).join('')||'<div class="status">Nenhum usuário encontrado.</div>';
     usersBox.querySelectorAll('[data-action="toggle"]').forEach(btn=>btn.onclick=()=>toggle(btn.closest('.user')?.dataset.uid));
   }
   async function toggle(uid){
