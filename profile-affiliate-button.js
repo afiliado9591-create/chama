@@ -28,8 +28,8 @@
   async function loadLink(uid){
     const token=++requestToken,current=String(uid||'');currentUid=current;
     const b=ensureButton();if(!b)return;
-    b.removeAttribute('href');b.style.display='inline-flex';
-    b.setAttribute('aria-disabled','true');b.title='Carregando oferta...';
+    b.removeAttribute('href');b.style.display='none';
+    b.setAttribute('aria-disabled','true');b.title='';
     if(!current||!db||!fs)return;
     try{
       const [own,base]=await Promise.all([
@@ -38,7 +38,7 @@
       ]);
       if(token!==requestToken||currentUid!==current)return;
       const url=safeUrl(own.exists()?own.data()?.url:'')||safeUrl(base.exists()?base.data()?.url:'');
-      if(url){b.href=url;b.removeAttribute('aria-disabled');b.title='Abrir oferta escolhida para você'}
+      if(url){b.href=url;b.style.display='inline-flex';b.removeAttribute('aria-disabled');b.title='Abrir oferta escolhida para você'}
       else{b.style.display='none';b.title=''}
     }catch(e){console.warn('Chama: link Pra você indisponível',e);if(token===requestToken)b.style.display='none'}
   }
