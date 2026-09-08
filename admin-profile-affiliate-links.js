@@ -46,7 +46,8 @@
     const defSnap=await fs.getDoc(fs.doc(db,'appConfig','affiliateLink_default'));if(defSnap.exists())defInput.value=defSnap.data()?.url||'';
     defBtn.onclick=()=>save('affiliateLink_default',defInput,defMsg);
 
-    const users=document.createElement('div');users.className='chama-link-users';users.innerHTML='<div>Carregando usuários...</div>';card.appendChild(users);main.appendChild(card);
+    const users=document.createElement('div');users.className='chama-link-users';users.innerHTML='<div>Carregando usuários...</div>';card.appendChild(users);
+    const panel=document.getElementById('panel');(panel||main).prepend(card);
     const snap=await fs.getDocs(fs.query(fs.collection(db,'users'),fs.limit(200)));users.innerHTML='';
     const list=[];snap.forEach(d=>list.push({uid:d.id,...d.data()}));list.sort((a,b)=>String(a.nome||a.email||'').localeCompare(String(b.nome||b.email||''),'pt-BR'));
     for(const u of list){
