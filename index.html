@@ -19,7 +19,9 @@
     .field input{border:1px solid #ccd4d0;border-radius:14px;padding:14px 15px;outline:none}.field input:focus{border-color:var(--green)}
     .primary{width:100%;border:0;background:var(--green);color:#fff;padding:14px 16px;border-radius:14px;font-weight:750;cursor:pointer}
     .secondary{width:100%;border:1px solid #c9d4cf;background:#fff;color:var(--green);padding:13px 16px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:9px}
-    .msg{min-height:22px;margin-top:10px;font-size:14px;color:#b42318}
+    .forgot{display:block;width:max-content;margin:13px auto 2px;border:0;background:transparent;color:var(--green);font-weight:750;text-decoration:underline;cursor:pointer;padding:5px}
+    .forgot:disabled{opacity:.6;cursor:wait}
+    .msg{min-height:22px;margin-top:10px;font-size:14px;color:#b42318}.msg.success{color:var(--green);font-weight:700}
     .topbar{height:66px;background:var(--green);color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:5}
     .topbar h2{margin:0;font-size:21px;flex:1}.iconbtn{border:0;background:#ffffff18;color:#fff;border-radius:12px;padding:10px 12px;cursor:pointer}
     .layout{display:grid;grid-template-columns:330px 1fr;min-height:calc(100dvh - 66px)}
@@ -62,7 +64,8 @@
       <div class="field"><label>Senha</label><input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="current-password"></div>
       <button id="loginBtn" class="primary">Entrar</button>
       <button id="signupBtn" class="secondary">Criar minha conta</button>
-      <div id="authMsg" class="msg"></div>
+      <button id="forgotPasswordBtn" class="forgot" type="button">Esqueci minha senha</button>
+      <div id="authMsg" class="msg" role="status" aria-live="polite"></div>
     </div>
   </div>
 
@@ -99,7 +102,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, onSnapshot, serverTimestamp, addDoc, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -185,6 +188,42 @@
       await updateProfile(cred.user,{displayName:nome});
       await ensureProfile(cred.user,nome);
     }catch(e){authMsg.textContent=friendlyError(e)}
+  };
+
+  $("forgotPasswordBtn").onclick=async()=>{
+    const btn=$("forgotPasswordBtn");
+    authMsg.classList.remove("success");
+    authMsg.textContent="";
+    const email=$("email").value.trim().toLowerCase();
+    if(!email){
+      authMsg.textContent="Digite seu e-mail acima para recuperar a senha.";
+      $("email").focus();
+      return;
+    }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      authMsg.textContent="Digite um e-mail válido.";
+      $("email").focus();
+      return;
+    }
+    btn.disabled=true;
+    btn.textContent="Enviando...";
+    try{
+      await sendPasswordResetEmail(auth,email);
+      authMsg.classList.add("success");
+      authMsg.textContent="Enviamos o link para criar uma nova senha. Confira também a caixa de spam.";
+    }catch(e){
+      const code=String(e?.code||"");
+      if(code.includes("too-many-requests")){
+        authMsg.textContent="Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+      }else{
+        // Resposta neutra evita revelar se um e-mail possui conta no Chama.
+        authMsg.classList.add("success");
+        authMsg.textContent="Se este e-mail estiver cadastrado, você receberá o link para criar uma nova senha.";
+      }
+    }finally{
+      btn.disabled=false;
+      btn.textContent="Esqueci minha senha";
+    }
   };
 
   $("loginBtn").onclick=async()=>{
