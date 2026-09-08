@@ -403,7 +403,8 @@
     await saveMessage(text,"🎤 Áudio");
   }
 
-  function previewAudio(blob,type){\n    if(!activeUser||$("chatPanel").classList.contains("hidden-mobile"))return;
+  function previewAudio(blob,type){
+    if(!activeUser||$("chatPanel").classList.contains("hidden-mobile"))return;
     document.querySelector(".audio-preview-backdrop")?.remove();
     const url=URL.createObjectURL(blob),backdrop=document.createElement("div");
     backdrop.className="audio-preview-backdrop";
