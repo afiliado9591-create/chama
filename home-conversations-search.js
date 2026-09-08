@@ -92,9 +92,7 @@
     if(!me||!db||!fs||suggestionsLoadedFor===me.uid)return;suggestionsLoadedFor=me.uid;
     try{
       const found=new Map(),add=snap=>snap.forEach(d=>{if(d.id===me.uid||found.has(d.id))return;const x=d.data()||{};found.set(d.id,{uid:d.id,nome:String(x.nome||x.name||x.email?.split('@')?.[0]||'Usuário'),cidade:String(x.cidade||''),tipoPerfil:String(x.tipoPerfil||''),conversationInterest:String(x.conversationInterest||''),photoUrl:safePhotoUrl(x.photoUrl)})});
-      if(INTEREST_LABELS[myInterest]){const matching=await fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.where('conversationInterest','==',myInterest),fs.limit(21)));add(matching)}
       const profiles=await fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.limit(21)));add(profiles);
-      if(found.size<20){const users=await fs.getDocs(fs.query(fs.collection(db,'users'),fs.limit(21)));add(users)}
       const items=[...found.values()].sort((a,b)=>Number(b.conversationInterest===myInterest)-Number(a.conversationInterest===myInterest)||dailyOrder(a.uid)-dailyOrder(b.uid)).slice(0,20);renderSuggestions(items);
     }catch(e){console.warn('Chama: sugestões não carregaram',e);suggestionsLoadedFor=''}
   }
