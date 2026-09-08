@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v182";
+const VERSION="chama-clean-v183";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "182") return;
-        url.searchParams.set("chama_update", "182");
+        if (url.searchParams.get("chama_update") === "183") return;
+        url.searchParams.set("chama_update", "183");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -58,6 +58,7 @@ function injectSafeUi(html) {
   const floatingPartnersMarker = 'floating-partners.js?v=1';
   const chatForYouMarker = 'chat-for-you.js?v=1';
   const adminChatForYouMarker = 'admin-chat-for-you.js?v=1';
+  const adminOnlineUsersMarker = 'admin-online-users.js?v=1';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -148,6 +149,7 @@ function injectSafeUi(html) {
   if (!out.includes(floatingPartnersMarker)) out = out.replace('</body>', `<script src="./floating-partners.js?v=1"></script></body>`);
   if (!out.includes(chatForYouMarker)) out = out.replace('</body>', `<script src="./chat-for-you.js?v=1"></script></body>`);
   if (!out.includes(adminChatForYouMarker)) out = out.replace('</body>', `<script src="./admin-chat-for-you.js?v=1"></script></body>`);
+  if (!out.includes(adminOnlineUsersMarker)) out = out.replace('</body>', `<script src="./admin-online-users.js?v=1"></script></body>`);
   return out;
 }
 
@@ -226,10 +228,3 @@ self.addEventListener("notificationclick", event => {
   if (data.type === "chama_channel" && data.channelId) url = "./?channel=" + encodeURIComponent(data.channelId);
 
   event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
-    for (const client of list) {
-      if ("navigate" in client) client.navigate(url).catch(() => {});
-      if ("focus" in client) return client.focus();
-    }
-    return self.clients.openWindow(url);
-  }));
-});
