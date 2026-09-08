@@ -58,8 +58,6 @@ function injectSafeUi(html) {
   const floatingPartnersMarker = 'floating-partners.js?v=1';
   const chatForYouMarker = 'chat-for-you.js?v=1';
   const adminChatForYouMarker = 'admin-chat-for-you.js?v=1';
-  const adminOnlineUsersMarker = 'admin-online-users.js?v=3';
-  const presenceMarker = 'presence.js?v=3';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -150,8 +148,6 @@ function injectSafeUi(html) {
   if (!out.includes(floatingPartnersMarker)) out = out.replace('</body>', `<script src="./floating-partners.js?v=1"></script></body>`);
   if (!out.includes(chatForYouMarker)) out = out.replace('</body>', `<script src="./chat-for-you.js?v=1"></script></body>`);
   if (!out.includes(adminChatForYouMarker)) out = out.replace('</body>', `<script src="./admin-chat-for-you.js?v=1"></script></body>`);
-  if (!out.includes(adminOnlineUsersMarker)) out = out.replace('</body>', `<script src="./admin-online-users.js?v=3"></script></body>`);
-  if (!out.includes(presenceMarker)) out = out.replace('</body>', `<script type="module" src="./presence.js?v=3"></script></body>`);
   return out;
 }
 
