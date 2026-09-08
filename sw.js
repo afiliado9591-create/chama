@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v189";
+const VERSION="chama-clean-v190";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "189") return;
-        url.searchParams.set("chama_update", "189");
+        if (url.searchParams.get("chama_update") === "190") return;
+        url.searchParams.set("chama_update", "190");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
