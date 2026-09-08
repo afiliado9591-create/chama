@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v182";
+const VERSION="chama-clean-v183";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "182") return;
-        url.searchParams.set("chama_update", "182");
+        if (url.searchParams.get("chama_update") === "183") return;
+        url.searchParams.set("chama_update", "183");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -58,6 +58,7 @@ function injectSafeUi(html) {
   const floatingPartnersMarker = 'floating-partners.js?v=1';
   const profileAffiliateButtonMarker = 'profile-affiliate-button.js?v=1';
   const adminProfileAffiliateLinksMarker = 'admin-profile-affiliate-links.js?v=1';
+  const chatScrollLockMarker = 'chat-scroll-lock.js?v=1';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -148,6 +149,7 @@ function injectSafeUi(html) {
   if (!out.includes(floatingPartnersMarker)) out = out.replace('</body>', `<script src="./floating-partners.js?v=1"></script></body>`);
   if (!out.includes(profileAffiliateButtonMarker)) out = out.replace('</body>', `<script src="./profile-affiliate-button.js?v=1"></script></body>`);
   if (!out.includes(adminProfileAffiliateLinksMarker)) out = out.replace('</body>', `<script src="./admin-profile-affiliate-links.js?v=1"></script></body>`);
+  if (!out.includes(chatScrollLockMarker)) out = out.replace('</body>', `<script src="./chat-scroll-lock.js?v=1"></script></body>`);
   return out;
 }
 
