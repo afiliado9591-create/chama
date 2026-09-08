@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v185";
+const VERSION="chama-clean-v186";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "185") return;
-        url.searchParams.set("chama_update", "185");
+        if (url.searchParams.get("chama_update") === "186") return;
+        url.searchParams.set("chama_update", "186");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -59,7 +59,7 @@ function injectSafeUi(html) {
   const chatForYouMarker = 'chat-for-you.js?v=1';
   const adminChatForYouMarker = 'admin-chat-for-you.js?v=1';
   const adminOnlineUsersMarker = 'admin-online-users.js?v=2';
-  const presenceMarker = 'presence.js?v=1';
+  const presenceMarker = 'presence.js?v=2';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -151,7 +151,7 @@ function injectSafeUi(html) {
   if (!out.includes(chatForYouMarker)) out = out.replace('</body>', `<script src="./chat-for-you.js?v=1"></script></body>`);
   if (!out.includes(adminChatForYouMarker)) out = out.replace('</body>', `<script src="./admin-chat-for-you.js?v=1"></script></body>`);
   if (!out.includes(adminOnlineUsersMarker)) out = out.replace('</body>', `<script src="./admin-online-users.js?v=2"></script></body>`);
-  if (!out.includes(presenceMarker)) out = out.replace('</body>', `<script type="module" src="./presence.js?v=1"></script></body>`);
+  if (!out.includes(presenceMarker)) out = out.replace('</body>', `<script type="module" src="./presence.js?v=2"></script></body>`);
   return out;
 }
 
