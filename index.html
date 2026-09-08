@@ -230,7 +230,7 @@
     authMsg.textContent="";
     try{
       const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
-      await ensureProfile(cred.user,$("name").value.trim());
+      ensureProfile(cred.user,$("name").value.trim()).catch(console.error);
     }catch(e){authMsg.textContent=friendlyError(e)}
   };
 
@@ -248,11 +248,12 @@
       authView.classList.remove("hidden"); appView.classList.add("hidden"); return;
     }
     me=user;
-    try{ await ensureProfile(user); }catch(e){ console.error(e); }
     $("meName").textContent=user.displayName || user.email?.split("@")[0] || "Você";
     $("meEmail").textContent=user.email||"";
     authView.classList.add("hidden"); appView.classList.remove("hidden");
-    const list=$("usersList"); if(list) list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando conversas...</div>';
+    const list=$("usersList"); if(list) list.innerHTML='<div style="padding:16px;color:#6a756f">Abrindo suas conversas...</div>';
+    listenUsers();
+    ensureProfile(user).catch(console.error);
   });
 
   async function listenUsers(){
