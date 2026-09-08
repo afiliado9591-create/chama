@@ -342,7 +342,8 @@
     },e=>console.error(e));
   }
 
-  // firstChatCreated: a conversa já é preparada em openChat.\n  async function saveMessage(text,label=text){
+  // firstChatCreated: a conversa já é preparada em openChat.
+  async function saveMessage(text,label=text){
     if(!me||!activeUser)return;
     const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
     // Cria/atualiza primeiro o documento pai para que o listener da primeira
