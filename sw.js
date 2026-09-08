@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v184";
+const VERSION="chama-clean-v185";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "184") return;
-        url.searchParams.set("chama_update", "184");
+        if (url.searchParams.get("chama_update") === "185") return;
+        url.searchParams.set("chama_update", "185");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -57,7 +57,7 @@ function injectSafeUi(html) {
   const engagementMarker = 'engagement.js?v=3';
   const floatingPartnersMarker = 'floating-partners.js?v=1';
   const profileAffiliateButtonMarker = 'profile-affiliate-button.js?v=2';
-  const adminProfileAffiliateLinksMarker = 'admin-profile-affiliate-links.js?v=2';
+  const adminProfileAffiliateLinksMarker = 'admin-profile-affiliate-links.js?v=3';
   const chatScrollLockMarker = 'chat-scroll-lock.js?v=1';
   let out = html;
 
@@ -148,7 +148,7 @@ function injectSafeUi(html) {
   if (!out.includes(engagementMarker)) out = out.replace('</body>', `<script src="./engagement.js?v=3"></script></body>`);
   if (!out.includes(floatingPartnersMarker)) out = out.replace('</body>', `<script src="./floating-partners.js?v=1"></script></body>`);
   if (!out.includes(profileAffiliateButtonMarker)) out = out.replace('</body>', `<script src="./profile-affiliate-button.js?v=2"></script></body>`);
-  if (!out.includes(adminProfileAffiliateLinksMarker)) out = out.replace('</body>', `<script src="./admin-profile-affiliate-links.js?v=2"></script></body>`);
+  if (!out.includes(adminProfileAffiliateLinksMarker)) out = out.replace('</body>', `<script src="./admin-profile-affiliate-links.js?v=3"></script></body>`);
   if (!out.includes(chatScrollLockMarker)) out = out.replace('</body>', `<script src="./chat-scroll-lock.js?v=1"></script></body>`);
   return out;
 }
