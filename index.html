@@ -289,7 +289,7 @@
     if(!text.startsWith(MEDIA_PREFIX))return null;
     try{
       const meta=JSON.parse(text.slice(MEDIA_PREFIX.length));
-      if(meta?.kind==="audio" && /^https?:\/\//i.test(meta.url||""))return meta;
+      if(meta?.kind==="audio" && /^(https?:\/\/|\/api\/media\?)/i.test(meta.url||""))return meta;
     }catch(_){ }
     return null;
   }
@@ -348,7 +348,7 @@
     // Cria/atualiza primeiro o documento pai para que o listener da primeira
     // mensagem permaneça autorizado e ativo desde o início da conversa.
     await setDoc(doc(db,"chats",chatId),{participants:ids},{merge:true});
-    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
+    const messages=collection(db,"chats",chatId,"messages");\n    const data={text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()};\n    try{\n      await addDoc(messages,data);\n    }catch(e){\n      if(!String(e?.code||"").includes("permission-denied"))throw e;\n      await setDoc(doc(db,"chats",chatId),{participants:ids,createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});\n      await addDoc(messages,data);\n    }
     await setDoc(doc(db,"chats",chatId),{
       participants:ids,
       lastMessage:label,
@@ -402,7 +402,7 @@
     await saveMessage(text,"🎤 Áudio");
   }
 
-  function previewAudio(blob,type){
+  function previewAudio(blob,type){\n    if(!activeUser||$("chatPanel").classList.contains("hidden-mobile"))return;
     document.querySelector(".audio-preview-backdrop")?.remove();
     const url=URL.createObjectURL(blob),backdrop=document.createElement("div");
     backdrop.className="audio-preview-backdrop";
