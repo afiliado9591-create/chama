@@ -342,13 +342,13 @@
     },e=>console.error(e));
   }
 
-  async function saveMessage(text,label=text){
+  // firstChatCreated: a conversa já é preparada em openChat.\n  async function saveMessage(text,label=text){
     if(!me||!activeUser)return;
     const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
     // Cria/atualiza primeiro o documento pai para que o listener da primeira
     // mensagem permaneça autorizado e ativo desde o início da conversa.
     await setDoc(doc(db,"chats",chatId),{participants:ids},{merge:true});
-    const messages=collection(db,"chats",chatId,"messages");\n    const data={text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()};\n    try{\n      await addDoc(messages,data);\n    }catch(e){\n      if(!String(e?.code||"").includes("permission-denied"))throw e;\n      await setDoc(doc(db,"chats",chatId),{participants:ids,createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true});\n      await addDoc(messages,data);\n    }
+    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
     await setDoc(doc(db,"chats",chatId),{
       participants:ids,
       lastMessage:label,
