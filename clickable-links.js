@@ -25,4 +25,5 @@
   document.readyState==="loading"?document.addEventListener("DOMContentLoaded",start):start();
 })();
 (function(){if(document.querySelector('script[data-chama-optimistic-loader]'))return;const s=document.createElement('script');s.src='./media-optimistic-upload.js?v=1';s.dataset.chamaOptimisticLoader='1';document.head.appendChild(s)})();
+(function(){if(document.querySelector('script[data-chama-stability-loader]'))return;const s=document.createElement('script');s.src='./media-stability.js?v=1';s.dataset.chamaStabilityLoader='1';document.head.appendChild(s)})();
 import("./media-chat.js?v=2").catch(e=>console.warn("Chama mídia não carregou",e));
