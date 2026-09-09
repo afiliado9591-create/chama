@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v152";
+const VERSION="chama-clean-v153";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "152") return;
-        url.searchParams.set("chama_update", "152");
+        if (url.searchParams.get("chama_update") === "153") return;
+        url.searchParams.set("chama_update", "153");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -52,7 +52,7 @@ function injectSafeUi(html) {
   const affiliateDayMarker = 'affiliate-day.js?v=2';
   const adminAffiliateDayMarker = 'admin-affiliate-day.js?v=1';
   const selfProfileClickMarker = 'home-self-profile-click.js?v=1';
-  const profileFollowMarker = 'profile-follow.js?v=1';
+  const profileFollowMarker = 'profile-follow.js?v=2';
   let out = html;
 
   if (!out.includes('window.chamaOpenChat=openChat;')) {
@@ -138,7 +138,7 @@ function injectSafeUi(html) {
   if (!out.includes(affiliateDayMarker)) out = out.replace('</body>', `<script src="./affiliate-day.js?v=2"></script></body>`);
   if (!out.includes(adminAffiliateDayMarker)) out = out.replace('</body>', `<script src="./admin-affiliate-day.js?v=1"></script></body>`);
   if (!out.includes(selfProfileClickMarker)) out = out.replace('</body>', `<script src="./home-self-profile-click.js?v=1"></script></body>`);
-  if (!out.includes(profileFollowMarker)) out = out.replace('</body>', `<script src="./profile-follow.js?v=1"></script></body>`);
+  if (!out.includes(profileFollowMarker)) out = out.replace('</body>', `<script src="./profile-follow.js?v=2"></script></body>`);
   return out;
 }
 
