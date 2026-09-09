@@ -20,6 +20,8 @@
       .chama-search-avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:#0b7a53;font-weight:900;flex:0 0 44px;overflow:hidden}.chama-search-avatar img,#usersList .user>.avatar img{width:100%;height:100%;object-fit:cover;display:block}
       #usersList .user>.avatar{overflow:hidden}
       .chama-search-main{min-width:0;flex:1}.chama-search-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chama-search-city{font-size:12px;color:#6a756f;margin-top:2px}
+      .chama-self-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #e8eeeb;background:#f8fbf9;cursor:default}.chama-self-avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:#0b7a53;font-weight:900;flex:0 0 44px;overflow:hidden}.chama-self-avatar img{width:100%;height:100%;object-fit:cover;display:block}.chama-self-main{min-width:0;flex:1}.chama-self-name{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chama-self-label{font-size:12px;color:#0b7a53;font-weight:750;margin-top:2px}
+      #usersList .user-email,#chatEmail{display:none!important}
       #usersList.chama-conversations-mode .user:not(.chama-has-conversation){display:none!important}.chama-empty-conversations{padding:18px 16px;color:#6a756f;text-align:center;line-height:1.45}.chama-search-bridge{display:none!important}
       .chama-suggestions{background:#fff;border-top:8px solid #f3f5f4}.chama-suggestions-head{padding:13px 16px 8px;font-size:13px;color:#607069;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.chama-suggestions-note{padding:0 16px 10px;font-size:12px;color:#7a8680}.chama-suggestion-user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid #f0f2f1;background:#fff;cursor:pointer}.chama-suggestion-user:active{background:#f2f8f5}.chama-suggestion-badge{font-size:10px;font-weight:850;color:#0b7a53;background:#e8f6ef;border-radius:999px;padding:4px 7px;white-space:nowrap}
     `;document.head.appendChild(s);
@@ -31,13 +33,28 @@
     const img=document.createElement('img');img.alt='Foto de perfil';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=safe;img.onerror=()=>{el.textContent=(String(fallback||'U').trim().charAt(0)||'U').toUpperCase()};el.appendChild(img);
   }
 
+  function ensureSelfRow(){
+    const list=document.getElementById('usersList');if(!list||!me)return;
+    let row=document.getElementById('chamaSelfRow');
+    if(!row){
+      row=document.createElement('div');row.id='chamaSelfRow';row.className='chama-self-row';
+      row.innerHTML='<div class="chama-self-avatar"></div><div class="chama-self-main"><div class="chama-self-name"></div><div class="chama-self-label">Eu</div></div>';
+      list.insertBefore(row,list.firstChild);
+    }
+    row.dataset.uid=me.uid||'';row.querySelector('.chama-self-name').textContent=me.displayName||me.email?.split('@')?.[0]||'Usuário';
+    setAvatar(row.querySelector('.chama-self-avatar'),me.photoURL,me.displayName||me.email||'U');
+  }
+
   function ensureUi(){
     const sidebar=document.querySelector('.sidebar'),list=document.getElementById('usersList');if(!sidebar||!list||document.getElementById('chamaHomeTools'))return;
     const title=sidebar.querySelector('.section-title');if(title)title.textContent='Conversas';
-    const tools=document.createElement('div');tools.id='chamaHomeTools';tools.className='chama-home-tools';tools.innerHTML='<input id="chamaPeopleSearch" maxlength="60" placeholder="Buscar pessoa ou cidade"><button id="chamaPeopleSearchBtn" class="chama-home-search-btn" type="button" aria-label="Buscar">🔍</button>';list.insertAdjacentElement('beforebegin',tools);
+    const meBox=sidebar.querySelector('.me');
+    const tools=document.createElement('div');tools.id='chamaHomeTools';tools.className='chama-home-tools';tools.innerHTML='<input id="chamaPeopleSearch" maxlength="60" placeholder="Buscar pessoa ou cidade"><button id="chamaPeopleSearchBtn" class="chama-home-search-btn" type="button" aria-label="Buscar">🔍</button>';
+    if(meBox)meBox.insertAdjacentElement('beforebegin',tools);else sidebar.insertBefore(tools,list);
+    if(meBox)meBox.style.display='none';
     const results=document.createElement('div');results.id='chamaPeopleResults';results.hidden=true;list.insertAdjacentElement('afterend',results);
     document.getElementById('chamaPeopleSearchBtn').onclick=runSearch;document.getElementById('chamaPeopleSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runSearch()}});
-    list.classList.add('chama-conversations-mode');refreshConversationRows();
+    list.classList.add('chama-conversations-mode');ensureSelfRow();refreshConversationRows();
   }
 
   function refreshConversationRows(){
@@ -51,7 +68,7 @@
     try{
       const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const app=appMod.getApps()[0];if(!app){if(attempt>=20)return null;await new Promise(r=>setTimeout(r,100));return getFirebase(attempt+1)}
       const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');fs=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');db=fs.getFirestore(app);const auth=authMod.getAuth(app);
-      authMod.onAuthStateChanged(auth,u=>{me=u||null;if(!me){suggestionsLoadedFor='';document.getElementById('chamaSuggestions')?.remove();return}loadSuggestions()});return true;
+      authMod.onAuthStateChanged(auth,u=>{me=u||null;if(!me){suggestionsLoadedFor='';document.getElementById('chamaSuggestions')?.remove();return}ensureSelfRow();loadSuggestions()});return true;
     }catch(e){console.error('Chama: busca não iniciou',e);return null}
   }
 
@@ -61,7 +78,7 @@
 
   function ensureBridge(u){
     const list=document.getElementById('usersList');if(!list)return '';const bridgeId='chamaBridge_'+u.uid;let row=document.getElementById(bridgeId);const pseudo=`${u.uid}@chama.local`;
-    if(!row){row=document.createElement('div');row.id=bridgeId;row.className='user chama-search-bridge';row.dataset.uid=u.uid;row.dataset.photoUrl=safePhotoUrl(u.photoUrl);row.innerHTML=`<div class="user-main"><div class="user-name">${esc(u.nome||'Usuário')}</div><div class="user-email">${esc(pseudo)}</div></div>`;list.appendChild(row)}return pseudo;
+    if(!row){row=document.createElement('div');row.id=bridgeId;row.className='user chama-search-bridge';row.dataset.uid=u.uid;row.innerHTML=`<div class="user-main"><div class="user-name">${esc(u.nome||'Usuário')}</div><div class="user-email">${esc(pseudo)}</div></div>`;list.appendChild(row)}return pseudo;
   }
 
   function dailyOrder(uid){
@@ -109,7 +126,7 @@
     }catch(e){console.error(e);results.innerHTML='<div class="chama-search-status">Não foi possível fazer a busca agora.</div>'}
   }
 
-  function showConversations(){const list=document.getElementById('usersList'),results=document.getElementById('chamaPeopleResults'),suggestions=document.getElementById('chamaSuggestions');if(results)results.hidden=true;if(suggestions)suggestions.hidden=false;if(list){list.hidden=false;list.classList.add('chama-conversations-mode');refreshConversationRows()}}
+  function showConversations(){const list=document.getElementById('usersList'),results=document.getElementById('chamaPeopleResults'),suggestions=document.getElementById('chamaSuggestions');if(results)results.hidden=true;if(suggestions)suggestions.hidden=false;if(list){list.hidden=false;list.classList.add('chama-conversations-mode');ensureSelfRow();refreshConversationRows()}}
 
   async function start(){
     addStyle();ensureUi();await getFirebase();const list=document.getElementById('usersList');
