@@ -20,7 +20,7 @@
       .chama-search-avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:#0b7a53;font-weight:900;flex:0 0 44px;overflow:hidden}.chama-search-avatar img,#usersList .user>.avatar img{width:100%;height:100%;object-fit:cover;display:block}
       #usersList .user>.avatar{overflow:hidden}
       .chama-search-main{min-width:0;flex:1}.chama-search-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chama-search-city{font-size:12px;color:#6a756f;margin-top:2px}
-      .chama-self-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #e8eeeb;background:#f8fbf9;cursor:default}.chama-self-avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:#0b7a53;font-weight:900;flex:0 0 44px;overflow:hidden}.chama-self-avatar img{width:100%;height:100%;object-fit:cover;display:block}.chama-self-main{min-width:0;flex:1}.chama-self-name{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chama-self-label{font-size:12px;color:#0b7a53;font-weight:750;margin-top:2px}
+      .chama-self-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #e8eeeb;background:#f8fbf9;cursor:default}.chama-self-avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:#0b7a53;font-weight:900;flex:0 0 44px;overflow:hidden;border:3px solid #f4c542;box-shadow:0 0 0 1px #e7b82f66}.chama-self-avatar img{width:100%;height:100%;object-fit:cover;display:block}.chama-self-main{min-width:0;flex:1}.chama-self-name{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       #usersList .user-email,#chatEmail{display:none!important}
       #usersList.chama-conversations-mode .user:not(.chama-has-conversation){display:none!important}.chama-empty-conversations{padding:18px 16px;color:#6a756f;text-align:center;line-height:1.45}.chama-search-bridge{display:none!important}
       .chama-suggestions{background:#fff;border-top:8px solid #f3f5f4}.chama-suggestions-head{padding:13px 16px 8px;font-size:13px;color:#607069;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.chama-suggestions-note{padding:0 16px 10px;font-size:12px;color:#7a8680}.chama-suggestion-user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid #f0f2f1;background:#fff;cursor:pointer}.chama-suggestion-user:active{background:#f2f8f5}.chama-suggestion-badge{font-size:10px;font-weight:850;color:#0b7a53;background:#e8f6ef;border-radius:999px;padding:4px 7px;white-space:nowrap}
@@ -38,10 +38,10 @@
     let row=document.getElementById('chamaSelfRow');
     if(!row){
       row=document.createElement('div');row.id='chamaSelfRow';row.className='chama-self-row';
-      row.innerHTML='<div class="chama-self-avatar"></div><div class="chama-self-main"><div class="chama-self-name"></div><div class="chama-self-label">Eu</div></div>';
+      row.innerHTML='<div class="chama-self-avatar"></div><div class="chama-self-main"><div class="chama-self-name">Eu</div></div>';
       list.insertBefore(row,list.firstChild);
     }
-    row.dataset.uid=me.uid||'';row.querySelector('.chama-self-name').textContent=me.displayName||me.email?.split('@')?.[0]||'Usuário';
+    row.dataset.uid=me.uid||'';row.querySelector('.chama-self-name').textContent='Eu';
     setAvatar(row.querySelector('.chama-self-avatar'),me.photoURL,me.displayName||me.email||'U');
   }
 
