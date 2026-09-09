@@ -1,49 +1,69 @@
 (()=>{
-  if(window.__chamaMediaStabilityV1)return;
-  window.__chamaMediaStabilityV1=1;
+  if(window.__chamaMediaStabilityV2)return;
+  window.__chamaMediaStabilityV2=1;
   const PREFIX='__CHAMA_MEDIA__';
-  let lastChat='';
   const kept=new Map();
-  const rawOf=b=>b?.dataset?.chamaRaw||'';
-  function remember(nodes){
-    nodes.forEach(n=>{
-      if(!(n instanceof HTMLElement)||!n.classList.contains('bubble'))return;
-      const raw=rawOf(n);
-      if(raw.startsWith(PREFIX)) kept.set(raw,n);
-    });
-    while(kept.size>100){const k=kept.keys().next().value;kept.delete(k)}
+  let scope='';
+  const getScope=()=>((document.getElementById('chatEmail')?.textContent||'').trim().toLowerCase());
+  function rawOf(b){
+    const stored=b?.dataset?.chamaRaw||'';
+    if(stored.startsWith(PREFIX))return stored;
+    let text='';
+    for(const n of b?.childNodes||[]){
+      if(n.nodeType===Node.TEXT_NODE)text+=n.nodeValue||'';
+      else if(n.nodeType===Node.ELEMENT_NODE&&!n.classList.contains('time')&&!n.classList.contains('chama-msg-menu-btn'))text+=n.textContent||'';
+    }
+    return text.trim();
+  }
+  function remember(node){
+    if(!(node instanceof HTMLElement)||!node.classList.contains('bubble'))return;
+    const raw=rawOf(node);
+    if(!raw.startsWith(PREFIX))return;
+    kept.set(raw,{node:node.cloneNode(true),scope:getScope()});
+    while(kept.size>100)kept.delete(kept.keys().next().value);
+  }
+  function currentRaw(box){
+    return new Set([...box.querySelectorAll('.bubble')].map(rawOf).filter(x=>x.startsWith(PREFIX)));
   }
   function restore(box){
-    if(!box)return;
-    const current=new Set([...box.querySelectorAll('.bubble')].map(rawOf));
-    for(const [raw,node] of kept){
-      if(!raw||current.has(raw)||!node)return;
-      const active=document.getElementById('activeChat');
-      if(!active||active.classList.contains('hidden'))continue;
+    if(!box||scope!==getScope())return;
+    const current=currentRaw(box);
+    for(const [raw,item] of kept){
+      if(item.scope!==scope||current.has(raw))continue;
+      const node=item.node.cloneNode(true);
+      node.dataset.chamaStabilityRestored='1';
       box.appendChild(node);
     }
+    box.scrollTop=box.scrollHeight;
   }
   function observe(){
     const box=document.getElementById('messages');
-    if(!box||box.dataset.chamaStability==='1')return;
-    box.dataset.chamaStability='1';
-    const chatScope=()=>((document.getElementById('chatEmail')?.textContent||'').trim().toLowerCase());
-    lastChat=chatScope();
+    if(!box||box.dataset.chamaStabilityV2==='1')return;
+    box.dataset.chamaStabilityV2='1';
+    scope=getScope();
     new MutationObserver(records=>{
-      const removed=[];let broad=false;
+      let removedMedia=false;
       records.forEach(r=>{
         if(r.type!=='childList')return;
-        r.removedNodes.forEach(n=>removed.push(n));
-        if(r.removedNodes.length>2) broad=true;
+        r.removedNodes.forEach(n=>{
+          if(n instanceof HTMLElement){
+            if(n.classList.contains('bubble')){
+              const raw=rawOf(n);
+              if(raw.startsWith(PREFIX)){remember(n);removedMedia=true}
+            }else{
+              n.querySelectorAll?.('.bubble').forEach(b=>{const raw=rawOf(b);if(raw.startsWith(PREFIX)){remember(b);removedMedia=true}});
+            }
+          }
+        });
       });
-      if(removed.length)remember(removed);
-      const scope=chatScope();
-      if(scope!==lastChat){lastChat=scope;kept.clear();return}
-      if(broad){
-        requestAnimationFrame(()=>setTimeout(()=>restore(box),0));
-      }
-    }).observe(box,{childList:true});
+      const nextScope=getScope();
+      if(nextScope!==scope){scope=nextScope;kept.clear();return}
+      if(removedMedia)setTimeout(()=>restore(box),30);
+    }).observe(box,{childList:true,subtree:true});
   }
-  function boot(){observe();new MutationObserver(observe).observe(document.body,{childList:true,subtree:true})}
+  function boot(){
+    observe();
+    new MutationObserver(()=>observe()).observe(document.body,{childList:true,subtree:true});
+  }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',boot,{once:true}):boot();
 })();
