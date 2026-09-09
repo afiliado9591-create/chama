@@ -1,4 +1,4 @@
-const VERSION="chama-clean-v149";
+const VERSION="chama-clean-v150";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -15,8 +15,8 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        if (url.searchParams.get("chama_update") === "149") return;
-        url.searchParams.set("chama_update", "149");
+        if (url.searchParams.get("chama_update") === "150") return;
+        url.searchParams.set("chama_update", "150");
         await client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -105,6 +105,14 @@ function injectSafeUi(html) {
       '    },e=>console.error(e));\n  }\n\n  async function saveMessage',
       '    },e=>{console.error(e);const box=$("messages");if(box)box.innerHTML=\'<div id="chama-first-message-hint-v119" style="margin:auto;color:#6a756f;padding:20px;text-align:center">Conversa ainda não iniciada. Envie a primeira mensagem.</div>\';});\n  }\n\n  async function saveMessage'
     );
+  }
+
+  if (!out.includes('chama-chat-read-limit-v150')) {
+    out = out.replace(
+      'const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(20));',
+      'const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(10));'
+    );
+    out = out.replace('</body>', '<!-- chama-chat-read-limit-v150 --> </body>');
   }
 
   if (!out.includes(mediaMarker)) out = out.replace('</body>', `<script src="./media-render-safe.js?v=93"></script></body>`);
