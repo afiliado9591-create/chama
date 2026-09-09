@@ -1,15 +1,9 @@
 (()=>{
   const STYLE_ID='chamaHomeSearchStyleV3';
   let me=null,db=null,fs=null,suggestionsLoadedFor='';
-
   const norm=v=>String(v||'').trim().toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const esc=v=>String(v||'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
-
-  function safePhotoUrl(value){
-    const v=String(value||'').trim();if(!v)return '';
-    try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}
-  }
-
+  function safePhotoUrl(value){const v=String(value||'').trim();if(!v)return '';try{const u=new URL(v,location.origin);if(u.origin!==location.origin||u.pathname!=='/api/media'||!u.searchParams.get('key'))return '';return u.href}catch{return ''}}
   function addStyle(){
     if(document.getElementById(STYLE_ID))return;
     const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
@@ -26,112 +20,38 @@
       .chama-suggestions{background:#fff;border-top:8px solid #f3f5f4}.chama-suggestions-head{padding:13px 16px 8px;font-size:13px;color:#607069;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.chama-suggestions-note{padding:0 16px 10px;font-size:12px;color:#7a8680}.chama-suggestion-user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid #f0f2f1;background:#fff;cursor:pointer}.chama-suggestion-user:active{background:#f2f8f5}.chama-suggestion-badge{font-size:10px;font-weight:850;color:#0b7a53;background:#e8f6ef;border-radius:999px;padding:4px 7px;white-space:nowrap}
     `;document.head.appendChild(s);
   }
-
-  function setAvatar(el,url,fallback='U'){
-    if(!el)return;const safe=safePhotoUrl(url);el.textContent='';
-    if(!safe){el.textContent=(String(fallback||'U').trim().charAt(0)||'U').toUpperCase();return}
-    const img=document.createElement('img');img.alt='Foto de perfil';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=safe;img.onerror=()=>{el.textContent=(String(fallback||'U').trim().charAt(0)||'U').toUpperCase()};el.appendChild(img);
-  }
-
+  function setAvatar(el,url,fallback='U'){if(!el)return;const safe=safePhotoUrl(url);el.textContent='';if(!safe){el.textContent=(String(fallback||'U').trim().charAt(0)||'U').toUpperCase();return}const img=document.createElement('img');img.alt='Foto de perfil';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=safe;img.onerror=()=>{el.textContent=(String(fallback||'U').trim().charAt(0)||'U').toUpperCase()};el.appendChild(img)}
   function ensureSelfRow(){
     const list=document.getElementById('usersList');if(!list||!me)return;
     let row=document.getElementById('chamaSelfRow');
-    if(!row){
-      row=document.createElement('div');row.id='chamaSelfRow';row.className='chama-self-row';
-      row.innerHTML='<div class="chama-self-avatar"></div><div class="chama-self-main"><div class="chama-self-name">Eu</div></div>';
-      list.insertBefore(row,list.firstChild);
-    }
-    row.dataset.uid=me.uid||'';row.querySelector('.chama-self-name').textContent='Eu';
-    setAvatar(row.querySelector('.chama-self-avatar'),me.photoURL,me.displayName||me.email||'U');
+    if(!row){row=document.createElement('div');row.id='chamaSelfRow';row.className='chama-self-row';row.innerHTML='<div class="chama-self-avatar"></div><div class="chama-self-main"><div class="chama-self-name">Eu</div></div>';list.insertBefore(row,list.firstChild)}
+    row.dataset.uid=me.uid||'';row.querySelector('.chama-self-name').textContent='Eu';setAvatar(row.querySelector('.chama-self-avatar'),me.photoURL,me.displayName||me.email||'U');
   }
-
   function ensureUi(){
-    const sidebar=document.querySelector('.sidebar'),list=document.getElementById('usersList');if(!sidebar||!list||document.getElementById('chamaHomeTools'))return;
+    const sidebar=document.querySelector('.sidebar'),list=document.getElementById('usersList');if(!sidebar||!list)return false;
+    if(document.getElementById('chamaHomeTools')){list.classList.add('chama-conversations-mode');ensureSelfRow();return true}
     const title=sidebar.querySelector('.section-title');if(title)title.textContent='Conversas';
-    const meBox=sidebar.querySelector('.me');
-    const tools=document.createElement('div');tools.id='chamaHomeTools';tools.className='chama-home-tools';tools.innerHTML='<input id="chamaPeopleSearch" maxlength="60" placeholder="Buscar pessoa ou cidade"><button id="chamaPeopleSearchBtn" class="chama-home-search-btn" type="button" aria-label="Buscar">🔍</button>';
-    if(meBox)meBox.insertAdjacentElement('beforebegin',tools);else sidebar.insertBefore(tools,list);
-    if(meBox)meBox.style.display='none';
+    const meBox=sidebar.querySelector('.me');const tools=document.createElement('div');tools.id='chamaHomeTools';tools.className='chama-home-tools';tools.innerHTML='<input id="chamaPeopleSearch" maxlength="60" placeholder="Buscar pessoa ou cidade"><button id="chamaPeopleSearchBtn" class="chama-home-search-btn" type="button" aria-label="Buscar">🔍</button>';
+    if(meBox)meBox.insertAdjacentElement('beforebegin',tools);else sidebar.insertBefore(tools,list);if(meBox)meBox.style.display='none';
     const results=document.createElement('div');results.id='chamaPeopleResults';results.hidden=true;list.insertAdjacentElement('afterend',results);
     document.getElementById('chamaPeopleSearchBtn').onclick=runSearch;document.getElementById('chamaPeopleSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runSearch()}});
-    list.classList.add('chama-conversations-mode');ensureSelfRow();refreshConversationRows();
+    list.classList.add('chama-conversations-mode');ensureSelfRow();refreshConversationRows();return true;
   }
-
-  function refreshConversationRows(){
-    const list=document.getElementById('usersList');if(!list)return;let count=0;
-    list.querySelectorAll('.user:not(.chama-search-bridge)').forEach(row=>{const has=!!row.querySelector('.chama-conversation-side');row.classList.toggle('chama-has-conversation',has);if(has)count++});
-    document.getElementById('chamaEmptyConversations')?.remove();
-    if(count===0&&list.classList.contains('chama-conversations-mode')){const empty=document.createElement('div');empty.id='chamaEmptyConversations';empty.className='chama-empty-conversations';empty.textContent='Nenhuma conversa ainda. Use a busca acima para encontrar uma pessoa.';list.appendChild(empty)}
-  }
-
-  async function getFirebase(attempt=0){
-    try{
-      const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const app=appMod.getApps()[0];if(!app){if(attempt>=20)return null;await new Promise(r=>setTimeout(r,100));return getFirebase(attempt+1)}
-      const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');fs=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');db=fs.getFirestore(app);const auth=authMod.getAuth(app);
-      authMod.onAuthStateChanged(auth,u=>{me=u||null;if(!me){suggestionsLoadedFor='';document.getElementById('chamaSuggestions')?.remove();return}ensureSelfRow();loadSuggestions()});return true;
-    }catch(e){console.error('Chama: busca não iniciou',e);return null}
-  }
-
-  async function queryField(field,term){
-    return fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.orderBy(field),fs.startAt(term),fs.endAt(term+'\uf8ff'),fs.limit(20)));
-  }
-
-  function ensureBridge(u){
-    const list=document.getElementById('usersList');if(!list)return '';const bridgeId='chamaBridge_'+u.uid;let row=document.getElementById(bridgeId);const pseudo=`${u.uid}@chama.local`;
-    if(!row){row=document.createElement('div');row.id=bridgeId;row.className='user chama-search-bridge';row.dataset.uid=u.uid;row.innerHTML=`<div class="user-main"><div class="user-name">${esc(u.nome||'Usuário')}</div><div class="user-email">${esc(pseudo)}</div></div>`;list.appendChild(row)}return pseudo;
-  }
-
-  function dailyOrder(uid){
-    const day=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}),seed=uid+'|'+day;
-    let n=2166136261;for(let i=0;i<seed.length;i++){n^=seed.charCodeAt(i);n=Math.imul(n,16777619)}return n>>>0;
-  }
-
-  function openSuggested(u){
-    if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');
-    const pseudo=ensureBridge(u);window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo,photoUrl:u.photoUrl||''});
-  }
-
-  function renderSuggestions(items){
-    document.getElementById('chamaSuggestions')?.remove();const list=document.getElementById('usersList');if(!list||!items.length)return;
-    const box=document.createElement('section');box.id='chamaSuggestions';box.className='chama-suggestions';box.innerHTML='<div class="chama-suggestions-head">Sugestões para conversar</div><div class="chama-suggestions-note">Conheça pessoas da comunidade. A conversa só começa quando você tocar e enviar uma mensagem.</div>';
-    for(const u of items.slice(0,20)){
-      const row=document.createElement('div');row.className='chama-suggestion-user';row.dataset.uid=u.uid;row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||u.tipoPerfil||'Usuário do Chama')}</div></div><span class="chama-suggestion-badge">Conversar</span>`;
-      setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);row.onclick=()=>openSuggested(u);box.appendChild(row);
-    }
-    list.insertAdjacentElement('afterend',box);
-  }
-
-  async function loadSuggestions(){
-    if(!me||!db||!fs||suggestionsLoadedFor===me.uid)return;suggestionsLoadedFor=me.uid;
-    try{
-      const found=new Map(),add=snap=>snap.forEach(d=>{if(d.id===me.uid||found.has(d.id))return;const x=d.data()||{};found.set(d.id,{uid:d.id,nome:String(x.nome||x.name||x.email?.split('@')?.[0]||'Usuário'),cidade:String(x.cidade||''),tipoPerfil:String(x.tipoPerfil||''),photoUrl:safePhotoUrl(x.photoUrl)})});
-      const profiles=await fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.limit(21)));add(profiles);
-      if(found.size<20){const users=await fs.getDocs(fs.query(fs.collection(db,'users'),fs.limit(21)));add(users)}
-      const items=[...found.values()].sort((a,b)=>dailyOrder(a.uid)-dailyOrder(b.uid)).slice(0,20);renderSuggestions(items);
-    }catch(e){console.warn('Chama: sugestões não carregaram',e);suggestionsLoadedFor=''}
-  }
-
-  async function runSearch(){
-    const input=document.getElementById('chamaPeopleSearch'),term=norm(input?.value||'');if(term.length<2)return alert('Digite pelo menos 2 letras do nome ou da cidade.');if(!me||!db||!fs)return alert('Aguarde o Chama terminar de carregar.');
-    const list=document.getElementById('usersList'),results=document.getElementById('chamaPeopleResults');if(!list||!results)return;list.hidden=true;document.getElementById('chamaSuggestions')?.setAttribute('hidden','');results.hidden=false;results.innerHTML='<div class="chama-search-status">Buscando pessoas...</div>';
-    try{
-      const [byName,byCity]=await Promise.all([queryField('nomeBusca',term),queryField('cidadeBusca',term)]),found=new Map();
-      const add=snap=>snap.forEach(d=>{const x=d.data()||{};if(d.id!==me.uid)found.set(d.id,{uid:d.id,nome:String(x.nome||'Usuário'),cidade:String(x.cidade||''),photoUrl:safePhotoUrl(x.photoUrl)})});add(byName);add(byCity);const items=[...found.values()].slice(0,30);results.innerHTML='';
-      const top=document.createElement('div');top.className='chama-home-tools';const label=document.createElement('div');label.style.cssText='flex:1;padding:10px 4px;font-weight:800;color:#34443c';label.textContent=`Resultados: ${items.length}`;const cancel=document.createElement('button');cancel.type='button';cancel.className='chama-home-cancel';cancel.textContent='Voltar';cancel.onclick=showConversations;top.append(label,cancel);results.appendChild(top);
-      if(!items.length){const empty=document.createElement('div');empty.className='chama-search-status';empty.textContent='Nenhuma pessoa encontrada. Usuários antigos aparecerão na busca quando acessarem esta nova versão do Chama.';results.appendChild(empty);return}
-      for(const u of items){
-        const row=document.createElement('div');row.className='chama-search-user';row.dataset.uid=u.uid;row.dataset.photoUrl=u.photoUrl||'';row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||'Cidade não informada')}</div></div>`;setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);
-        row.onclick=()=>{if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');const pseudo=ensureBridge(u);window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo,photoUrl:u.photoUrl||''})};results.appendChild(row);
-      }
-    }catch(e){console.error(e);results.innerHTML='<div class="chama-search-status">Não foi possível fazer a busca agora.</div>'}
-  }
-
+  function refreshConversationRows(){const list=document.getElementById('usersList');if(!list)return;let count=0;list.querySelectorAll('.user:not(.chama-search-bridge)').forEach(row=>{const has=!!row.querySelector('.chama-conversation-side');row.classList.toggle('chama-has-conversation',has);if(has)count++});document.getElementById('chamaEmptyConversations')?.remove();if(count===0&&list.classList.contains('chama-conversations-mode')){const empty=document.createElement('div');empty.id='chamaEmptyConversations';empty.className='chama-empty-conversations';empty.textContent='Nenhuma conversa ainda. Use a busca acima para encontrar uma pessoa.';list.appendChild(empty)}}
+  async function getFirebase(attempt=0){try{const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const app=appMod.getApps()[0];if(!app){if(attempt>=20)return null;await new Promise(r=>setTimeout(r,100));return getFirebase(attempt+1)}const authMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');fs=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');db=fs.getFirestore(app);const auth=authMod.getAuth(app);authMod.onAuthStateChanged(auth,u=>{me=u||null;if(!me){suggestionsLoadedFor='';document.getElementById('chamaSuggestions')?.remove();return}ensureSelfRow();loadSuggestions()});return true}catch(e){console.error('Chama: busca não iniciou',e);return null}}
+  async function queryField(field,term){return fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.orderBy(field),fs.startAt(term),fs.endAt(term+'\uf8ff'),fs.limit(20)))}
+  function ensureBridge(u){const list=document.getElementById('usersList');if(!list)return '';const bridgeId='chamaBridge_'+u.uid;let row=document.getElementById(bridgeId);const pseudo=`${u.uid}@chama.local`;if(!row){row=document.createElement('div');row.id=bridgeId;row.className='user chama-search-bridge';row.dataset.uid=u.uid;row.innerHTML=`<div class="user-main"><div class="user-name">${esc(u.nome||'Usuário')}</div><div class="user-email">${esc(pseudo)}</div></div>`;list.appendChild(row)}return pseudo}
+  function dailyOrder(uid){const day=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}),seed=uid+'|'+day;let n=2166136261;for(let i=0;i<seed.length;i++){n^=seed.charCodeAt(i);n=Math.imul(n,16777619)}return n>>>0}
+  function openSuggested(u){if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');const pseudo=ensureBridge(u);window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo,photoUrl:u.photoUrl||''})}
+  function renderSuggestions(items){document.getElementById('chamaSuggestions')?.remove();const list=document.getElementById('usersList');if(!list||!items.length)return;const box=document.createElement('section');box.id='chamaSuggestions';box.className='chama-suggestions';box.innerHTML='<div class="chama-suggestions-head">Sugestões para conversar</div><div class="chama-suggestions-note">Conheça pessoas da comunidade. A conversa só começa quando você tocar e enviar uma mensagem.</div>';for(const u of items.slice(0,20)){const row=document.createElement('div');row.className='chama-suggestion-user';row.dataset.uid=u.uid;row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||u.tipoPerfil||'Usuário do Chama')}</div></div><span class="chama-suggestion-badge">Conversar</span>`;setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);row.onclick=()=>openSuggested(u);box.appendChild(row)}list.insertAdjacentElement('afterend',box)}
+  async function loadSuggestions(){if(!me||!db||!fs||suggestionsLoadedFor===me.uid)return;suggestionsLoadedFor=me.uid;try{const found=new Map(),add=snap=>snap.forEach(d=>{if(d.id===me.uid||found.has(d.id))return;const x=d.data()||{};found.set(d.id,{uid:d.id,nome:String(x.nome||x.name||x.email?.split('@')?.[0]||'Usuário'),cidade:String(x.cidade||''),tipoPerfil:String(x.tipoPerfil||''),photoUrl:safePhotoUrl(x.photoUrl)})});const profiles=await fs.getDocs(fs.query(fs.collection(db,'publicProfiles'),fs.limit(21)));add(profiles);if(found.size<20){const users=await fs.getDocs(fs.query(fs.collection(db,'users'),fs.limit(21)));add(users)}const items=[...found.values()].sort((a,b)=>dailyOrder(a.uid)-dailyOrder(b.uid)).slice(0,20);renderSuggestions(items)}catch(e){console.warn('Chama: sugestões não carregaram',e);suggestionsLoadedFor=''}}
+  async function runSearch(){const input=document.getElementById('chamaPeopleSearch'),term=norm(input?.value||'');if(term.length<2)return alert('Digite pelo menos 2 letras do nome ou da cidade.');if(!me||!db||!fs)return alert('Aguarde o Chama terminar de carregar.');const list=document.getElementById('usersList'),results=document.getElementById('chamaPeopleResults');if(!list||!results)return;list.hidden=true;document.getElementById('chamaSuggestions')?.setAttribute('hidden','');results.hidden=false;results.innerHTML='<div class="chama-search-status">Buscando pessoas...</div>';try{const [byName,byCity]=await Promise.all([queryField('nomeBusca',term),queryField('cidadeBusca',term)]),found=new Map();const add=snap=>snap.forEach(d=>{const x=d.data()||{};if(d.id!==me.uid)found.set(d.id,{uid:d.id,nome:String(x.nome||'Usuário'),cidade:String(x.cidade||''),photoUrl:safePhotoUrl(x.photoUrl)})});add(byName);add(byCity);const items=[...found.values()].slice(0,30);results.innerHTML='';const top=document.createElement('div');top.className='chama-home-tools';const label=document.createElement('div');label.style.cssText='flex:1;padding:10px 4px;font-weight:800;color:#34443c';label.textContent=`Resultados: ${items.length}`;const cancel=document.createElement('button');cancel.type='button';cancel.className='chama-home-cancel';cancel.textContent='Voltar';cancel.onclick=showConversations;top.append(label,cancel);results.appendChild(top);if(!items.length){const empty=document.createElement('div');empty.className='chama-search-status';empty.textContent='Nenhuma pessoa encontrada. Usuários antigos aparecerão na busca quando acessarem esta nova versão do Chama.';results.appendChild(empty);return}for(const u of items){const row=document.createElement('div');row.className='chama-search-user';row.dataset.uid=u.uid;row.dataset.photoUrl=u.photoUrl||'';row.innerHTML=`<div class="chama-search-avatar"></div><div class="chama-search-main"><div class="chama-search-name">${esc(u.nome||'Usuário')}</div><div class="chama-search-city">${esc(u.cidade||'Cidade não informada')}</div></div>`;setAvatar(row.querySelector('.chama-search-avatar'),u.photoUrl,u.nome);row.onclick=()=>{if(typeof window.chamaOpenChat!=='function')return alert('A conversa ainda está carregando. Tente novamente em alguns segundos.');const pseudo=ensureBridge(u);window.chamaOpenChat({uid:u.uid,nome:u.nome||'Usuário',email:pseudo,photoUrl:u.photoUrl||''})};results.appendChild(row)}}catch(e){console.error(e);results.innerHTML='<div class="chama-search-status">Não foi possível fazer a busca agora.</div>'}}
   function showConversations(){const list=document.getElementById('usersList'),results=document.getElementById('chamaPeopleResults'),suggestions=document.getElementById('chamaSuggestions');if(results)results.hidden=true;if(suggestions)suggestions.hidden=false;if(list){list.hidden=false;list.classList.add('chama-conversations-mode');ensureSelfRow();refreshConversationRows()}}
-
   async function start(){
-    addStyle();ensureUi();await getFirebase();const list=document.getElementById('usersList');
-    if(list)new MutationObserver(()=>setTimeout(refreshConversationRows,0)).observe(list,{childList:true,subtree:true});
-    setTimeout(refreshConversationRows,800);setTimeout(refreshConversationRows,1800);
+    addStyle();
+    const boot=()=>{const ready=ensureUi();if(!ready||!document.getElementById('chamaSelfRow'))setTimeout(boot,300)};
+    boot();await getFirebase();const list=document.getElementById('usersList');if(list)new MutationObserver(()=>{setTimeout(ensureSelfRow,0);setTimeout(refreshConversationRows,0)}).observe(list,{childList:true,subtree:true});
+    setTimeout(()=>{ensureUi();ensureSelfRow();refreshConversationRows()},800);setTimeout(()=>{ensureUi();ensureSelfRow();refreshConversationRows()},1800);
   }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
