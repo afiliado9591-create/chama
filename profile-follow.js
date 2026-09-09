@@ -1,7 +1,8 @@
 (()=>{
-  const STYLE_ID='chamaProfileFollowStyleV1';
+  const STYLE_ID='chamaProfileFollowStyleV2';
   let auth=null,db=null,fs=null,me=null;
   let firebaseReady=null;
+  const followedLocal=new Set();
   const wait=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 
   function style(){
@@ -10,6 +11,9 @@
       .chama-profile-follow{width:100%;margin-top:12px;border:0;border-radius:13px;padding:12px 14px;font-weight:900;cursor:pointer;background:#eef8f3;color:#0b7a53}
       .chama-profile-follow.following{background:#0b7a53;color:#fff}
       .chama-profile-follow[disabled]{opacity:.65;cursor:wait}
+      .chama-home-follow{display:block;width:max-content;margin-top:6px;border:0;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:900;cursor:pointer;background:#eef8f3;color:#0b7a53}
+      .chama-home-follow.following{background:#0b7a53;color:#fff}
+      .chama-home-follow[disabled]{opacity:.65;cursor:wait}
     `;document.head.appendChild(s);
   }
 
@@ -46,9 +50,10 @@
       button.classList.toggle('following',snap.exists());
       button.textContent=snap.exists()?'✓ Seguindo':'Seguir';
       button.dataset.following=snap.exists()?'1':'0';
+      if(snap.exists())followedLocal.add(uid);
     }catch(e){
-      button.textContent='Seguir';
-      button.dataset.following='0';
+      button.textContent=followedLocal.has(uid)?'✓ Seguindo':'Seguir';
+      button.dataset.following=followedLocal.has(uid)?'1':'0';
       console.warn('Chama: não foi possível consultar seguir',e);
     }
   }
@@ -64,25 +69,53 @@
       button.dataset.following=following?'0':'1';
       button.classList.toggle('following',!following);
       button.textContent=following?'Seguir':'✓ Seguindo';
+      if(following)followedLocal.delete(uid);else followedLocal.add(uid);
+      document.querySelectorAll('[data-chama-follow-uid="'+CSS.escape(uid)+'"]').forEach(b=>{
+        b.dataset.following=following?'0':'1';b.classList.toggle('following',!following);b.textContent=following?'Seguir':'✓ Seguindo';
+      });
     }catch(e){
       alert('Não foi possível atualizar o seguir agora.');
     }finally{button.disabled=false}
   }
 
-  async function enhance(){
+  function addButton(container,uid,kind){
+    if(!container||!uid||!me||uid===me.uid)return;
+    if(container.querySelector('[data-chama-follow-uid]'))return;
+    const button=document.createElement('button');
+    button.type='button';button.className=kind==='home'?'chama-home-follow':'chama-profile-follow';button.textContent=followedLocal.has(uid)?'✓ Seguindo':'Seguir';button.dataset.following=followedLocal.has(uid)?'1':'0';button.dataset.chamaFollowUid=uid;
+    button.onclick=e=>{e.preventDefault();e.stopPropagation();toggle(button,uid)};
+    container.appendChild(button);
+    if(kind!=='home')loadState(button,uid);
+  }
+
+  function enhanceProfile(){
     const card=document.querySelector('#chamaProfileModal .chama-profile-card');
     if(!card||card.dataset.followReady==='1')return;
     const uid=targetUid();
     if(!uid||!me||uid===me.uid)return;
     const title=card.querySelector('.chama-profile-title');
     if(!title)return;
-    const button=document.createElement('button');
-    button.type='button';button.className='chama-profile-follow';button.textContent='Seguir';
-    title.appendChild(button);
+    addButton(title,uid,'profile');
     card.dataset.followReady='1';
-    button.onclick=()=>toggle(button,uid);
-    await loadState(button,uid);
   }
+
+  function enhanceHome(){
+    if(!me)return;
+    document.querySelectorAll('#usersList .user').forEach(row=>{
+      const uid=String(row.dataset.uid||'').trim();
+      if(!uid||uid===me.uid)return;
+      const main=row.querySelector('.user-main')||row;
+      addButton(main,uid,'home');
+    });
+    document.querySelectorAll('.chama-search-user,.chama-suggestion-user').forEach(row=>{
+      const uid=String(row.dataset.uid||'').trim();
+      if(!uid||uid===me.uid)return;
+      const main=row.querySelector('.chama-search-main');
+      addButton(main||row,uid,'home');
+    });
+  }
+
+  function enhance(){enhanceProfile();enhanceHome()}
 
   async function start(){
     style();
