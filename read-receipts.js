@@ -1,4 +1,6 @@
 (()=>{
+  if(window.__chamaReadReceiptsLoaded)return;
+  window.__chamaReadReceiptsLoaded=true;
   const STYLE_ID='chamaReadReceiptsStyleV3';
   let fs=null,db=null,me=null,activeOtherUid='',activeChatId='',stopChat=null;
   let ownSeenAt=0,otherSeenAt=0,chatReady=false,markTimer=null,marking=false,recoveryTimer=null,recovering=false,recoveredKey='';
