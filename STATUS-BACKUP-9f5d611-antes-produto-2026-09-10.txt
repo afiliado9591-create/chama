@@ -1,0 +1,1 @@
+Backup marker antes da alteração do Status para suporte a produtos e links. Código completo preservado no commit 9f5d611a394c93b53731c2805d423655fa3f44c1 e na branch backup-antes-publicar-9f5d611-2026-09-10.
