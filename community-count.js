@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaCommunityCountStyleV3';
+  const STYLE_ID='chamaCommunityCountStyleV4';
   let currentUid='',db=null,fs=null,me=null,isAdmin=false,currentCount=0,currentEnabled=false;
   const DRIDALIA_AFFILIATE_URL='https://www.dridalia.com.br/afiliados';
   function addStyle(){
@@ -11,6 +11,13 @@
       .chama-community-count-edit-top{border:0;background:#fff8e8;color:#805100;border:1px solid #f0ddb0;border-radius:999px;padding:5px 7px;font-size:11px;font-weight:850;cursor:pointer;white-space:nowrap}
       .chama-dridalia-cta{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:linear-gradient(135deg,#ffb300,#ff7a00);color:#fff;border:1px solid #ffcf68;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900;white-space:nowrap;box-shadow:0 3px 10px #ff8a0038}
       .chama-dridalia-cta:active{transform:scale(.96)}
+      .chama-count-backdrop{position:fixed;inset:0;background:#0007;z-index:3900;display:grid;place-items:center;padding:16px}
+      .chama-count-modal{width:min(380px,100%);background:#fff;border-radius:20px;padding:18px;box-shadow:0 22px 60px #0004}
+      .chama-count-modal h3{margin:0 0 6px}.chama-count-modal p{margin:0 0 14px;color:#68756e;font-size:13px;line-height:1.45}
+      .chama-count-modal label{display:grid;gap:6px;font-size:13px;font-weight:800;color:#48564f;margin-bottom:10px}
+      .chama-count-modal input[type="number"]{width:100%;border:1px solid #cad5cf;border-radius:12px;padding:11px 12px;font:inherit}
+      .chama-count-check{display:flex!important;align-items:center;gap:8px!important}.chama-count-check input{width:auto}
+      .chama-count-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.chama-count-actions button{border:0;border-radius:12px;padding:11px 12px;font-weight:850}.chama-count-cancel{background:#eef4f1;color:#0b7a53}.chama-count-save{background:#0b7a53;color:#fff}.chama-count-msg{min-height:18px;margin-top:8px;font-size:12px;color:#0b7a53;font-weight:800}
       @media(max-width:700px){.chama-top-tools{gap:4px}.chama-community-count-top{padding:4px 6px;font-size:10px}.chama-community-count-edit-top{padding:4px 6px;font-size:10px}.chama-dridalia-cta{padding:5px 7px;font-size:10px}.topbar h2{flex:0 0 auto}.topbar{gap:6px;padding:0 9px}.topbar .install{display:none!important}.topbar #logoutBtn{padding:8px 9px}}
     `;document.head.appendChild(s);
   }
