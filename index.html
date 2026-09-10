@@ -95,7 +95,7 @@
   import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, onSnapshot, serverTimestamp, addDoc, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",
+    apiKey: "AIzaSyCcAVkmLUKPcEMZ5erDswOQ8eO493pl2I",
     authDomain: "chama-cfc28.firebaseapp.com",
     projectId: "chama-cfc28",
     storageBucket: "chama-cfc28.firebasestorage.app",
@@ -185,6 +185,7 @@
     $("meEmail").textContent=user.email||"";
     authView.classList.add("hidden"); appView.classList.remove("hidden");
     const list=$("usersList"); if(list) list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando conversas...</div>';
+    listenUsers();
   });
 
   async function listenUsers(){
