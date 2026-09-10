@@ -28,6 +28,7 @@
   function safeImage(v){v=String(v||'').trim();if(!v)return '';try{const u=new URL(v);return u.protocol==='https:'?u.href:''}catch{return ''}}
   function normalize(list){return (Array.isArray(list)?list:[]).slice(0,8).map(x=>({enabled:x?.enabled!==false,title:String(x?.title||'').trim().slice(0,60),store:String(x?.store||'').trim().slice(0,30),price:String(x?.price||'').trim().slice(0,24),image:safeImage(x?.image||''),url:safeUrl(x?.url||'')}))}
   function findPanel(){return document.querySelector('#chamaAffiliateWrap .chama-affiliate-panel')}
+  function isAdmin(){return !!document.querySelector('#chamaAffiliateWrap.chama-admin')||!!document.querySelector('#chamaAffiliateWrap .chama-affiliate-admin')}
   function replaceCatalog(panel){
     panel.querySelector('.chama-floating-catalog-admin')?.remove();
     panel.querySelector('.chama-affiliate-catalog-title')?.remove();
@@ -45,7 +46,7 @@
     if(valid.length)panel.appendChild(grid);
   }
   function addEditor(panel){
-    if(!document.querySelector('#chamaAffiliateWrap.chama-admin'))return false;
+    if(!isAdmin())return false;
     if(panel.querySelector('.chama-floating-catalog-admin'))return true;
     const box=document.createElement('div');box.className='chama-floating-catalog-admin';
     const edit=document.createElement('button');edit.type='button';edit.className='chama-floating-catalog-edit';edit.textContent='✏️ Editar catálogo (somente admin)';box.appendChild(edit);
@@ -81,7 +82,7 @@
       const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');let app=appMod.getApps()[0];for(let i=0;!app&&i<20;i++){await new Promise(r=>setTimeout(r,100));app=appMod.getApps()[0]}if(!app)return;
       const [authMod,firestoreMod]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')]);fs=firestoreMod;db=fs.getFirestore(app);const auth=authMod.getAuth(app);
       authMod.onAuthStateChanged(async user=>{uid=user?.uid||'';items=[];if(uid)await load()});
-      const mo=new MutationObserver(()=>{const panel=findPanel();if(panel&&uid){if(!panel.dataset.floatingCatalogReady){panel.dataset.floatingCatalogReady='1';load()}else if(document.querySelector('#chamaAffiliateWrap.chama-admin')&&!panel.querySelector('.chama-floating-catalog-admin')){replaceCatalog(panel);addEditor(panel)}}});mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+      const mo=new MutationObserver(()=>{const panel=findPanel();if(panel&&uid){if(!panel.dataset.floatingCatalogReady){panel.dataset.floatingCatalogReady='1';load()}else if(isAdmin()&&!panel.querySelector('.chama-floating-catalog-admin')){addEditor(panel)}}});mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
     }catch(e){console.warn('Chama: catálogo flutuante não iniciou',e)}
   }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
