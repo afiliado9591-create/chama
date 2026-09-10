@@ -1,10 +1,16 @@
 (()=>{
-  const STYLE_ID='chamaAffiliateMenuStyleV5';
+  const STYLE_ID='chamaAffiliateMenuStyleV6';
   let db=null,fs=null,loaded=false,admin=false,currentButtons=[],catalog=[];
-
   function addStyle(){
     if(document.getElementById(STYLE_ID))return;
     const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
+      .user-name{font-size:16px!important}
+      .user-email{font-size:13px!important}
+      .chat-head strong{font-size:16px!important}
+      .chat-head small{font-size:13px!important}
+      .bubble{font-size:15px!important}
+      .time{font-size:11px!important}
+      .composer input{font-size:16px!important}
       .chama-affiliate-fab{position:fixed;right:16px;bottom:18px;width:58px;height:58px;border-radius:50%;border:0;background:#0b7a53;color:#fff;display:grid;place-items:center;font-size:30px;line-height:1;cursor:pointer;z-index:1800;box-shadow:0 7px 20px #0003;animation:chamaBagPulse 2.2s infinite}
       .chama-affiliate-fab:active{transform:scale(.94)}
       @keyframes chamaBagPulse{0%,100%{box-shadow:0 7px 20px #0003}50%{box-shadow:0 7px 25px #0b7a5366}}
