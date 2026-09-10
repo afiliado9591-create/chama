@@ -1,5 +1,5 @@
 (()=>{
-  const STYLE_ID='chamaFloatingCatalogStyleV1';
+  const STYLE_ID='chamaFloatingCatalogStyleV2';
   let loaded=false, db=null, fs=null, uid='';
   let items=[];
 
@@ -82,7 +82,8 @@
       const appMod=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');let app=appMod.getApps()[0];for(let i=0;!app&&i<20;i++){await new Promise(r=>setTimeout(r,100));app=appMod.getApps()[0]}if(!app)return;
       const [authMod,firestoreMod]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js')]);fs=firestoreMod;db=fs.getFirestore(app);const auth=authMod.getAuth(app);
       authMod.onAuthStateChanged(async user=>{uid=user?.uid||'';items=[];if(uid)await load()});
-      const mo=new MutationObserver(()=>{const panel=findPanel();if(panel&&uid){if(!panel.dataset.floatingCatalogReady){panel.dataset.floatingCatalogReady='1';load()}else if(isAdmin()&&!panel.querySelector('.chama-floating-catalog-admin')){addEditor(panel)}}});mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+      const mo=new MutationObserver(()=>{const panel=findPanel();if(panel&&uid){if(!panel.dataset.floatingCatalogReady){panel.dataset.floatingCatalogReady='1';load()}else if(!panel.querySelector('.chama-floating-catalog-admin')){addEditor(panel)}}});mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+      setInterval(()=>{const panel=findPanel();if(panel&&uid&&!panel.querySelector('.chama-floating-catalog-admin'))addEditor(panel)},1000);
     }catch(e){console.warn('Chama: catálogo flutuante não iniciou',e)}
   }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
