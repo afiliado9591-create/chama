@@ -31,6 +31,7 @@
       #chamaAffiliateToolsEntry,#chamaSupportEntry,#chamaChatShopPromo{display:none!important}
       .chama-affiliate-menu{padding:6px 9px!important}.chama-affiliate-btn{min-height:38px!important;padding:7px 6px!important;font-size:12px!important;border-radius:10px!important}.chama-affiliate-btn.featured{padding-top:18px!important}.chama-affiliate-btn.featured::before{top:3px!important}
       #usersList .user-email,#chatEmail{display:none!important}
+      #logoutBtn{display:none!important}
     `;
     document.head.appendChild(s);
   }
@@ -87,6 +88,7 @@
     }
     addLink(links,'🔒','Política de Privacidade','./politica-de-privacidade.html');
     const install=document.getElementById('installBtn');if(install&&!install.classList.contains('hidden'))addAction(links,'📲','Instalar Chama',()=>install.click());
+    const logout=document.getElementById('logoutBtn');if(logout)addAction(links,'🚪','Sair',()=>logout.click());
     const note=document.createElement('div');note.className='chama-menu-note';note.textContent=adminAllowed?'Sua conta é administradora. Use “Páginas e Menu” para criar páginas e editar os itens deste menu.':'Use o Chama para conversar, divulgar e acessar suas ferramentas.';
     panel.append(head,links,note);backdrop.appendChild(panel);backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeMenu()});document.body.appendChild(backdrop);
   }
@@ -94,7 +96,7 @@
   function installTopMenu(){
     if(document.getElementById('chamaMainMenuBtn'))return;const topbar=document.querySelector('.topbar');if(!topbar)return;
     const btn=document.createElement('button');btn.id='chamaMainMenuBtn';btn.type='button';btn.className='chama-main-menu-btn';btn.title='Menu';btn.setAttribute('aria-label','Abrir menu');btn.textContent='☰';
-    const logout=document.getElementById('logoutBtn');if(logout)topbar.insertBefore(btn,logout);else topbar.appendChild(btn);btn.onclick=()=>openMenu();
+    const logout=document.getElementById('logoutBtn');if(logout){topbar.insertBefore(btn,logout);logout.style.display='none'}else topbar.appendChild(btn);btn.onclick=()=>openMenu();
   }
 
   function installAuthPrivacy(){
