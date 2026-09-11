@@ -1,11 +1,16 @@
 (()=>{
   const STYLE_ID='chamaHomeSelfProfileClickStyleV1';
+  function loadSegments(){
+    if(document.querySelector('script[data-chama-segment-groups="1"]'))return;
+    const s=document.createElement('script');s.src='./segment-groups-ui.js?v=1';s.async=true;s.dataset.chamaSegmentGroups='1';document.head.appendChild(s);
+  }
   function start(){
     if(document.getElementById(STYLE_ID))return;
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent='.chama-self-row{cursor:pointer!important}.chama-self-row:active{background:#eef7f2!important}';
     document.head.appendChild(s);
+    loadSegments();
     document.addEventListener('click',e=>{
       const row=e.target?.closest?.('#chamaSelfRow');
       if(!row)return;
