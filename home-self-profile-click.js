@@ -4,7 +4,7 @@
   function loadSegments(){
     if(document.querySelector('script[data-chama-segment-groups-v3="1"]'))return;
     const s=document.createElement('script');
-    s.src='./segment-groups-ui.js?v=3';
+    s.src='./segment-groups-ui.js?v=4';
     s.async=true;
     s.dataset.chamaSegmentGroupsV3='1';
     document.head.appendChild(s);
