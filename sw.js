@@ -1,7 +1,7 @@
-const VERSION="chama-clean-v164";
+const VERSION="chama-clean-v165";
 
 self.addEventListener("install",event=>{self.skipWaiting()});
-self.addEventListener("activate",event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.map(key=>caches.delete(key)));await self.clients.claim();const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});await Promise.all(windows.map(async client=>{try{const url=new URL(client.url);if(url.origin!==self.location.origin)return;if(url.searchParams.get("chama_update")==="164")return;url.searchParams.set("chama_update","164");await client.navigate(url.toString())}catch(_){}}))})())});
+self.addEventListener("activate",event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.map(key=>caches.delete(key)));await self.clients.claim();const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});await Promise.all(windows.map(async client=>{try{const url=new URL(client.url);if(url.origin!==self.location.origin)return;if(url.searchParams.get("chama_update")==="165")return;url.searchParams.set("chama_update","165");await client.navigate(url.toString())}catch(_){}}))})())});
 function injectSafeUi(html){
   const referralShareMarker='referral-share.js?v=1';
   let out=html;
