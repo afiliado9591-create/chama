@@ -1,12 +1,12 @@
 (()=>{
-  const STYLE_ID='chamaHomeSelfProfileClickStyleV2';
+  const STYLE_ID='chamaHomeSelfProfileClickStyleV3';
   function hideSuggestions(){document.querySelectorAll('#chamaSuggestions,.chama-suggestions').forEach(el=>{el.style.setProperty('display','none','important')})}
   function loadSegments(){
-    if(document.querySelector('script[data-chama-segment-groups="1"]'))return;
+    if(document.querySelector('script[data-chama-segment-groups-v3="1"]'))return;
     const s=document.createElement('script');
-    s.src='./segment-groups-ui.js?v=2';
+    s.src='./segment-groups-ui.js?v=3';
     s.async=true;
-    s.dataset.chamaSegmentGroups='1';
+    s.dataset.chamaSegmentGroupsV3='1';
     document.head.appendChild(s);
   }
   function start(){
@@ -25,9 +25,7 @@
       e.preventDefault();e.stopPropagation();
       document.dispatchEvent(new CustomEvent('chama-open-my-profile'));
     },true);
-    const clean=()=>{
-      document.querySelectorAll('[data-chama-chat-loading-v119]').forEach(el=>el.remove());
-    };
+    const clean=()=>{document.querySelectorAll('[data-chama-chat-loading-v119]').forEach(el=>el.remove())};
     clean();
     const messages=document.getElementById('messages');
     if(messages)new MutationObserver(clean).observe(messages,{childList:true,subtree:true});
