@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v178";
+const VERSION="chama-safe-v179";
 
 self.addEventListener("install", event => {
   event.waitUntil(self.skipWaiting());
@@ -15,7 +15,7 @@ self.addEventListener("activate", event => {
 });
 
 // Keep the original Chama application intact. The groups/profile module
-// remains untouched; availability is loaded as a separate isolated module.
+// remains untouched; availability/presentation is loaded as a separate isolated module.
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
@@ -31,12 +31,12 @@ self.addEventListener("fetch", event => {
       const text = await response.text();
       if (text.includes("chama-features-safe.js")) {
         if (text.includes("chama-availability-safe.js")) return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
-        const injectedExisting = text.replace(/<\/body>/i,'<script src="./chama-availability-safe.js?v=178" defer></script></body>');
+        const injectedExisting = text.replace(/<\/body>/i,'<script src="./chama-availability-safe.js?v=179" defer></script></body>');
         const headersExisting = new Headers(response.headers);
         headersExisting.delete("content-length");
         return new Response(injectedExisting,{status:response.status,statusText:response.statusText,headers:headersExisting});
       }
-      const injected = text.replace(/<\/body>/i,'<script src="./chama-features-safe.js?v=177" defer></script><script src="./chama-availability-safe.js?v=178" defer></script></body>');
+      const injected = text.replace(/<\/body>/i,'<script src="./chama-features-safe.js?v=177" defer></script><script src="./chama-availability-safe.js?v=179" defer></script></body>');
       const headers = new Headers(response.headers);
       headers.delete("content-length");
       return new Response(injected,{status:response.status,statusText:response.statusText,headers});
