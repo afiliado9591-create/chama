@@ -9,4 +9,17 @@ function open(){if(document.getElementById(MENU))return;const back=document.crea
 function install(){const app=document.getElementById('appView'),top=document.querySelector('.topbar');if(!app||app.classList.contains('hidden')||!top)return;styles();let b=document.getElementById('chamaMainMenuBtn');if(!b){b=document.createElement('button');b.id='chamaMainMenuBtn';b.className='chama-main-menu-btn';b.type='button';b.title='Abrir menu';b.setAttribute('aria-label','Abrir menu');b.textContent='⋮';b.onclick=open;top.appendChild(b)}const old=document.getElementById('logoutBtn');if(old)old.style.display='none';const admin=document.getElementById('adminBtn');if(admin)admin.style.display='none'}
 function start(){install();const top=document.querySelector('.topbar');if(top)new MutationObserver(install).observe(top,{childList:true,subtree:true});setTimeout(install,500);resolveAdmin()}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
+
+function keyboardFix(){
+ const chat=document.getElementById('chatPanel'),active=document.getElementById('activeChat'),input=document.getElementById('messageInput');
+ if(!chat||!active||!window.visualViewport)return;
+ if(window.innerWidth>700){chat.style.top='';chat.style.bottom='';chat.style.height='';active.style.height='';active.style.minHeight='';return;}
+ const top=66,height=Math.max(260,Math.round(window.visualViewport.height-top));
+ chat.style.top=top+'px';chat.style.bottom='auto';chat.style.height=height+'px';
+ active.style.minHeight='0';active.style.height=height+'px';active.style.overflow='hidden';
+ const messages=document.getElementById('messages');if(messages)messages.style.minHeight='0';
+ if(document.activeElement===input)setTimeout(()=>{try{input.scrollIntoView({block:'nearest'})}catch{}},30);
+}
+function startKeyboardFix(){keyboardFix();window.visualViewport?.addEventListener('resize',keyboardFix,{passive:true});window.visualViewport?.addEventListener('scroll',keyboardFix,{passive:true});window.addEventListener('resize',keyboardFix,{passive:true});document.addEventListener('focusin',e=>{if(e.target?.id==='messageInput')setTimeout(keyboardFix,50)});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startKeyboardFix,{once:true});else startKeyboardFix();
 })();
