@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v177";
+const VERSION="chama-safe-v178";
 
 self.addEventListener("install", event => {
   event.waitUntil(self.skipWaiting());
@@ -14,8 +14,8 @@ self.addEventListener("activate", event => {
   })());
 });
 
-// Keep the original Chama application intact. Only add the isolated,
-// non-blocking groups/profile feature script to HTML responses.
+// Keep the original Chama application intact. The groups/profile module
+// remains untouched; availability is loaded as a separate isolated module.
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
@@ -29,8 +29,14 @@ self.addEventListener("fetch", event => {
     if (!type.includes("text/html")) return response;
     try {
       const text = await response.text();
-      if (text.includes("chama-features-safe.js")) return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
-      const injected = text.replace(/<\/body>/i,'<script src="./chama-features-safe.js?v=177" defer></script></body>');
+      if (text.includes("chama-features-safe.js")) {
+        if (text.includes("chama-availability-safe.js")) return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
+        const injectedExisting = text.replace(/<\/body>/i,'<script src="./chama-availability-safe.js?v=178" defer></script></body>');
+        const headersExisting = new Headers(response.headers);
+        headersExisting.delete("content-length");
+        return new Response(injectedExisting,{status:response.status,statusText:response.statusText,headers:headersExisting});
+      }
+      const injected = text.replace(/<\/body>/i,'<script src="./chama-features-safe.js?v=177" defer></script><script src="./chama-availability-safe.js?v=178" defer></script></body>');
       const headers = new Headers(response.headers);
       headers.delete("content-length");
       return new Response(injected,{status:response.status,statusText:response.statusText,headers});
