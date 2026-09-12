@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v187";
+const VERSION="chama-safe-v188";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 
@@ -27,6 +27,7 @@ self.addEventListener("fetch", event => {
       const hasProfileStatus=text.includes("chama-profile-status-safe.js");
       const hasStatus=text.includes("status.js");
       const hasAdminRepair=text.includes("admin-menu-repair.js");
+      const hasOfferPosition=text.includes("offer-day-position.js");
       let scripts='';
       if(!hasFeatures)scripts+='<script src="./chama-features-safe.js?v=177" defer></script>';
       if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=184" defer></script>';
@@ -35,6 +36,7 @@ self.addEventListener("fetch", event => {
       if(!hasProfileStatus)scripts+='<script src="./chama-profile-status-safe.js?v=184" defer></script>';
       if(!hasStatus)scripts+='<script src="./status.js?v=3" defer></script>';
       if(!hasAdminRepair)scripts+='<script type="module" src="./admin-menu-repair.js?v=72"></script>';
+      if(!hasOfferPosition)scripts+='<script src="./offer-day-position.js?v=1" defer></script>';
       if(url.pathname==='/admin.html'){
         text=text.replace('⭐ Dia do Afiliado — catálogo','🔥 Liberar Oferta do Dia pelo Status');
         text=text.replace('Aqui você escolhe quem será o Afiliado do Dia e cadastra os produtos que ele poderá escolher para divulgar.','Escolha o usuário e a data. Nesse dia ele poderá marcar um produto do próprio Status como Oferta do Dia.');
