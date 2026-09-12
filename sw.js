@@ -1,14 +1,7 @@
-const VERSION="chama-safe-v188";
+const VERSION="chama-safe-v190";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
-
-self.addEventListener("activate", event => {
-  event.waitUntil((async () => {
-    try { const keys = await caches.keys(); await Promise.all(keys.map(key => caches.delete(key))); } catch (_) {}
-    await self.clients.claim();
-  })());
-});
-
+self.addEventListener("activate", event => { event.waitUntil((async () => { try { const keys = await caches.keys(); await Promise.all(keys.map(key => caches.delete(key))); } catch (_) {} await self.clients.claim(); })()); });
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
@@ -28,6 +21,7 @@ self.addEventListener("fetch", event => {
       const hasStatus=text.includes("status.js");
       const hasAdminRepair=text.includes("admin-menu-repair.js");
       const hasOfferPosition=text.includes("offer-day-position.js");
+      const hasTopbarMenu=text.includes("topbar-menu-v2.js");
       let scripts='';
       if(!hasFeatures)scripts+='<script src="./chama-features-safe.js?v=177" defer></script>';
       if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=184" defer></script>';
@@ -37,6 +31,7 @@ self.addEventListener("fetch", event => {
       if(!hasStatus)scripts+='<script src="./status.js?v=3" defer></script>';
       if(!hasAdminRepair)scripts+='<script type="module" src="./admin-menu-repair.js?v=72"></script>';
       if(!hasOfferPosition)scripts+='<script src="./offer-day-position.js?v=1" defer></script>';
+      if(url.pathname==='/'&&!hasTopbarMenu)scripts+='<script src="./topbar-menu-v2.js?v=1" defer></script>';
       if(url.pathname==='/admin.html'){
         text=text.replace('⭐ Dia do Afiliado — catálogo','🔥 Liberar Oferta do Dia pelo Status');
         text=text.replace('Aqui você escolhe quem será o Afiliado do Dia e cadastra os produtos que ele poderá escolher para divulgar.','Escolha o usuário e a data. Nesse dia ele poderá marcar um produto do próprio Status como Oferta do Dia.');
@@ -50,12 +45,5 @@ self.addEventListener("fetch", event => {
     }catch(_){return response;}
   })());
 });
-
-self.addEventListener("push", event => {
-  let data={}; try{data=event.data?event.data.json():{}}catch(_){ }
-  event.waitUntil(self.registration.showNotification(data.title||"Chama",{body:data.body||"Você recebeu uma nova mensagem.",icon:data.icon||"/icon-192.png",badge:data.badge||"/icon-192.png",data:data.data||{}}));
-});
-self.addEventListener("notificationclick", event => {
-  event.notification.close();
-  event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{const target=event.notification?.data?.url||"/";for(const client of clients){if("focus" in client){client.navigate(target).catch(()=>{});return client.focus();}}if(self.clients.openWindow)return self.clients.openWindow(target)}));
-});
+self.addEventListener("push", event => { let data={}; try{data=event.data?event.data.json():{}}catch(_){} event.waitUntil(self.registration.showNotification(data.title||"Chama",{body:data.body||"Você recebeu uma nova mensagem.",icon:data.icon||"/icon-192.png",badge:data.badge||"/icon-192.png",data:data.data||{}})); });
+self.addEventListener("notificationclick", event => { event.notification.close(); event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{const target=event.notification?.data?.url||"/";for(const client of clients){if("focus" in client){client.navigate(target).catch(()=>{});return client.focus();}}if(self.clients.openWindow)return self.clients.openWindow(target)})); });
