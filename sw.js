@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v191";
+const VERSION="chama-safe-v192";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 self.addEventListener("activate", event => { event.waitUntil((async () => { try { const keys = await caches.keys(); await Promise.all(keys.map(key => caches.delete(key))); } catch (_) {} await self.clients.claim(); })()); });
@@ -19,7 +19,6 @@ self.addEventListener("fetch", event => {
       const hasSafety=text.includes("chama-safety-safe.js");
       const hasProfileStatus=text.includes("chama-profile-status-safe.js");
       const hasStatus=text.includes("status.js");
-      const hasAdminRepair=text.includes("admin-menu-repair.js");
       const hasOfferPosition=text.includes("offer-day-position.js");
       const hasTopbarMenu=text.includes("topbar-menu-v2.js");
       let scripts='';
@@ -29,9 +28,8 @@ self.addEventListener("fetch", event => {
       if(!hasSafety)scripts+='<script src="./chama-safety-safe.js?v=182" defer></script>';
       if(!hasProfileStatus)scripts+='<script src="./chama-profile-status-safe.js?v=184" defer></script>';
       if(!hasStatus)scripts+='<script src="./status.js?v=3" defer></script>';
-      if(!hasAdminRepair)scripts+='<script type="module" src="./admin-menu-repair.js?v=72"></script>';
       if(!hasOfferPosition)scripts+='<script src="./offer-day-position.js?v=1" defer></script>';
-      if(url.pathname==='/'&&!hasTopbarMenu)scripts+='<script src="./topbar-menu-v2.js?v=1" defer></script>';
+      if(url.pathname==='/'&&!hasTopbarMenu)scripts+='<script src="./topbar-menu-v2.js?v=2" defer></script>';
       if(url.pathname==='/admin.html'){
         text=text.replace('⭐ Dia do Afiliado — catálogo','🔥 Liberar Oferta do Dia pelo Status');
         text=text.replace('Aqui você escolhe quem será o Afiliado do Dia e cadastra os produtos que ele poderá escolher para divulgar.','Escolha o usuário e a data. Nesse dia ele poderá marcar um produto do próprio Status como Oferta do Dia.');
