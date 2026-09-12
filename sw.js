@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v190";
+const VERSION="chama-safe-v191";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 self.addEventListener("activate", event => { event.waitUntil((async () => { try { const keys = await caches.keys(); await Promise.all(keys.map(key => caches.delete(key))); } catch (_) {} await self.clients.claim(); })()); });
@@ -24,7 +24,7 @@ self.addEventListener("fetch", event => {
       const hasTopbarMenu=text.includes("topbar-menu-v2.js");
       let scripts='';
       if(!hasFeatures)scripts+='<script src="./chama-features-safe.js?v=177" defer></script>';
-      if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=184" defer></script>';
+      if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=185" defer></script>';
       if(!hasNotifications)scripts+='<script src="./chama-notifications-safe.js?v=181" defer></script>';
       if(!hasSafety)scripts+='<script src="./chama-safety-safe.js?v=182" defer></script>';
       if(!hasProfileStatus)scripts+='<script src="./chama-profile-status-safe.js?v=184" defer></script>';
