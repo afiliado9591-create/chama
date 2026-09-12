@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v181";
+const VERSION="chama-safe-v182";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 
@@ -21,29 +21,19 @@ self.addEventListener("fetch", event => {
     if (!type.includes("text/html")) return response;
     try {
       let text = await response.text();
-
-      // The core index used to read users/{uid} for the public contact list.
-      // Replace only that exact query with publicProfiles. Chat IDs already
-      // use UID pairs, so conversations remain unchanged.
-      text = text.replace(
-        'getDocs(query(collection(db,"users"),limit(20)))',
-        'getDocs(query(collection(db,"publicProfiles"),limit(20)))'
-      );
-
+      text = text.replace('getDocs(query(collection(db,"users"),limit(20)))','getDocs(query(collection(db,"publicProfiles"),limit(20)))');
       const hasFeatures=text.includes("chama-features-safe.js");
       const hasAvailability=text.includes("chama-availability-safe.js");
       const hasNotifications=text.includes("chama-notifications-safe.js");
+      const hasSafety=text.includes("chama-safety-safe.js");
       let scripts='';
       if(!hasFeatures)scripts+='<script src="./chama-features-safe.js?v=177" defer></script>';
       if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=180" defer></script>';
       if(!hasNotifications)scripts+='<script src="./chama-notifications-safe.js?v=181" defer></script>';
-      if(scripts){
-        const injected=text.replace(/<\/body>/i,scripts+'</body>');
-        const headers=new Headers(response.headers);headers.delete("content-length");
-        return new Response(injected,{status:response.status,statusText:response.statusText,headers});
-      }
+      if(!hasSafety)scripts+='<script src="./chama-safety-safe.js?v=182" defer></script>';
+      if(scripts){const injected=text.replace(/<\/body>/i,scripts+'</body>');const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers});}
       return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
-    } catch (_) { return response; }
+    }catch(_){return response;}
   })());
 });
 
@@ -51,12 +41,7 @@ self.addEventListener("push", event => {
   let data={}; try{data=event.data?event.data.json():{}}catch(_){ }
   event.waitUntil(self.registration.showNotification(data.title||"Chama",{body:data.body||"Você recebeu uma nova mensagem.",icon:data.icon||"/icon-192.png",badge:data.badge||"/icon-192.png",data:data.data||{}}));
 });
-
 self.addEventListener("notificationclick", event => {
   event.notification.close();
-  event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{
-    const target=event.notification?.data?.url||"/";
-    for(const client of clients){ if("focus" in client){client.navigate(target).catch(()=>{});return client.focus();} }
-    if(self.clients.openWindow)return self.clients.openWindow(target);
-  }));
+  event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{const target=event.notification?.data?.url||"/";for(const client of clients){if("focus" in client){client.navigate(target).catch(()=>{});return client.focus();}}if(self.clients.openWindow)return self.clients.openWindow(target)}));
 });
