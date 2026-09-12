@@ -25,7 +25,8 @@ service cloud.firestore {
     function blockedEitherWay(senderId, receiverId) { return userBlocked(senderId, receiverId) || userBlocked(receiverId, senderId); }
 
     match /users/{userId} {
-      allow read: if activeUser() || isAdmin();
+      // Private account data: only the owner and administrator can read it.
+      allow read: if isAdmin() || (activeUser() && request.auth.uid == userId);
       allow create: if signedIn() && request.auth.uid == userId && !banned(userId) && !request.resource.data.keys().hasAny(['admin','suspended','adminBanner','adminUpdatedAt']);
       allow update: if
         (isAdmin() && request.auth.uid != userId) ||
@@ -52,22 +53,14 @@ service cloud.firestore {
 
     match /massLimits/{limitId} {
       allow read: if activeUser() && resource.data.ownerId == request.auth.uid;
-      allow create: if activeUser() &&
-        request.resource.data.ownerId == request.auth.uid &&
-        request.resource.data.count is int &&
-        request.resource.data.count >= 0 &&
-        request.resource.data.count <= 50;
-      allow update: if activeUser() &&
-        resource.data.ownerId == request.auth.uid &&
-        request.resource.data.ownerId == request.auth.uid &&
-        request.resource.data.count is int &&
-        request.resource.data.count >= 0 &&
-        request.resource.data.count <= 50;
+      allow create: if activeUser() && request.resource.data.ownerId == request.auth.uid && request.resource.data.count is int && request.resource.data.count >= 0 && request.resource.data.count <= 50;
+      allow update: if activeUser() && resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == request.auth.uid && request.resource.data.count is int && request.resource.data.count >= 0 && request.resource.data.count <= 50;
       allow delete: if isAdmin();
     }
 
     match /bannedUsers/{userId} { allow read, create, update, delete: if isAdmin(); }
-    match /publicProfiles/{userId} { allow read: if true; allow create, update, delete: if isAdmin() || (activeUser() && request.auth.uid == userId); }
+    // Public profile contains only fields intended for other users to see.
+    match /publicProfiles/{userId} { allow read: if activeUser(); allow create, update, delete: if isAdmin() || (activeUser() && request.auth.uid == userId); }
     match /appConfig/{configId} { allow read: if activeUser(); allow create, update, delete: if isAdmin(); }
     match /userHighlights/{userId} { allow read: if (activeUser() && request.auth.uid == userId) || isAdmin(); allow create, update, delete: if isAdmin(); }
 
@@ -76,13 +69,9 @@ service cloud.firestore {
       allow create: if activeUser() && request.auth.uid == userId && request.resource.data.userId == userId;
       allow update: if isAdmin() || (activeUser() && request.auth.uid == userId && request.resource.data.userId == userId);
       allow delete: if isAdmin();
-
       match /messages/{messageId} {
         allow read: if isAdmin() || (activeUser() && request.auth.uid == userId);
-        allow create: if isAdmin() ||
-          (activeUser() && request.auth.uid == userId &&
-            request.resource.data.senderId == request.auth.uid &&
-            request.resource.data.senderRole in ['user', 'bot']);
+        allow create: if isAdmin() || (activeUser() && request.auth.uid == userId && request.resource.data.senderId == request.auth.uid && request.resource.data.senderRole in ['user', 'bot']);
         allow update, delete: if isAdmin();
       }
     }
@@ -95,11 +84,7 @@ service cloud.firestore {
         allow read: if isAdmin() || (activeUser() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
         allow create: if activeUser() && request.resource.data.senderId == request.auth.uid && request.resource.data.receiverId is string && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants && !blockedEitherWay(request.resource.data.senderId, request.resource.data.receiverId);
         allow delete: if activeUser() && resource.data.senderId == request.auth.uid && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow update: if activeUser() &&
-          resource.data.receiverId == request.auth.uid &&
-          request.resource.data.senderId == resource.data.senderId &&
-          request.resource.data.receiverId == resource.data.receiverId &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seenAt','playedAt']);
+        allow update: if activeUser() && resource.data.receiverId == request.auth.uid && request.resource.data.senderId == resource.data.senderId && request.resource.data.receiverId == resource.data.receiverId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seenAt','playedAt']);
       }
     }
 
