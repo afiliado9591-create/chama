@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v192";
+const VERSION="chama-safe-v193";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 self.addEventListener("activate", event => { event.waitUntil((async () => { try { const keys = await caches.keys(); await Promise.all(keys.map(key => caches.delete(key))); } catch (_) {} await self.clients.claim(); })()); });
@@ -21,6 +21,7 @@ self.addEventListener("fetch", event => {
       const hasStatus=text.includes("status.js");
       const hasOfferPosition=text.includes("offer-day-position.js");
       const hasTopbarMenu=text.includes("topbar-menu-v2.js");
+      const hasMediaRender=text.includes("media-render-safe.js");
       let scripts='';
       if(!hasFeatures)scripts+='<script src="./chama-features-safe.js?v=177" defer></script>';
       if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=185" defer></script>';
@@ -29,16 +30,17 @@ self.addEventListener("fetch", event => {
       if(!hasProfileStatus)scripts+='<script src="./chama-profile-status-safe.js?v=184" defer></script>';
       if(!hasStatus)scripts+='<script src="./status.js?v=3" defer></script>';
       if(!hasOfferPosition)scripts+='<script src="./offer-day-position.js?v=1" defer></script>';
+      if(!hasMediaRender)scripts+='<script src="./media-render-safe.js?v=2" defer></script>';
       if(url.pathname==='/'&&!hasTopbarMenu)scripts+='<script src="./topbar-menu-v2.js?v=2" defer></script>';
       if(url.pathname==='/admin.html'){
         text=text.replace('⭐ Dia do Afiliado — catálogo','🔥 Liberar Oferta do Dia pelo Status');
         text=text.replace('Aqui você escolhe quem será o Afiliado do Dia e cadastra os produtos que ele poderá escolher para divulgar.','Escolha o usuário e a data. Nesse dia ele poderá marcar um produto do próprio Status como Oferta do Dia.');
         text=text.replace('👤 Afiliado do Dia','👤 Liberar usuário para a Oferta do Dia');
-        text=text.replace('>Afiliado\n','>Usuário\n');
+        text=text.replace('>Afiliado\\n','>Usuário\\n');
         text=text.replace('Ativar destaque do Afiliado do Dia','Liberar este usuário para escolher a Oferta do Dia');
         text=text.replace('Salvar Afiliado do Dia','Salvar liberação');
       }
-      if(scripts){const injected=text.replace(/<\/body>/i,scripts+'</body>');const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers});}
+      if(scripts){const injected=text.replace(/<\\/body>/i,scripts+'</body>');const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers});}
       return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
     }catch(_){return response;}
   })());
