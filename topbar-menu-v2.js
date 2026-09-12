@@ -17,6 +17,17 @@
   function item(panel,icon,text,fn,cls=''){
     const b=document.createElement('button');b.type='button';b.className='chama-menu-link '+cls;b.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${text}</span>`;b.onclick=()=>{close();fn()};panel.appendChild(b)
   }
+  async function openAdmin(){
+    try{
+      await import('./admin-panel.js?menu-open=1');
+      for(let i=0;i<30;i++){
+        const b=document.getElementById('adminBtn');
+        if(b){b.click();return}
+        await new Promise(r=>setTimeout(r,100));
+      }
+      alert('O painel Admin ainda está carregando. Tente novamente em alguns segundos.');
+    }catch(e){alert('Não consegui carregar o painel de administrador.');}
+  }
   function open(){
     if(document.getElementById(MENU))return;
     const back=document.createElement('div');back.id='chamaMainMenuBackdrop';back.className='chama-main-menu-backdrop';back.onclick=close;document.body.appendChild(back);
@@ -26,18 +37,23 @@
     const p=m.querySelector('.chama-menu-links');
     item(p,'📖','Como usar o Chama',()=>location.href='./como-usar.html');
     item(p,'🔒','Política de privacidade',()=>location.href='./politica-de-privacidade.html');
-    const admin=document.getElementById('adminBtn');
-    if(admin)item(p,'🛡️','Admin',()=>admin.click());
+    item(p,'🛡️','Admin',openAdmin);
     const spacer=document.createElement('div');spacer.className='chama-menu-spacer';p.appendChild(spacer);
     const logout=document.getElementById('logoutBtn');if(logout)item(p,'🚪','Sair',()=>logout.click(),'chama-menu-logout');
   }
   function install(){
     const app=document.getElementById('appView'),top=document.querySelector('.topbar');if(!app||app.classList.contains('hidden')||!top)return;
-    styles();let b=document.getElementById('chamaMainMenuBtn');if(!b){b=document.createElement('button');b.id='chamaMainMenuBtn';b.className='chama-main-menu-btn';b.type='button';b.title='Abrir menu';b.setAttribute('aria-label','Abrir menu');b.textContent='⋮';b.onclick=open;top.appendChild(b)}
+    styles();
+    let b=document.getElementById('chamaMainMenuBtn');
+    if(!b){b=document.createElement('button');b.id='chamaMainMenuBtn';b.className='chama-main-menu-btn';b.type='button';b.title='Abrir menu';b.setAttribute('aria-label','Abrir menu');b.textContent='⋮';b.onclick=open;top.appendChild(b)}
     const old=document.getElementById('logoutBtn');if(old)old.style.display='none';
     const admin=document.getElementById('adminBtn');if(admin)admin.style.display='none';
   }
-  const mo=new MutationObserver(()=>install());
-  function start(){install();mo.observe(document.querySelector('.topbar')||document.body,{childList:true,subtree:true});setTimeout(install,300);setTimeout(install,1200)}
+  function start(){
+    install();
+    const top=document.querySelector('.topbar');
+    if(top)new MutationObserver(install).observe(top,{childList:true,subtree:true});
+    setTimeout(install,500);
+  }
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
