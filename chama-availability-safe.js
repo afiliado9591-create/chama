@@ -36,9 +36,9 @@
       #chamaAvailabilityClose{margin-left:8px;background:#eee}
       #chamaAvailabilityToggle{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ddd;border-radius:12px;cursor:pointer}
       #chamaAvailabilityToggle input{width:20px;height:20px}
-      #meEmail{display:none!important}
       #usersList .user-email{display:none!important}
       #usersList .chama-profile-subtitle{display:block;font-size:12px;color:#6a756f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+      #meEmail{display:none!important}
     `;
     document.head.appendChild(style);
   }
