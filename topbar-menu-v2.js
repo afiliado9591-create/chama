@@ -10,16 +10,33 @@ function install(){const app=document.getElementById('appView'),top=document.que
 function start(){install();const top=document.querySelector('.topbar');if(top)new MutationObserver(install).observe(top,{childList:true,subtree:true});setTimeout(install,500);resolveAdmin()}
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 
+/* Mobile chat/keyboard: keep the conversation as one fixed viewport and never force a second fixed-height page inside it. */
 function keyboardFix(){
- const chat=document.getElementById('chatPanel'),active=document.getElementById('activeChat'),input=document.getElementById('messageInput');
- if(!chat||!active||!window.visualViewport)return;
- if(window.innerWidth>700){chat.style.top='';chat.style.bottom='';chat.style.height='';active.style.height='';active.style.minHeight='';return;}
- const top=66,height=Math.max(260,Math.round(window.visualViewport.height-top));
- chat.style.top=top+'px';chat.style.bottom='auto';chat.style.height=height+'px';
- active.style.minHeight='0';active.style.height=height+'px';active.style.overflow='hidden';
- const messages=document.getElementById('messages');if(messages)messages.style.minHeight='0';
- if(document.activeElement===input)setTimeout(()=>{try{input.scrollIntoView({block:'nearest'})}catch{}},30);
+ const chat=document.getElementById('chatPanel'),active=document.getElementById('activeChat');
+ if(!chat||!window.visualViewport)return;
+ if(window.innerWidth>700){
+   chat.style.top='';chat.style.right='';chat.style.bottom='';chat.style.left='';chat.style.height='';
+   active?.style.removeProperty('height');active?.style.removeProperty('min-height');active?.style.removeProperty('overflow');
+   document.documentElement.style.removeProperty('--chama-keyboard-bottom');
+   return;
+ }
+ const vv=window.visualViewport;
+ const layoutH=window.innerHeight||document.documentElement.clientHeight||vv.height;
+ const keyboard=Math.max(0,Math.round(layoutH-vv.height-vv.offsetTop));
+ const top=66;
+ chat.style.position='fixed';chat.style.top=top+'px';chat.style.right='0';chat.style.left='0';chat.style.bottom=keyboard+'px';chat.style.height='auto';
+ /* activeChat must fill the chat, not create another viewport-sized layer. */
+ if(active){active.style.height='100%';active.style.minHeight='0';active.style.maxHeight='none';active.style.overflow='hidden'}
+ const messages=document.getElementById('messages');if(messages){messages.style.minHeight='0';messages.style.overflowY='auto';messages.style.overscrollBehavior='contain'}
+ document.documentElement.style.setProperty('--chama-keyboard-bottom',keyboard+'px');
 }
-function startKeyboardFix(){keyboardFix();window.visualViewport?.addEventListener('resize',keyboardFix,{passive:true});window.visualViewport?.addEventListener('scroll',keyboardFix,{passive:true});window.addEventListener('resize',keyboardFix,{passive:true});document.addEventListener('focusin',e=>{if(e.target?.id==='messageInput')setTimeout(keyboardFix,50)});}
+function startKeyboardFix(){
+ keyboardFix();
+ window.visualViewport?.addEventListener('resize',keyboardFix,{passive:true});
+ window.visualViewport?.addEventListener('scroll',keyboardFix,{passive:true});
+ window.addEventListener('resize',keyboardFix,{passive:true});
+ document.addEventListener('focusin',e=>{if(e.target?.id==='messageInput')setTimeout(keyboardFix,80)});
+ document.addEventListener('focusout',e=>{if(e.target?.id==='messageInput')setTimeout(keyboardFix,120)});
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startKeyboardFix,{once:true});else startKeyboardFix();
 })();
