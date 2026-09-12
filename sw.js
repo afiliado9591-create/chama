@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v193";
+const VERSION="chama-safe-v194";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 self.addEventListener("activate", event => { event.waitUntil((async () => { try { const keys = await caches.keys(); await Promise.all(keys.map(key => caches.delete(key))); } catch (_) {} await self.clients.claim(); })()); });
@@ -18,6 +18,7 @@ self.addEventListener("fetch", event => {
       const hasNotifications=text.includes("chama-notifications-safe.js");
       const hasSafety=text.includes("chama-safety-safe.js");
       const hasProfileStatus=text.includes("chama-profile-status-safe.js");
+      const hasProfileCity=text.includes("profile-city-safe.js");
       const hasStatus=text.includes("status.js");
       const hasOfferPosition=text.includes("offer-day-position.js");
       const hasTopbarMenu=text.includes("topbar-menu-v2.js");
@@ -28,6 +29,7 @@ self.addEventListener("fetch", event => {
       if(!hasNotifications)scripts+='<script src="./chama-notifications-safe.js?v=181" defer></script>';
       if(!hasSafety)scripts+='<script src="./chama-safety-safe.js?v=182" defer></script>';
       if(!hasProfileStatus)scripts+='<script src="./chama-profile-status-safe.js?v=184" defer></script>';
+      if(!hasProfileCity)scripts+='<script src="./profile-city-safe.js?v=4" defer></script>';
       if(!hasStatus)scripts+='<script src="./status.js?v=3" defer></script>';
       if(!hasOfferPosition)scripts+='<script src="./offer-day-position.js?v=1" defer></script>';
       if(!hasMediaRender)scripts+='<script src="./media-render-safe.js?v=2" defer></script>';
