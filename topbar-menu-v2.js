@@ -5,6 +5,7 @@
     if(document.getElementById(STYLE))return;
     const s=document.createElement('style');s.id=STYLE;s.textContent=`
       #logoutBtn{display:none!important}
+      #adminBtn{display:none!important}
       .chama-main-menu-btn{border:1px solid #d9e9e1;background:#eef6f2;color:#0b7a53;border-radius:12px;padding:10px 12px;font-weight:900;font-size:20px;line-height:1;cursor:pointer}
       .chama-main-menu-backdrop{position:fixed;inset:0;background:#0005;z-index:7000}
       .chama-main-menu{position:fixed;top:0;right:0;width:min(330px,88vw);height:100dvh;background:#fff;z-index:7001;box-shadow:-12px 0 40px #0003;display:flex;flex-direction:column}
@@ -25,14 +26,16 @@
     const p=m.querySelector('.chama-menu-links');
     item(p,'📖','Como usar o Chama',()=>location.href='./como-usar.html');
     item(p,'🔒','Política de privacidade',()=>location.href='./politica-de-privacidade.html');
-    if(document.getElementById('adminBtn')) item(p,'🛡️','Admin',()=>document.getElementById('adminBtn')?.click());
+    const admin=document.getElementById('adminBtn');
+    if(admin)item(p,'🛡️','Admin',()=>admin.click());
     const spacer=document.createElement('div');spacer.className='chama-menu-spacer';p.appendChild(spacer);
     const logout=document.getElementById('logoutBtn');if(logout)item(p,'🚪','Sair',()=>logout.click(),'chama-menu-logout');
   }
   function install(){
     const app=document.getElementById('appView'),top=document.querySelector('.topbar');if(!app||app.classList.contains('hidden')||!top)return;
-    styles();let b=document.getElementById('chamaMainMenuBtn');if(!b){b=document.createElement('button');b.id='chamaMainMenuBtn';b.className='chama-main-menu-btn';b.type='button';b.title='Abrir menu';b.textContent='⋮';b.onclick=open;top.appendChild(b)}
+    styles();let b=document.getElementById('chamaMainMenuBtn');if(!b){b=document.createElement('button');b.id='chamaMainMenuBtn';b.className='chama-main-menu-btn';b.type='button';b.title='Abrir menu';b.setAttribute('aria-label','Abrir menu');b.textContent='⋮';b.onclick=open;top.appendChild(b)}
     const old=document.getElementById('logoutBtn');if(old)old.style.display='none';
+    const admin=document.getElementById('adminBtn');if(admin)admin.style.display='none';
   }
   const mo=new MutationObserver(()=>install());
   function start(){install();mo.observe(document.querySelector('.topbar')||document.body,{childList:true,subtree:true});setTimeout(install,300);setTimeout(install,1200)}
