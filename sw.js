@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v180";
+const VERSION="chama-safe-v181";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 
@@ -30,15 +30,19 @@ self.addEventListener("fetch", event => {
         'getDocs(query(collection(db,"publicProfiles"),limit(20)))'
       );
 
-      if (text.includes("chama-features-safe.js")) {
-        if (text.includes("chama-availability-safe.js")) return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
-        const injectedExisting = text.replace(/<\/body>/i,'<script src="./chama-availability-safe.js?v=180" defer></script></body>');
-        const headersExisting = new Headers(response.headers); headersExisting.delete("content-length");
-        return new Response(injectedExisting,{status:response.status,statusText:response.statusText,headers:headersExisting});
+      const hasFeatures=text.includes("chama-features-safe.js");
+      const hasAvailability=text.includes("chama-availability-safe.js");
+      const hasNotifications=text.includes("chama-notifications-safe.js");
+      let scripts='';
+      if(!hasFeatures)scripts+='<script src="./chama-features-safe.js?v=177" defer></script>';
+      if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=180" defer></script>';
+      if(!hasNotifications)scripts+='<script src="./chama-notifications-safe.js?v=181" defer></script>';
+      if(scripts){
+        const injected=text.replace(/<\/body>/i,scripts+'</body>');
+        const headers=new Headers(response.headers);headers.delete("content-length");
+        return new Response(injected,{status:response.status,statusText:response.statusText,headers});
       }
-      const injected = text.replace(/<\/body>/i,'<script src="./chama-features-safe.js?v=177" defer></script><script src="./chama-availability-safe.js?v=180" defer></script></body>');
-      const headers = new Headers(response.headers); headers.delete("content-length");
-      return new Response(injected,{status:response.status,statusText:response.statusText,headers});
+      return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
     } catch (_) { return response; }
   })());
 });
