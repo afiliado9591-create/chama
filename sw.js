@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v173";
+const VERSION="chama-safe-v174";
 
 self.addEventListener("install", event => {
   event.waitUntil(self.skipWaiting());
@@ -16,7 +16,7 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        url.searchParams.set("chama_clean","173");
+        url.searchParams.set("chama_clean","174");
         return client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -32,10 +32,13 @@ self.addEventListener("fetch", event => {
     if (!type.includes("text/html")) return response;
     try {
       const html = await response.text();
-      if (html.includes("chama-profile-status-safe.js")) {
-        return new Response(html,{status:response.status,statusText:response.statusText,headers:response.headers});
+      let injected = html;
+      if (!injected.includes("chama-profile-status-safe.js")) {
+        injected = injected.replace(/<\/body>/i,'<script src="/chama-profile-status-safe.js?v=174" defer></script></body>');
       }
-      const injected = html.replace(/<\/body>/i,'<script src="/chama-profile-status-safe.js?v=173" defer></script></body>');
+      if (!injected.includes("chama-groups-safe.js")) {
+        injected = injected.replace(/<\/body>/i,'<script src="/chama-groups-safe.js?v=174" defer></script></body>');
+      }
       const headers = new Headers(response.headers);
       headers.delete("content-length");
       return new Response(injected,{status:response.status,statusText:response.statusText,headers});
