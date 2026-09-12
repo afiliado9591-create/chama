@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v185";
+const VERSION="chama-safe-v186";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 
@@ -9,8 +9,6 @@ self.addEventListener("activate", event => {
   })());
 });
 
-// Safe runtime compatibility layer. It keeps the existing app intact while
-// moving the people list away from private users/{uid} documents.
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
@@ -35,6 +33,14 @@ self.addEventListener("fetch", event => {
       if(!hasSafety)scripts+='<script src="./chama-safety-safe.js?v=182" defer></script>';
       if(!hasProfileStatus)scripts+='<script src="./chama-profile-status-safe.js?v=184" defer></script>';
       if(!hasStatus)scripts+='<script src="./status.js?v=3" defer></script>';
+      if(url.pathname==='/admin.html'){
+        text=text.replace('⭐ Dia do Afiliado — catálogo','🔥 Liberar Oferta do Dia pelo Status');
+        text=text.replace('Aqui você escolhe quem será o Afiliado do Dia e cadastra os produtos que ele poderá escolher para divulgar.','Escolha o usuário e a data. Nesse dia ele poderá marcar um produto do próprio Status como Oferta do Dia.');
+        text=text.replace('👤 Afiliado do Dia','👤 Liberar usuário para a Oferta do Dia');
+        text=text.replace('>Afiliado\n','>Usuário\n');
+        text=text.replace('Ativar destaque do Afiliado do Dia','Liberar este usuário para escolher a Oferta do Dia');
+        text=text.replace('Salvar Afiliado do Dia','Salvar liberação');
+      }
       if(scripts){const injected=text.replace(/<\/body>/i,scripts+'</body>');const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers});}
       return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
     }catch(_){return response;}
