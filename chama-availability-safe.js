@@ -6,13 +6,13 @@
   let db = null;
   let auth = null;
   let initialized = false;
+  let publicProfiles = new Map();
 
   async function firebase() {
     const appMod = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`);
     const authMod = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`);
     const fsMod = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`);
-    const apps = appMod.getApps();
-    const app = apps[0];
+    const app = appMod.getApps()[0];
     if (!app) throw new Error("Firebase app não encontrada");
     auth = authMod.getAuth(app);
     db = fsMod.getFirestore(app);
@@ -36,6 +36,8 @@
       #chamaAvailabilityClose{margin-left:8px;background:#eee}
       #chamaAvailabilityToggle{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ddd;border-radius:12px;cursor:pointer}
       #chamaAvailabilityToggle input{width:20px;height:20px}
+      #usersList .user-email{display:none!important}
+      #usersList .chama-profile-subtitle{display:block;font-size:12px;color:#6a756f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
     `;
     document.head.appendChild(style);
   }
@@ -81,6 +83,55 @@
     setButton(!!value);
   }
 
+  async function loadPublicProfiles() {
+    if (!db) return;
+    try {
+      const { collection, getDocs, limit, query } = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`);
+      const snap = await getDocs(query(collection(db, "publicProfiles"), limit(100)));
+      publicProfiles = new Map();
+      snap.forEach(s => publicProfiles.set(s.id, s.data()));
+      decorateUserRows();
+    } catch (e) {
+      console.warn("Chama perfis públicos:", e);
+    }
+  }
+
+  function decorateUserRows() {
+    document.querySelectorAll("#usersList .user").forEach(row => {
+      const uid = row.dataset.uid;
+      if (!uid) return;
+      row.querySelector(".user-email")?.setAttribute("aria-hidden", "true");
+      const profile = publicProfiles.get(uid) || {};
+      const phrase = String(profile.statusTexto || profile.frase || "").trim();
+      let sub = row.querySelector(".chama-profile-subtitle");
+      if (!phrase) { if (sub) sub.remove(); return; }
+      if (!sub) {
+        sub = document.createElement("span");
+        sub.className = "chama-profile-subtitle";
+        const main = row.querySelector(".user-main");
+        if (main) main.appendChild(sub);
+      }
+      sub.textContent = phrase;
+      sub.title = phrase;
+    });
+  }
+
+  function relabelProfileField() {
+    document.querySelectorAll(".cf-field").forEach(field => {
+      const label = field.querySelector("label");
+      const textarea = field.querySelector("textarea");
+      if (label && textarea && label.textContent.trim() === "Status") {
+        label.textContent = "Frase / apresentação";
+        textarea.placeholder = "Ex.: Moda evangélica • Deus seja louvado • Faço negócios 🤝";
+      }
+    });
+  }
+
+  function refreshVisibleRows() {
+    decorateUserRows();
+    relabelProfileField();
+  }
+
   function closeModal() {
     document.getElementById("chamaAvailabilityModal")?.remove();
   }
@@ -90,7 +141,6 @@
     if (document.getElementById("chamaAvailabilityModal")) return;
     let value = false;
     try { value = await readCurrent(); } catch (_) {}
-
     const modal = document.createElement("div");
     modal.id = "chamaAvailabilityModal";
     modal.innerHTML = `
@@ -132,9 +182,11 @@
       const { onAuthStateChanged } = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`);
       onAuthStateChanged(auth, async user => {
         if (!user) return;
+        await loadPublicProfiles();
         let tries = 0;
         const timer = setInterval(async () => {
           const el = button();
+          refreshVisibleRows();
           tries++;
           if (el || tries >= 40) {
             clearInterval(timer);
@@ -142,6 +194,7 @@
             try { setButton(await readCurrent()); } catch (_) { setButton(false); }
           }
         }, 250);
+        setInterval(refreshVisibleRows, 1200);
       });
     } catch (e) {
       console.error("Chama availability module:", e);
