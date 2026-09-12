@@ -25,7 +25,6 @@ service cloud.firestore {
     function blockedEitherWay(senderId, receiverId) { return userBlocked(senderId, receiverId) || userBlocked(receiverId, senderId); }
 
     match /users/{userId} {
-      // Private account data: only the owner and administrator can read it.
       allow read: if isAdmin() || (activeUser() && request.auth.uid == userId);
       allow create: if signedIn() && request.auth.uid == userId && !banned(userId) && !request.resource.data.keys().hasAny(['admin','suspended','adminBanner','adminUpdatedAt']);
       allow update: if
@@ -59,10 +58,14 @@ service cloud.firestore {
     }
 
     match /bannedUsers/{userId} { allow read, create, update, delete: if isAdmin(); }
-    // Public profile contains only fields intended for other users to see.
     match /publicProfiles/{userId} { allow read: if activeUser(); allow create, update, delete: if isAdmin() || (activeUser() && request.auth.uid == userId); }
     match /appConfig/{configId} { allow read: if activeUser(); allow create, update, delete: if isAdmin(); }
     match /userHighlights/{userId} { allow read: if (activeUser() && request.auth.uid == userId) || isAdmin(); allow create, update, delete: if isAdmin(); }
+
+    match /userReports/{reportId} {
+      allow create: if activeUser() && request.resource.data.reporterId == request.auth.uid && request.resource.data.reportedId is string && request.resource.data.reportedId != request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
 
     match /supportChats/{userId} {
       allow read: if isAdmin() || (activeUser() && request.auth.uid == userId);
