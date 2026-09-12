@@ -1,16 +1,59 @@
-const VERSION="chama-clean-v171";
+const VERSION="chama-kill-v172";
 
-self.addEventListener("install",event=>{self.skipWaiting()});
-self.addEventListener("activate",event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.map(key=>caches.delete(key)));await self.clients.claim();const windows=await self.clients.matchAll({type:"window",includeUncontrolled:true});await Promise.all(windows.map(async client=>{try{const url=new URL(client.url);if(url.origin!==self.location.origin)return;if(url.searchParams.get("chama_update")==="171")return;url.searchParams.set("chama_update","171");await client.navigate(url.toString())}catch(_){}}))})())});
-function injectSafeUi(html){
-  let out=html;
-  if(!out.includes('window.chamaOpenChat=openChat;'))out=out.replace('  async function saveMessage(text,label=text)=>','  async function saveMessage(text,label=text)=>');
-  if(!out.includes('window.chamaOpenChat=openChat;'))out=out.replace('  async function saveMessage(text,label=text){','  window.chamaOpenChat=openChat;\n\n  async function saveMessage(text,label=text){');
-  if(!out.includes('window.chamaSendMessage=saveMessage;'))out=out.replace('  $("composer").addEventListener("submit", async e=>{','  window.chamaSendMessage=saveMessage;\n\n  $("composer").addEventListener("submit", async e=>{');
-  if(!out.includes('chama-chat-opened'))out=out.replace('    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();','    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();\n    const activeEl=$("activeChat"); if(activeEl) activeEl.dataset.uid=u.uid||"";\n    document.dispatchEvent(new CustomEvent("chama-chat-opened",{detail:{uid:u.uid||"",nome:u.nome||"Usuário",photoUrl:u.photoUrl||""}}));');
-  if(!out.includes('data-chama-message-meta-v123'))out=out.replace('        const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs");','        const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs"); b.dataset.messageId=d.id; b.dataset.chamaCreatedMs=m.createdAt?.toMillis?String(m.createdAt.toMillis()):""; b.dataset.senderId=m.senderId||""; b.setAttribute("data-chama-message-meta-v123","1");');
-  return out;
-}
-self.addEventListener("fetch",event=>{if(event.request.method!=="GET")return;if(event.request.mode==="navigate")event.respondWith((async()=>{const response=await fetch(event.request,{cache:"no-store"});const type=response.headers.get("content-type")||"";if(!type.includes("text/html"))return response;const html=injectSafeUi(await response.text());return new Response(html,{status:response.status,statusText:response.statusText,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}})})());else event.respondWith(fetch(event.request,{cache:"no-store"}))});
-self.addEventListener("push",event=>{let payload={};try{payload=event.data?.json?.()||{}}catch(_){try{payload=JSON.parse(event.data?.text?.()||"{}")||{}}catch(_){} }const data=payload.data||payload;if(data.type==="chama_message"){const title=data.senderName||payload.notification?.title||"Nova mensagem no Chama",body=data.text||payload.notification?.body||"Você recebeu uma nova mensagem";event.waitUntil(self.registration.showNotification(title,{body,icon:"./icon.svg",badge:"./icon.svg",tag:"chama-msg-"+(data.chatId||"nova"),renotify:true,requireInteraction:false,silent:false,vibrate:[250,120,250],data:{type:"chama_message",chatId:data.chatId||""}}));return}if(data.type==="chama_channel"){const title="📢 "+(data.channelName||"Canal Chama"),body=data.text||"Nova publicação";event.waitUntil(self.registration.showNotification(title,{body,icon:"./icon.svg",badge:"./icon.svg",tag:"chama-channel-"+(data.channelId||"novo"),renotify:true,requireInteraction:false,silent:false,vibrate:[180,100,180],data:{type:"chama_channel",channelId:data.channelId||""}}))}});
-self.addEventListener("notificationclick",event=>{const data=event.notification?.data||{};event.notification.close();let url="./";if(data.type==="chama_message"&&data.chatId)url="./?chat="+encodeURIComponent(data.chatId);if(data.type==="chama_channel"&&data.channelId)url="./?channel="+encodeURIComponent(data.channelId);event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{for(const client of list){if("navigate"in client)client.navigate(url).catch(()=>{});if("focus"in client)return client.focus()}return self.clients.openWindow(url)}))});
+self.addEventListener("install", event => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil((async () => {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(key => caches.delete(key)));
+    } catch (_) {}
+
+    await self.clients.claim();
+
+    const clients = await self.clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    });
+
+    await Promise.all(clients.map(client => {
+      try {
+        const url = new URL(client.url);
+        if (url.origin !== self.location.origin) return;
+        url.searchParams.set("chama_clean", "172");
+        return client.navigate(url.toString());
+      } catch (_) {}
+    }));
+  })());
+});
+
+// Intentionally do not intercept fetch requests.
+// The application must load directly from the network without HTML/script injection.
+
+self.addEventListener("push", event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (_) {}
+  const title = data.title || "Chama";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: data.body || "Você recebeu uma nova mensagem.",
+    icon: data.icon || "/icon-192.png",
+    badge: data.badge || "/icon-192.png",
+    data: data.data || {}
+  }));
+});
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({type:"window", includeUncontrolled:true}).then(clients => {
+    const target = event.notification?.data?.url || "/";
+    for (const client of clients) {
+      if ("focus" in client) {
+        client.navigate(target).catch(() => {});
+        return client.focus();
+      }
+    }
+    if (self.clients.openWindow) return self.clients.openWindow(target);
+  }));
+});
