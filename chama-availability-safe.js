@@ -7,6 +7,7 @@
   let auth = null;
   let initialized = false;
   let publicProfiles = new Map();
+  let profileLoadStarted = false;
 
   async function firebase() {
     const appMod = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`);
@@ -85,7 +86,8 @@
   }
 
   async function loadPublicProfiles() {
-    if (!db) return;
+    if (!db || profileLoadStarted) return;
+    profileLoadStarted = true;
     try {
       const { collection, getDocs, limit, query } = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`);
       const snap = await getDocs(query(collection(db, "publicProfiles"), limit(100)));
@@ -93,6 +95,7 @@
       snap.forEach(s => publicProfiles.set(s.id, s.data()));
       decorateUserRows();
     } catch (e) {
+      profileLoadStarted = false;
       console.warn("Chama perfis públicos:", e);
     }
   }
@@ -183,19 +186,13 @@
       const { onAuthStateChanged } = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`);
       onAuthStateChanged(auth, async user => {
         if (!user) return;
-        await loadPublicProfiles();
-        let tries = 0;
-        const timer = setInterval(async () => {
-          const el = button();
-          refreshVisibleRows();
-          tries++;
-          if (el || tries >= 40) {
-            clearInterval(timer);
-            if (!el) return;
-            try { setButton(await readCurrent()); } catch (_) { setButton(false); }
-          }
-        }, 250);
-        setInterval(refreshVisibleRows, 1200);
+        // Cria o botão e consulta somente o documento do usuário primeiro.
+        // A leitura dos 100 perfis públicos fica em segundo plano e não bloqueia o verde.
+        button();
+        try { setButton(await readCurrent()); } catch (_) { setButton(false); }
+        loadPublicProfiles();
+        refreshVisibleRows();
+        setTimeout(refreshVisibleRows, 1200);
       });
     } catch (e) {
       console.error("Chama availability module:", e);
