@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v182";
+const VERSION="chama-safe-v183";
 
 self.addEventListener("install", event => { event.waitUntil(self.skipWaiting()); });
 
@@ -28,7 +28,7 @@ self.addEventListener("fetch", event => {
       const hasSafety=text.includes("chama-safety-safe.js");
       let scripts='';
       if(!hasFeatures)scripts+='<script src="./chama-features-safe.js?v=177" defer></script>';
-      if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=180" defer></script>';
+      if(!hasAvailability)scripts+='<script src="./chama-availability-safe.js?v=181" defer></script>';
       if(!hasNotifications)scripts+='<script src="./chama-notifications-safe.js?v=181" defer></script>';
       if(!hasSafety)scripts+='<script src="./chama-safety-safe.js?v=182" defer></script>';
       if(scripts){const injected=text.replace(/<\/body>/i,scripts+'</body>');const headers=new Headers(response.headers);headers.delete("content-length");return new Response(injected,{status:response.status,statusText:response.statusText,headers});}
