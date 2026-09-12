@@ -39,9 +39,7 @@
     .audio-player{width:min(280px,65vw);display:block;margin:2px 0}.audio-label{font-size:12px;font-weight:700;color:#4d5b54;margin-bottom:5px}.install{background:#fff;color:var(--green);border:1px solid #ffffff80}
     .audio-toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#14221c;color:#fff;padding:10px 14px;border-radius:999px;z-index:100;font-size:14px;white-space:nowrap}
     .audio-preview-backdrop{position:fixed;inset:0;background:#0008;z-index:900;display:grid;place-items:center;padding:18px}.audio-preview-card{width:min(420px,100%);background:#fff;border-radius:20px;padding:18px;display:grid;gap:14px;box-shadow:0 20px 60px #0004}.audio-preview-card strong{font-size:18px}.audio-preview-card audio{width:100%}.audio-preview-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.audio-preview-delete,.audio-preview-send{border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer}.audio-preview-delete{background:#fff0f0;color:#b42318}.audio-preview-send{background:var(--green);color:#fff}.audio-preview-send:disabled{opacity:.65}
-    @media(max-width:700px){
-      .layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}
-    }
+    @media(max-width:700px){.layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}}
     .back{display:none}
   </style>
 </head>
@@ -52,315 +50,33 @@
       <div class="field"><label>Nome</label><input id="name" placeholder="Seu nome" autocomplete="name"></div>
       <div class="field"><label>E-mail</label><input id="email" type="email" placeholder="voce@email.com" autocomplete="email"></div>
       <div class="field"><label>Senha</label><input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="current-password"></div>
-      <button id="loginBtn" class="primary">Entrar</button>
-      <button id="signupBtn" class="secondary">Criar minha conta</button>
-      <div id="authMsg" class="msg"></div>
+      <button id="loginBtn" class="primary">Entrar</button><button id="signupBtn" class="secondary">Criar minha conta</button><div id="authMsg" class="msg"></div>
     </div>
   </div>
-
   <div id="appView" class="shell hidden">
-    <header class="topbar">
-      <h2>Chama</h2>
-      <button id="installBtn" class="iconbtn install hidden">Instalar Chama</button>
-      <button id="logoutBtn" class="iconbtn">Sair</button>
-    </header>
-    <main class="layout">
-      <aside class="sidebar">
-        <div class="me"><strong id="meName">Você</strong><br><small id="meEmail"></small></div>
-        <div class="section-title">Pessoas</div>
-        <div id="usersList"></div>
-      </aside>
-      <section id="chatPanel" class="chat hidden-mobile">
-        <div id="emptyState" class="empty"><h3>Escolha uma pessoa</h3><p>Toque em um contato para começar a conversar.</p></div>
-        <div id="activeChat" class="hidden" style="display:flex;flex-direction:column;min-height:calc(100dvh - 66px)">
-          <div class="chat-head">
-            <button id="backBtn" class="iconbtn back" style="background:#eef4f1;color:#0b7a53">←</button>
-            <div class="avatar" id="chatAvatar">C</div>
-            <div><strong id="chatName"></strong><small id="chatEmail"></small></div>
-          </div>
-          <div id="messages" class="messages"></div>
-          <form id="composer" class="composer">
-            <button id="audioBtn" class="audio-record" type="button" title="Gravar áudio">🎤</button>
-            <input id="messageInput" maxlength="1500" placeholder="Digite uma mensagem..." autocomplete="off">
-            <button class="send" type="submit">➤</button>
-          </form>
-        </div>
-      </section>
-    </main>
+    <header class="topbar"><h2>Chama</h2><button id="installBtn" class="iconbtn install hidden">Instalar Chama</button><button id="logoutBtn" class="iconbtn">Sair</button></header>
+    <main class="layout"><aside class="sidebar"><div class="me"><strong id="meName">Você</strong><br><small id="meEmail"></small></div><div class="section-title">Pessoas</div><div id="usersList"></div></aside><section id="chatPanel" class="chat hidden-mobile"><div id="emptyState" class="empty"><h3>Escolha uma pessoa</h3><p>Toque em um contato para começar a conversar.</p></div><div id="activeChat" class="hidden" style="display:flex;flex-direction:column;min-height:calc(100dvh - 66px)"><div class="chat-head"><button id="backBtn" class="iconbtn back" style="background:#eef4f1;color:#0b7a53">←</button><div class="avatar" id="chatAvatar">C</div><div><strong id="chatName"></strong><small id="chatEmail"></small></div></div><div id="messages" class="messages"></div><form id="composer" class="composer"><button id="audioBtn" class="audio-record" type="button" title="Gravar áudio">🎤</button><input id="messageInput" maxlength="1500" placeholder="Digite uma mensagem..." autocomplete="off"><button class="send" type="submit">➤</button></form></div></section></main>
   </div>
-
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, onSnapshot, serverTimestamp, addDoc, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",
-    authDomain: "chama-cfc28.firebaseapp.com",
-    projectId: "chama-cfc28",
-    storageBucket: "chama-cfc28.firebasestorage.app",
-    messagingSenderId: "680045231088",
-    appId: "1:680045231088:web:8db35684e4b56a320ebb35"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const MEDIA_PREFIX="__CHAMA_MEDIA__";
-
-  const $ = (id) => document.getElementById(id);
-  const authView=$("authView"), appView=$("appView"), authMsg=$("authMsg");
-  let me=null, activeUser=null, stopMessages=null, usersLoadToken=0, installPrompt=null;
-  let recorder=null, audioChunks=[], audioStream=null;
-
-  function friendlyError(e){
-    const c=e?.code||"";
-    if(c.includes("invalid-credential")) return "E-mail ou senha incorretos.";
-    if(c.includes("email-already-in-use")) return "Este e-mail já está cadastrado.";
-    if(c.includes("weak-password")) return "Use uma senha com pelo menos 6 caracteres.";
-    if(c.includes("invalid-email")) return "Digite um e-mail válido.";
-    return e?.message || "Não foi possível concluir.";
-  }
-
-  function validateSignupEmail(value){
-    const email=String(value||"").trim().toLowerCase();
-    if(!email || email.length>254 || email.includes(".."))return "Digite um e-mail válido.";
-    const parts=email.split("@");
-    if(parts.length!==2)return "Digite um e-mail válido.";
-    const [local,domain]=parts;
-    if(!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}$/i.test(local))return "Digite um e-mail válido.";
-    if(!/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/i.test(domain))return "Digite um domínio de e-mail válido, como gmail.com.";
-    const reservedDomains=new Set(["example.com","example.org","example.net","teste.com","test.com","email.com","localhost"]);
-    const testName=/(^|[._+-])(teste?|test|fake|falso|invalido|invalid|exemplo|example)([._+-]|\d*$)/i.test(local);
-    if(testName||reservedDomains.has(domain)||domain.endsWith(".invalid")||domain.endsWith(".test"))return "E-mails de teste só podem ser criados pelo administrador.";
-    const corrections={"gmal.com":"gmail.com","gmil.com":"gmail.com","gmail.con":"gmail.com","gmail.co":"gmail.com","hotmal.com":"hotmail.com","hotmai.com":"hotmail.com","hotmail.con":"hotmail.com","outlook.con":"outlook.com","yahoo.con":"yahoo.com"};
-    if(corrections[domain])return `Confira o domínio. Você quis dizer ${corrections[domain]}?`;
-    return "";
-  }
-
-  async function ensureProfile(user, requestedName=""){
-    const ref=doc(db,"users",user.uid);
-    const snap=await getDoc(ref);
-    const fallback=(requestedName || user.displayName || user.email?.split("@")[0] || "Usuário").trim();
-    if(!snap.exists()){
-      await setDoc(ref,{uid:user.uid,nome:fallback,email:user.email||"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-    } else if(!snap.data().uid || !snap.data().email){
-      await setDoc(ref,{uid:user.uid,nome:snap.data().nome||fallback,email:user.email||"",updatedAt:serverTimestamp()},{merge:true});
-    }
-  }
-
-  $("signupBtn").onclick=async()=>{
-    authMsg.textContent="";
-    try{
-      const nome=$("name").value.trim();
-      if(!nome) throw new Error("Digite seu nome.");
-      const email=$("email").value.trim();
-      const emailError=validateSignupEmail(email);if(emailError)throw new Error(emailError);
-      const cred=await createUserWithEmailAndPassword(auth,email,$("password").value);
-      await updateProfile(cred.user,{displayName:nome});
-      await ensureProfile(cred.user,nome);
-    }catch(e){authMsg.textContent=friendlyError(e)}
-  };
-
-  $("loginBtn").onclick=async()=>{
-    authMsg.textContent="";
-    try{
-      const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);
-      await ensureProfile(cred.user,$("name").value.trim());
-    }catch(e){authMsg.textContent=friendlyError(e)}
-  };
-
-  $("logoutBtn").onclick=()=>signOut(auth);
-  $("backBtn").onclick=()=> $("chatPanel").classList.add("hidden-mobile");
-
-  onAuthStateChanged(auth, async user=>{
-    if(!user){
-      me=null; activeUser=null;
-      if(stopMessages){stopMessages();stopMessages=null}
-      authView.classList.remove("hidden"); appView.classList.add("hidden"); return;
-    }
-    me=user;
-    try{ await ensureProfile(user); }catch(e){ console.error(e); }
-    $("meName").textContent=user.displayName || user.email?.split("@")[0] || "Você";
-    $("meEmail").textContent=user.email||"";
-    authView.classList.add("hidden"); appView.classList.remove("hidden");
-    const list=$("usersList"); if(list) list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando conversas...</div>';
-  });
-
-  async function listenUsers(){
-    const token=++usersLoadToken;
-    const list=$("usersList");
-    list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando pessoas...</div>';
-    try{
-      const q=query(collection(db,"users"),limit(20));
-      const snap=await getDocs(q);
-      if(token!==usersLoadToken || !me) return;
-
-      list.innerHTML="";
-      snap.forEach(d=>{
-        const u=d.data();
-        if(!u.uid || u.uid===me.uid) return;
-        const row=document.createElement("div"); row.className="user";
-        row.dataset.uid=u.uid;
-        const initial=(u.nome||u.email||"U").trim().charAt(0).toUpperCase();
-        row.innerHTML=`<div class="avatar">${escapeHtml(initial)}</div><div class="user-main"><div class="user-name">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;
-        row.onclick=()=>openChat(u);
-        list.appendChild(row);
-      });
-      if(!list.children.length) list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhum outro usuário ainda.</div>';
-    }catch(e){
-      console.error(e);
-      if(token===usersLoadToken){
-        list.innerHTML='<div style="padding:16px;color:#b42318">Não foi possível carregar as pessoas.</div>';
-      }
-    }
-  }
-
-  function parseAudio(text=""){
-    if(!text.startsWith(MEDIA_PREFIX))return null;
-    try{
-      const meta=JSON.parse(text.slice(MEDIA_PREFIX.length));
-      if(meta?.kind==="audio" && /^https?:\/\//i.test(meta.url||""))return meta;
-    }catch(_){ }
-    return null;
-  }
-
-  function renderMessage(b,m,t){
-    const audio=parseAudio(m.text||"");
-    if(audio){
-      const label=document.createElement("div");label.className="audio-label";label.textContent="🎤 Áudio";
-      const player=document.createElement("audio");player.className="audio-player";player.controls=true;player.preload="metadata";player.src=audio.url;
-      b.append(label,player);
-      const time=document.createElement("span");time.className="time";time.textContent=t;b.appendChild(time);
-      return;
-    }
-    b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`;
-  }
-
-  async function openChat(u){
-    activeUser=u;
-    $("chatName").textContent=u.nome||"Usuário"; $("chatEmail").textContent=u.email||"";
-    $("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();
-    $("emptyState").classList.add("hidden"); $("activeChat").classList.remove("hidden"); $("chatPanel").classList.remove("hidden-mobile");
-
-    const ids=[me.uid,u.uid].sort();
-    const chatId=ids.join("_");
-    if(stopMessages) stopMessages();
-
-    const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(20));
-    stopMessages=onSnapshot(mq,snap=>{
-      const box=$("messages"); box.innerHTML="";
-      const docs=[];
-      snap.forEach(d=>docs.push(d));
-      docs.reverse().forEach(d=>{
-        const m=d.data(), mine=m.senderId===me.uid;
-        const b=document.createElement("div"); b.className="bubble "+(mine?"mine":"theirs");
-        const t=m.createdAt?.toDate ? m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "";
-        renderMessage(b,m,t);
-        box.appendChild(b);
-      });
-      box.scrollTop=box.scrollHeight;
-    },e=>console.error(e));
-  }
-
-  async function saveMessage(text,label=text){
-    if(!me||!activeUser)return;
-    const ids=[me.uid,activeUser.uid].sort(), chatId=ids.join("_");
-    await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});
-    await setDoc(doc(db,"chats",chatId),{
-      participants:ids,
-      lastMessage:label,
-      lastSenderId:me.uid,
-      updatedAt:serverTimestamp(),
-      unreadCounts:{[activeUser.uid]:increment(1),[me.uid]:0}
-    },{merge:true});
-  }
-
-  $("composer").addEventListener("submit", async e=>{
-    e.preventDefault();
-    const text=$("messageInput").value.trim();
-    if(!text || !activeUser) return;
-    $("messageInput").value="";
-    try{await saveMessage(text,text)}catch(e){console.error(e);alert("Não foi possível enviar a mensagem.")}
-  });
-
-  function showAudioToast(text){
-    let el=$("audioToast");
-    if(!el){el=document.createElement("div");el.id="audioToast";el.className="audio-toast";document.body.appendChild(el)}
-    el.textContent=text;el.classList.remove("hidden");return()=>el.classList.add("hidden");
-  }
-
-  async function uploadAudio(blob,type){
-    if(!me||!activeUser)throw new Error("Abra uma conversa antes de enviar áudio.");
-    if(blob.size>10*1024*1024)throw new Error("Áudio muito grande. Limite de 10 MB.");
-    const token=await me.getIdToken();
-    const ext=type.includes("mp4")?"m4a":"webm";
-    const response=await fetch("/api/media",{
-      method:"POST",
-      headers:{Authorization:"Bearer "+token,"Content-Type":type||"audio/webm","X-File-Name":encodeURIComponent(`audio-${Date.now()}.${ext}`)},
-      body:blob
-    });
-    const data=await response.json().catch(()=>({}));
-    if(!response.ok||!data.url)throw new Error(data.error||"Falha ao enviar áudio.");
-    const text=MEDIA_PREFIX+JSON.stringify({kind:"audio",url:data.url,key:data.key||"",name:`audio-${Date.now()}.${ext}`});
-    await saveMessage(text,"🎤 Áudio");
-  }
-
-  function previewAudio(blob,type){
-    document.querySelector(".audio-preview-backdrop")?.remove();
-    const url=URL.createObjectURL(blob),backdrop=document.createElement("div");
-    backdrop.className="audio-preview-backdrop";
-    backdrop.innerHTML='<section class="audio-preview-card"><strong>Ouça antes de enviar</strong><audio controls preload="metadata"></audio><div class="audio-preview-actions"><button type="button" class="audio-preview-delete">Excluir</button><button type="button" class="audio-preview-send">Enviar áudio</button></div></section>';
-    const player=backdrop.querySelector("audio"),remove=()=>{player.pause();URL.revokeObjectURL(url);backdrop.remove()};
-    player.src=url;backdrop.querySelector(".audio-preview-delete").onclick=remove;backdrop.onclick=e=>{if(e.target===backdrop)remove()};
-    backdrop.querySelector(".audio-preview-send").onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;btn.textContent="Enviando...";const hide=showAudioToast("Enviando áudio...");try{await uploadAudio(blob,type);remove()}catch(err){console.error(err);alert(err.message||"Não foi possível enviar o áudio.");btn.disabled=false;btn.textContent="Enviar áudio"}finally{hide()}};
-    document.body.appendChild(backdrop);
-  }
-
-  $("audioBtn").onclick=async()=>{
-    const btn=$("audioBtn");
-    if(recorder&&recorder.state==="recording"){
-      recorder.stop();
-      btn.classList.remove("recording");btn.textContent="🎤";
-      return;
-    }
-    if(!activeUser)return alert("Abra uma conversa antes de gravar áudio.");
-    if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined")return alert("Este navegador não permite gravação de áudio.");
-    try{
-      audioStream=await navigator.mediaDevices.getUserMedia({audio:true});
-      audioChunks=[];
-      let mime="";
-      for(const t of["audio/webm;codecs=opus","audio/webm","audio/mp4"]){if(MediaRecorder.isTypeSupported?.(t)){mime=t;break}}
-      recorder=new MediaRecorder(audioStream,mime?{mimeType:mime}:undefined);
-      recorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data)};
-      recorder.onstop=async()=>{
-        try{
-          audioStream?.getTracks().forEach(t=>t.stop());
-          const type=recorder?.mimeType||"audio/webm";
-          const blob=new Blob(audioChunks,{type});
-          recorder=null;audioChunks=[];audioStream=null;
-          $("audioToast")?.classList.add("hidden");
-          if(blob.size)previewAudio(blob,type);
-        }catch(e){console.error(e);alert(e.message||"Não foi possível preparar o áudio.")}
-      };
-      recorder.start();
-      btn.classList.add("recording");btn.textContent="■";
-      showAudioToast("Gravando... toque ■ para revisar");
-    }catch(e){
-      audioStream?.getTracks().forEach(t=>t.stop());audioStream=null;recorder=null;
-      alert("Não foi possível acessar o microfone.");
-    }
-  };
-
-  function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]))}
-
-  window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});
-  $("installBtn").onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")}};
-  window.addEventListener("appinstalled",()=>$("installBtn").classList.add("hidden"));
-
-  if("serviceWorker" in navigator){
-    window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
-  }
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";import{getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,updateProfile}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";import{getFirestore,doc,setDoc,getDoc,getDocs,collection,query,onSnapshot,serverTimestamp,addDoc,orderBy,limit,increment}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",authDomain:"chama-cfc28.firebaseapp.com",projectId:"chama-cfc28",storageBucket:"chama-cfc28.firebasestorage.app",messagingSenderId:"680045231088",appId:"1:680045231088:web:8db35684e4b56a320ebb35"};const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),MEDIA_PREFIX="__CHAMA_MEDIA__";const $=id=>document.getElementById(id);const authView=$("authView"),appView=$("appView"),authMsg=$("authMsg");let me=null,activeUser=null,stopMessages=null,usersLoadToken=0,installPrompt=null;let recorder=null,audioChunks=[],audioStream=null;
+function friendlyError(e){const c=e?.code||"";if(c.includes("invalid-credential"))return"E-mail ou senha incorretos.";if(c.includes("email-already-in-use"))return"Este e-mail já está cadastrado.";if(c.includes("weak-password"))return"Use uma senha com pelo menos 6 caracteres.";if(c.includes("invalid-email"))return"Digite um e-mail válido.";return e?.message||"Não foi possível concluir."}
+function validateSignupEmail(value){const email=String(value||"").trim().toLowerCase();if(!email||email.length>254||email.includes(".."))return"Digite um e-mail válido.";const parts=email.split("@");if(parts.length!==2)return"Digite um e-mail válido.";const[local,domain]=parts;if(!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}$/i.test(local))return"Digite um e-mail válido.";if(!/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/i.test(domain))return"Digite um domínio de e-mail válido, como gmail.com.";const reservedDomains=new Set(["example.com","example.org","example.net","teste.com","test.com","email.com","localhost"]);const testName=/(^|[._+-])(teste?|test|fake|falso|invalido|invalid|exemplo|example)([._+-]|\d*$)/i.test(local);if(testName||reservedDomains.has(domain)||domain.endsWith(".invalid")||domain.endsWith(".test"))return"E-mails de teste só podem ser criados pelo administrador.";const corrections={"gmal.com":"gmail.com","gmil.com":"gmail.com","gmail.con":"gmail.com","gmail.co":"gmail.com","hotmal.com":"hotmail.com","hotmai.com":"hotmail.com","hotmail.con":"hotmail.com","outlook.con":"outlook.com","yahoo.con":"yahoo.com"};if(corrections[domain])return`Confira o domínio. Você quis dizer ${corrections[domain]}?`;return""}
+async function ensureProfile(user,requestedName=""){const ref=doc(db,"users",user.uid),snap=await getDoc(ref),fallback=(requestedName||user.displayName||user.email?.split("@")[0]||"Usuário").trim();if(!snap.exists())await setDoc(ref,{uid:user.uid,nome:fallback,email:user.email||"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});else if(!snap.data().uid||!snap.data().email)await setDoc(ref,{uid:user.uid,nome:snap.data().nome||fallback,email:user.email||"",updatedAt:serverTimestamp()},{merge:true})}
+$("signupBtn").onclick=async()=>{authMsg.textContent="";try{const nome=$("name").value.trim();if(!nome)throw new Error("Digite seu nome.");const email=$("email").value.trim(),emailError=validateSignupEmail(email);if(emailError)throw new Error(emailError);const cred=await createUserWithEmailAndPassword(auth,email,$("password").value);await updateProfile(cred.user,{displayName:nome});await ensureProfile(cred.user,nome)}catch(e){authMsg.textContent=friendlyError(e)}};
+$("loginBtn").onclick=async()=>{authMsg.textContent="";try{const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);await ensureProfile(cred.user,$("name").value.trim())}catch(e){authMsg.textContent=friendlyError(e)}};$("logoutBtn").onclick=()=>signOut(auth);$("backBtn").onclick=()=>$("chatPanel").classList.add("hidden-mobile");
+onAuthStateChanged(auth,async user=>{if(!user){me=null;activeUser=null;if(stopMessages){stopMessages();stopMessages=null}authView.classList.remove("hidden");appView.classList.add("hidden");return}me=user;try{await ensureProfile(user)}catch(e){console.error(e)}$("meName").textContent=user.displayName||user.email?.split("@")[0]||"Você";$("meEmail").textContent=user.email||"";authView.classList.add("hidden");appView.classList.remove("hidden");const list=$("usersList");if(list)list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando pessoas...</div>';listenUsers();});
+async function listenUsers(){const token=++usersLoadToken,list=$("usersList");if(!list)return;list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando pessoas...</div>';try{const snap=await getDocs(query(collection(db,"users"),limit(20)));if(token!==usersLoadToken||!me)return;list.innerHTML="";snap.forEach(d=>{const u=d.data();if(!u.uid||u.uid===me.uid)return;const row=document.createElement("div");row.className="user";row.dataset.uid=u.uid;const initial=(u.nome||u.email||"U").trim().charAt(0).toUpperCase();row.innerHTML=`<div class="avatar">${escapeHtml(initial)}</div><div class="user-main"><div class="user-name">${escapeHtml(u.nome||"Usuário")}</div><div class="user-email">${escapeHtml(u.email||"")}</div></div>`;row.onclick=()=>openChat(u);list.appendChild(row)});if(!list.children.length)list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhum outro usuário ainda.</div>'}catch(e){console.error(e);if(token===usersLoadToken)list.innerHTML='<div style="padding:16px;color:#b42318">Não foi possível carregar as pessoas.</div>'}}
+function parseAudio(text=""){if(!text.startsWith(MEDIA_PREFIX))return null;try{const meta=JSON.parse(text.slice(MEDIA_PREFIX.length));if(meta?.kind==="audio"&&/^https?:\/\//i.test(meta.url||""))return meta}catch(_){ }return null}
+function renderMessage(b,m,t){const audio=parseAudio(m.text||"");if(audio){const label=document.createElement("div");label.className="audio-label";label.textContent="🎤 Áudio";const player=document.createElement("audio");player.className="audio-player";player.controls=true;player.preload="metadata";player.src=audio.url;b.append(label,player);const time=document.createElement("span");time.className="time";time.textContent=t;b.appendChild(time);return}b.innerHTML=`${escapeHtml(m.text||"")}<span class="time">${t}</span>`}
+async function openChat(u){activeUser=u;$("chatName").textContent=u.nome||"Usuário";$("chatEmail").textContent=u.email||"";$("chatAvatar").textContent=(u.nome||u.email||"U").charAt(0).toUpperCase();$("emptyState").classList.add("hidden");$("activeChat").classList.remove("hidden");$("chatPanel").classList.remove("hidden-mobile");const ids=[me.uid,u.uid].sort(),chatId=ids.join("_");if(stopMessages)stopMessages();const mq=query(collection(db,"chats",chatId,"messages"),orderBy("createdAt","desc"),limit(10));stopMessages=onSnapshot(mq,snap=>{const box=$("messages");box.innerHTML="";const docs=[];snap.forEach(d=>docs.push(d));docs.reverse().forEach(d=>{const m=d.data(),mine=m.senderId===me.uid,b=document.createElement("div");b.className="bubble "+(mine?"mine":"theirs");const t=m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"";renderMessage(b,m,t);box.appendChild(b)});box.scrollTop=box.scrollHeight},e=>console.error(e))}
+async function saveMessage(text,label=text){if(!me||!activeUser)return;const ids=[me.uid,activeUser.uid].sort(),chatId=ids.join("_");await addDoc(collection(db,"chats",chatId,"messages"),{text,senderId:me.uid,receiverId:activeUser.uid,createdAt:serverTimestamp()});await setDoc(doc(db,"chats",chatId),{participants:ids,lastMessage:label,lastSenderId:me.uid,updatedAt:serverTimestamp(),unreadCounts:{[activeUser.uid]:increment(1),[me.uid]:0}},{merge:true})}
+$("composer").addEventListener("submit",async e=>{e.preventDefault();const text=$("messageInput").value.trim();if(!text||!activeUser)return;$("messageInput").value="";try{await saveMessage(text,text)}catch(e){console.error(e);alert("Não foi possível enviar a mensagem.")}});
+function showAudioToast(text){let el=$("audioToast");if(!el){el=document.createElement("div");el.id="audioToast";el.className="audio-toast";document.body.appendChild(el)}el.textContent=text;el.classList.remove("hidden");return()=>el.classList.add("hidden")}
+async function uploadAudio(blob,type){if(!me||!activeUser)throw new Error("Abra uma conversa antes de enviar áudio.");if(blob.size>10*1024*1024)throw new Error("Áudio muito grande. Limite de 10 MB.");const token=await me.getIdToken();const ext=type.includes("mp4")?"m4a":"webm";const response=await fetch("/api/media",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":type||"audio/webm","X-File-Name":encodeURIComponent(`audio-${Date.now()}.${ext}`)},body:blob});const data=await response.json().catch(()=>({}));if(!response.ok||!data.url)throw new Error(data.error||"Falha ao enviar áudio.");const text=MEDIA_PREFIX+JSON.stringify({kind:"audio",url:data.url,key:data.key||"",name:`audio-${Date.now()}.${ext}`});await saveMessage(text,"🎤 Áudio")}
+function previewAudio(blob,type){document.querySelector(".audio-preview-backdrop")?.remove();const url=URL.createObjectURL(blob),backdrop=document.createElement("div");backdrop.className="audio-preview-backdrop";backdrop.innerHTML='<section class="audio-preview-card"><strong>Ouça antes de enviar</strong><audio controls preload="metadata"></audio><div class="audio-preview-actions"><button type="button" class="audio-preview-delete">Excluir</button><button type="button" class="audio-preview-send">Enviar áudio</button></div></section>';const player=backdrop.querySelector("audio"),remove=()=>{player.pause();URL.revokeObjectURL(url);backdrop.remove()};player.src=url;backdrop.querySelector(".audio-preview-delete").onclick=remove;backdrop.onclick=e=>{if(e.target===backdrop)remove()};backdrop.querySelector(".audio-preview-send").onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;btn.textContent="Enviando...";const hide=showAudioToast("Enviando áudio...");try{await uploadAudio(blob,type);remove()}catch(err){console.error(err);alert(err.message||"Não foi possível enviar o áudio.");btn.disabled=false;btn.textContent="Enviar áudio"}finally{hide()}};document.body.appendChild(backdrop)}
+$("audioBtn").onclick=async()=>{const btn=$("audioBtn");if(recorder&&recorder.state==="recording"){recorder.stop();btn.classList.remove("recording");btn.textContent="🎤";return}if(!activeUser)return alert("Abra uma conversa antes de gravar áudio.");if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined")return alert("Este navegador não permite gravação de áudio.");try{audioStream=await navigator.mediaDevices.getUserMedia({audio:true});audioChunks=[];let mime="";for(const t of["audio/webm;codecs=opus","audio/webm","audio/mp4"]){if(MediaRecorder.isTypeSupported?.(t)){mime=t;break}}recorder=new MediaRecorder(audioStream,mime?{mimeType:mime}:undefined);recorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data)};recorder.onstop=async()=>{try{audioStream?.getTracks().forEach(t=>t.stop());const type=recorder?.mimeType||"audio/webm";const blob=new Blob(audioChunks,{type});recorder=null;audioChunks=[];audioStream=null;$("audioToast")?.classList.add("hidden");if(blob.size)previewAudio(blob,type)}catch(e){console.error(e);alert(e.message||"Não foi possível preparar o áudio.")}};recorder.start();btn.classList.add("recording");btn.textContent="■";showAudioToast("Gravando... toque ■ para revisar")}catch(e){audioStream?.getTracks().forEach(t=>t.stop());audioStream=null;recorder=null;alert("Não foi possível acessar o microfone.")}};
+function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]))}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});$("installBtn").onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")}};window.addEventListener("appinstalled",()=>$("installBtn").classList.add("hidden"));if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
 </script>
-</body>
-</html>
+</body></html>
