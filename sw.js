@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v176";
+const VERSION="chama-safe-v177";
 
 self.addEventListener("install", event => {
   event.waitUntil(self.skipWaiting());
@@ -14,12 +14,30 @@ self.addEventListener("activate", event => {
   })());
 });
 
-// Important: do not rewrite/inject the application's HTML here.
-// The Chama app must receive its original document unchanged so that
-// Firebase and the app's native event handlers remain reliable.
+// Keep the original Chama application intact. Only add the isolated,
+// non-blocking groups/profile feature script to HTML responses.
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
-  event.respondWith(fetch(event.request));
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  event.respondWith((async () => {
+    const response = await fetch(event.request);
+    const type = response.headers.get("content-type") || "";
+    if (!type.includes("text/html")) return response;
+    try {
+      const text = await response.text();
+      if (text.includes("chama-features-safe.js")) return new Response(text,{status:response.status,statusText:response.statusText,headers:response.headers});
+      const injected = text.replace(/<\/body>/i,'<script src="./chama-features-safe.js?v=177" defer></script></body>');
+      const headers = new Headers(response.headers);
+      headers.delete("content-length");
+      return new Response(injected,{status:response.status,statusText:response.statusText,headers});
+    } catch (_) {
+      return response;
+    }
+  })());
 });
 
 self.addEventListener("push", event => {
