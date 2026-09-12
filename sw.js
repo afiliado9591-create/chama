@@ -1,4 +1,4 @@
-const VERSION="chama-safe-v174";
+const VERSION="chama-safe-v175";
 
 self.addEventListener("install", event => {
   event.waitUntil(self.skipWaiting());
@@ -16,7 +16,7 @@ self.addEventListener("activate", event => {
       try {
         const url = new URL(client.url);
         if (url.origin !== self.location.origin) return;
-        url.searchParams.set("chama_clean","174");
+        url.searchParams.set("chama_clean","175");
         return client.navigate(url.toString());
       } catch (_) {}
     }));
@@ -34,10 +34,10 @@ self.addEventListener("fetch", event => {
       const html = await response.text();
       let injected = html;
       if (!injected.includes("chama-profile-status-safe.js")) {
-        injected = injected.replace(/<\/body>/i,'<script src="/chama-profile-status-safe.js?v=174" defer></script></body>');
+        injected = injected.replace(/<\/body>/i,'<script src="/chama-profile-status-safe.js?v=175" defer></script></body>');
       }
       if (!injected.includes("chama-groups-safe.js")) {
-        injected = injected.replace(/<\/body>/i,'<script src="/chama-groups-safe.js?v=174" defer></script></body>');
+        injected = injected.replace(/<\/body>/i,'<script src="/chama-groups-safe.js?v=175" defer></script></body>');
       }
       const headers = new Headers(response.headers);
       headers.delete("content-length");
