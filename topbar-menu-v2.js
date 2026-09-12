@@ -1,65 +1,12 @@
 (()=>{
-  const STYLE='chamaTopbarMenuV2Style';
-  const MENU='chamaMainMenu';
-  const OWNER_UID='0Mhnp79AYQTLwH6vfpAKROSGBtU2';
-  function styles(){
-    if(document.getElementById(STYLE))return;
-    const s=document.createElement('style');s.id=STYLE;s.textContent=`
-      #logoutBtn{display:none!important}
-      #adminBtn{display:none!important}
-      .chama-main-menu-btn{border:1px solid #d9e9e1;background:#eef6f2;color:#0b7a53;border-radius:12px;padding:10px 12px;font-weight:900;font-size:20px;line-height:1;cursor:pointer}
-      .chama-main-menu-backdrop{position:fixed;inset:0;background:#0005;z-index:7000}
-      .chama-main-menu{position:fixed;top:0;right:0;width:min(330px,88vw);height:100dvh;background:#fff;z-index:7001;box-shadow:-12px 0 40px #0003;display:flex;flex-direction:column}
-      .chama-menu-head{padding:18px 16px;border-bottom:1px solid #e6ebe8;display:flex;align-items:center;gap:10px}.chama-menu-head strong{font-size:18px;flex:1;color:#17372b}.chama-menu-close{border:0;background:#eef4f1;color:#0b7a53;border-radius:10px;padding:8px 11px;font-size:18px;cursor:pointer}
-      .chama-menu-links{padding:12px;display:flex;flex-direction:column;gap:7px;overflow:auto}.chama-menu-link{display:flex;align-items:center;gap:12px;width:100%;border:1px solid #e0e7e3;background:#fff;color:#20382f;border-radius:13px;padding:13px 14px;text-align:left;font-weight:800;text-decoration:none;cursor:pointer}.chama-menu-link:active{background:#eef7f2}.chama-menu-icon{width:25px;text-align:center;font-size:18px}.chama-menu-spacer{flex:1;min-height:18px}.chama-menu-logout{color:#b42318;border-color:#f0d7d4;background:#fffafa}
-    `;document.head.appendChild(s)
-  }
-  function close(){document.getElementById(MENU)?.remove();document.getElementById('chamaMainMenuBackdrop')?.remove()}
-  function item(panel,icon,text,fn,cls=''){
-    const b=document.createElement('button');b.type='button';b.className='chama-menu-link '+cls;b.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${text}</span>`;b.onclick=()=>{close();fn()};panel.appendChild(b);return b
-  }
-  function openAdmin(){location.href='./admin.html'}
-  async function isAdmin(){
-    try{
-      const {getApps}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
-      const {getAuth}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');
-      const {getFirestore,doc,getDoc}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
-      const app=getApps()[0];if(!app)return false;
-      const u=getAuth(app).currentUser;if(!u)return false;
-      if(u.uid===OWNER_UID)return true;
-      const snap=await getDoc(doc(getFirestore(app),'users',u.uid));
-      return snap.exists()&&snap.data()?.admin===true;
-    }catch{return false}
-  }
-  async function open(){
-    if(document.getElementById(MENU))return;
-    const back=document.createElement('div');back.id='chamaMainMenuBackdrop';back.className='chama-main-menu-backdrop';back.onclick=close;document.body.appendChild(back);
-    const m=document.createElement('aside');m.id=MENU;m.className='chama-main-menu';
-    m.innerHTML='<div class="chama-menu-head"><strong>Menu do Chama</strong><button type="button" class="chama-menu-close" aria-label="Fechar">×</button></div><div class="chama-menu-links"></div>';
-    document.body.appendChild(m);m.querySelector('.chama-menu-close').onclick=close;
-    const p=m.querySelector('.chama-menu-links');
-    item(p,'📖','Como usar o Chama',()=>location.href='./como-usar.html');
-    item(p,'🔒','Política de privacidade',()=>location.href='./politica-de-privacidade.html');
-    const spacer=document.createElement('div');spacer.className='chama-menu-spacer';p.appendChild(spacer);
-    const logout=document.getElementById('logoutBtn');if(logout)item(p,'🚪','Sair',()=>logout.click(),'chama-menu-logout');
-    if(await isAdmin()){
-      const first=p.querySelector('.chama-menu-spacer');
-      const admin=document.createElement('button');admin.type='button';admin.className='chama-menu-link';admin.innerHTML='<span class="chama-menu-icon">🛡️</span><span>Admin</span>';admin.onclick=()=>{close();openAdmin()};p.insertBefore(admin,first);
-    }
-  }
-  function install(){
-    const app=document.getElementById('appView'),top=document.querySelector('.topbar');if(!app||app.classList.contains('hidden')||!top)return;
-    styles();
-    let b=document.getElementById('chamaMainMenuBtn');
-    if(!b){b=document.createElement('button');b.id='chamaMainMenuBtn';b.className='chama-main-menu-btn';b.type='button';b.title='Abrir menu';b.setAttribute('aria-label','Abrir menu');b.textContent='⋮';b.onclick=open;top.appendChild(b)}
-    const old=document.getElementById('logoutBtn');if(old)old.style.display='none';
-    const admin=document.getElementById('adminBtn');if(admin)admin.style.display='none';
-  }
-  function start(){
-    install();
-    const top=document.querySelector('.topbar');
-    if(top)new MutationObserver(install).observe(top,{childList:true,subtree:true});
-    setTimeout(install,500);
-  }
-  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
+const STYLE='chamaTopbarMenuV2Style',MENU='chamaMainMenu',OWNER_UID='0Mhnp79AYQTLwH6vfpAKROSGBtU2';let adminReady=false,adminAllowed=false;
+function styles(){if(document.getElementById(STYLE))return;const s=document.createElement('style');s.id=STYLE;s.textContent=`#logoutBtn{display:none!important}#adminBtn{display:none!important}.chama-main-menu-btn{border:1px solid #d9e9e1;background:#eef6f2;color:#0b7a53;border-radius:12px;padding:10px 12px;font-weight:900;font-size:20px;line-height:1;cursor:pointer}.chama-main-menu-backdrop{position:fixed;inset:0;background:#0005;z-index:7000}.chama-main-menu{position:fixed;top:0;right:0;width:min(330px,88vw);height:100dvh;background:#fff;z-index:7001;box-shadow:-12px 0 40px #0003;display:flex;flex-direction:column}.chama-menu-head{padding:18px 16px;border-bottom:1px solid #e6ebe8;display:flex;align-items:center;gap:10px}.chama-menu-head strong{font-size:18px;flex:1;color:#17372b}.chama-menu-close{border:0;background:#eef4f1;color:#0b7a53;border-radius:10px;padding:8px 11px;font-size:18px;cursor:pointer}.chama-menu-links{padding:12px;display:flex;flex-direction:column;gap:7px;overflow:auto}.chama-menu-link{display:flex;align-items:center;gap:12px;width:100%;border:1px solid #e0e7e3;background:#fff;color:#20382f;border-radius:13px;padding:13px 14px;text-align:left;font-weight:800;text-decoration:none;cursor:pointer}.chama-menu-link:active{background:#eef7f2}.chama-menu-icon{width:25px;text-align:center;font-size:18px}.chama-menu-spacer{flex:1;min-height:18px}.chama-menu-logout{color:#b42318;border-color:#f0d7d4;background:#fffafa}`;document.head.appendChild(s)}
+function close(){document.getElementById(MENU)?.remove();document.getElementById('chamaMainMenuBackdrop')?.remove()}
+function item(panel,icon,text,fn,cls=''){const b=document.createElement('button');b.type='button';b.className='chama-menu-link '+cls;b.innerHTML=`<span class="chama-menu-icon">${icon}</span><span>${text}</span>`;b.onclick=()=>{close();fn()};panel.appendChild(b);return b}
+function renderAdmin(){const p=document.querySelector('#chamaMainMenu .chama-menu-links');if(!p||!adminReady||!adminAllowed||p.querySelector('[data-admin-menu]'))return;const spacer=p.querySelector('.chama-menu-spacer');const b=item(p,'🛡️','Admin',()=>location.href='./admin.html');b.setAttribute('data-admin-menu','1');if(spacer)p.insertBefore(b,spacer)}
+async function resolveAdmin(){try{const {getApps}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const {getAuth,onAuthStateChanged}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');const {getFirestore,doc,getDoc}=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const app=getApps()[0];if(!app)return;onAuthStateChanged(getAuth(app),async u=>{adminReady=true;adminAllowed=false;if(u){if(u.uid===OWNER_UID)adminAllowed=true;else{try{const s=await getDoc(doc(getFirestore(app),'users',u.uid));adminAllowed=s.exists()&&s.data()?.admin===true}catch{}}}renderAdmin()})}catch{adminReady=true;adminAllowed=false}}
+function open(){if(document.getElementById(MENU))return;const back=document.createElement('div');back.id='chamaMainMenuBackdrop';back.className='chama-main-menu-backdrop';back.onclick=close;document.body.appendChild(back);const m=document.createElement('aside');m.id=MENU;m.className='chama-main-menu';m.innerHTML='<div class="chama-menu-head"><strong>Menu do Chama</strong><button type="button" class="chama-menu-close" aria-label="Fechar">×</button></div><div class="chama-menu-links"></div>';document.body.appendChild(m);m.querySelector('.chama-menu-close').onclick=close;const p=m.querySelector('.chama-menu-links');item(p,'📖','Como usar o Chama',()=>location.href='./como-usar.html');item(p,'🔒','Política de privacidade',()=>location.href='./politica-de-privacidade.html');const spacer=document.createElement('div');spacer.className='chama-menu-spacer';p.appendChild(spacer);const logout=document.getElementById('logoutBtn');if(logout)item(p,'🚪','Sair',()=>logout.click(),'chama-menu-logout');renderAdmin()}
+function install(){const app=document.getElementById('appView'),top=document.querySelector('.topbar');if(!app||app.classList.contains('hidden')||!top)return;styles();let b=document.getElementById('chamaMainMenuBtn');if(!b){b=document.createElement('button');b.id='chamaMainMenuBtn';b.className='chama-main-menu-btn';b.type='button';b.title='Abrir menu';b.setAttribute('aria-label','Abrir menu');b.textContent='⋮';b.onclick=open;top.appendChild(b)}const old=document.getElementById('logoutBtn');if(old)old.style.display='none';const admin=document.getElementById('adminBtn');if(admin)admin.style.display='none'}
+function start(){install();const top=document.querySelector('.topbar');if(top)new MutationObserver(install).observe(top,{childList:true,subtree:true});setTimeout(install,500);resolveAdmin()}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
 })();
