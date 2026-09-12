@@ -11,41 +11,15 @@ self.addEventListener("activate", event => {
       await Promise.all(keys.map(key => caches.delete(key)));
     } catch (_) {}
     await self.clients.claim();
-    const clients = await self.clients.matchAll({type:"window",includeUncontrolled:true});
-    await Promise.all(clients.map(client => {
-      try {
-        const url = new URL(client.url);
-        if (url.origin !== self.location.origin) return;
-        url.searchParams.set("chama_clean","176");
-        return client.navigate(url.toString());
-      } catch (_) {}
-    }));
   })());
 });
 
+// Important: do not rewrite/inject the application's HTML here.
+// The Chama app must receive its original document unchanged so that
+// Firebase and the app's native event handlers remain reliable.
 self.addEventListener("fetch", event => {
-  const request = event.request;
-  if (request.mode !== "navigate") return;
-  event.respondWith((async () => {
-    const response = await fetch(request);
-    const type = response.headers.get("content-type") || "";
-    if (!type.includes("text/html")) return response;
-    try {
-      const html = await response.text();
-      let injected = html;
-      if (!injected.includes("chama-profile-status-safe.js")) {
-        injected = injected.replace(/<\/body>/i,'<script src="/chama-profile-status-safe.js?v=176" defer></script></body>');
-      }
-      if (!injected.includes("chama-groups-safe.js")) {
-        injected = injected.replace(/<\/body>/i,'<script src="/chama-groups-safe.js?v=176" defer></script></body>');
-      }
-      const headers = new Headers(response.headers);
-      headers.delete("content-length");
-      return new Response(injected,{status:response.status,statusText:response.statusText,headers});
-    } catch (_) {
-      return response;
-    }
-  })());
+  if (event.request.method !== "GET") return;
+  event.respondWith(fetch(event.request));
 });
 
 self.addEventListener("push", event => {
