@@ -1,4 +1,4 @@
-(function(){
+(()=>{
   'use strict';
   function init(){
     if(document.getElementById('chamaFloatingStore')) return;
@@ -8,7 +8,7 @@
     style.id='chamaFloatingStoreStyle';
     style.textContent=`
       #chamaFloatingStore{
-        position:fixed;right:10px;top:50%;transform:translateY(-50%);
+        position:fixed;right:10px;bottom:calc(18px + env(safe-area-inset-bottom));
         z-index:9998;display:none;align-items:center;justify-content:center;
         width:52px;height:52px;border:0;border-radius:50%;
         background:#0b7a53;color:#fff;text-decoration:none;
@@ -17,19 +17,25 @@
       }
       #chamaFloatingStore span{display:block;font-size:11px;font-weight:800;line-height:1;margin-top:2px}
       #chamaFloatingStore .storeIcon{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
-      #chamaFloatingStore:active{transform:translateY(-50%) scale(.94)}
-      @media(max-width:700px){#chamaFloatingStore{right:8px;width:48px;height:48px;font-size:21px}}
+      #chamaFloatingStore:active{transform:scale(.94)}
+      @media(max-width:700px){#chamaFloatingStore{right:8px;bottom:calc(14px + env(safe-area-inset-bottom));width:48px;height:48px;font-size:21px}}
     `;
     document.head.appendChild(style);
 
-    const a=document.createElement('a');
+    const a=document.createElement('button');
     a.id='chamaFloatingStore';
-    a.href=window.CHAMA_STORE_URL||'https://alibr.com.br';
-    a.target='_blank';
-    a.rel='noopener noreferrer';
+    a.type='button';
     a.title='Loja';
     a.setAttribute('aria-label','Abrir Loja');
     a.innerHTML='<div class="storeIcon">🛍️<span>Loja</span></div>';
+    a.addEventListener('click',()=>{
+      const statusEntry=document.getElementById('chamaStatusEntry');
+      if(statusEntry){
+        statusEntry.click();
+        return;
+      }
+      document.dispatchEvent(new CustomEvent('chama-open-loja'));
+    });
     document.body.appendChild(a);
 
     function sync(){
