@@ -48,6 +48,16 @@ service cloud.firestore {
       allow create: if activeUser() && request.resource.data.reporterId == request.auth.uid && request.resource.data.reportedId is string && request.resource.data.reportedId != request.auth.uid;
       allow read, update, delete: if isAdmin();
     }
+
+    // STATUS: usuários autenticados podem visualizar e publicar o próprio Status.
+    // O administrador pode visualizar e apagar qualquer Status.
+    match /statuses/{statusId} {
+      allow read: if activeUser();
+      allow create: if activeUser() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin() || (activeUser() && resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid);
+      allow delete: if isAdmin() || (activeUser() && resource.data.uid == request.auth.uid);
+    }
+
     match /supportChats/{userId} {
       allow read: if isAdmin() || (activeUser() && request.auth.uid == userId);
       allow create: if activeUser() && request.auth.uid == userId && request.resource.data.userId == userId;
