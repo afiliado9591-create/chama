@@ -1,0 +1,1 @@
+(()=>{if(window.__CHAMA_SCROLL_AUTOLOAD__)return;window.__CHAMA_SCROLL_AUTOLOAD__=true;const s=document.createElement('script');s.src='./chama-message-media-runtime-v4.js?v=1';document.head.appendChild(s)})();
