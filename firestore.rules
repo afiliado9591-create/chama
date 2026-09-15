@@ -51,7 +51,7 @@ service cloud.firestore {
       allow update: if activeUser() && resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == request.auth.uid && request.resource.data.count is int && request.resource.data.count >= 0 && request.resource.data.count <= 50;
       allow delete: if isAdmin();
     }
-    match /bannedUsers/{userId} { allow read, create, update, delete: if isAdmin(); }
+    match /bannedUsers/{userId) { allow read, create, update, delete: if isAdmin(); }
     match /publicProfiles/{userId} { allow read: if activeUser(); allow create, update, delete: if isAdmin() || (activeUser() && request.auth.uid == userId); }
     match /appConfig/{configId} { allow read: if activeUser(); allow create, update, delete: if isAdmin(); }
     match /userHighlights/{userId} { allow read: if (activeUser() && request.auth.uid == userId) || isAdmin(); allow create, update, delete: if isAdmin(); }
@@ -73,11 +73,16 @@ service cloud.firestore {
 
     match /chats/{chatId} {
       allow read: if isAdmin() || (activeUser() && request.auth.uid in resource.data.participants);
-      allow create: if activeUser() && request.auth.uid in request.resource.data.participants;
+      allow create: if activeUser() && request.auth.uid in request.resource.data.participants && request.resource.data.participants.size() == 2;
       allow update: if activeUser() && request.auth.uid in resource.data.participants && request.resource.data.participants == resource.data.participants;
       match /messages/{messageId} {
         allow read: if isAdmin() || (activeUser() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
-        allow create: if activeUser() && request.resource.data.senderId == request.auth.uid && request.resource.data.receiverId is string && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants && !blockedEitherWay(request.resource.data.senderId, request.resource.data.receiverId);
+        allow create: if activeUser() &&
+          request.resource.data.senderId == request.auth.uid &&
+          request.resource.data.receiverId is string &&
+          request.resource.data.receiverId != request.auth.uid &&
+          exists(/databases/$(database)/documents/users/$(request.resource.data.receiverId)) &&
+          !blockedEitherWay(request.resource.data.senderId, request.resource.data.receiverId);
         allow delete: if activeUser() && resource.data.senderId == request.auth.uid && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
         allow update: if activeUser() && resource.data.receiverId == request.auth.uid && request.resource.data.senderId == resource.data.senderId && request.resource.data.receiverId == resource.data.receiverId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seenAt','playedAt']);
       }
