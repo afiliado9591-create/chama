@@ -1,18 +1,19 @@
 (()=>{
 'use strict';
-if(window.__CHAMA_MEDIA_DIRECT__)return;
-window.__CHAMA_MEDIA_DIRECT__=true;
+if(window.__CHAMA_MEDIA_DIRECT_V2__)return;
+window.__CHAMA_MEDIA_DIRECT_V2__=true;
 const PREFIX='__CHAMA_MEDIA__';
 let stop=null,currentMedia=[],boundUid='';
 const $=id=>document.getElementById(id);
 function parse(v){const t=String(v||'');if(!t.startsWith(PREFIX))return null;try{const x=JSON.parse(t.slice(PREFIX.length));const kind=x.kind||x.type;return x.url&&['image','video','audio'].includes(kind)?{...x,kind}:null}catch{return null}}
-function label(v){return String(v||'').replace(/\s+/g,' ').trim().replace(/(?:m[ií]dia|midia)\s*\d{1,2}:\d{2}$/i,'midia').trim().toLowerCase()}
-function paint(){const box=$('messages');if(!box||!currentMedia.length)return;const targets=[...box.querySelectorAll('.bubble')].filter(b=>!b.dataset.directMedia&&label(b.dataset.mediaLabel||b.textContent)==='midia');targets.forEach((b,i)=>{const m=currentMedia[i];if(m)render(b,m)})}
+function clean(v){return String(v||'').replace(/\s+/g,' ').trim().toLowerCase()}
+function isMediaBubble(b){const text=clean(b.dataset.mediaLabel||b.textContent||'');return text==='mídia'||text==='midia'||/^m[ií]dia\s+\d{1,2}:\d{2}$/.test(text)}
+function paint(){const box=$('messages');if(!box||!currentMedia.length)return;const targets=[...box.querySelectorAll('.bubble')].filter(b=>!b.dataset.directMedia&&isMediaBubble(b));targets.slice(0,currentMedia.length).forEach((b,i)=>render(b,currentMedia[i]))}
 function render(b,m){b.dataset.directMedia='1';const time=b.querySelector('.time');b.innerHTML='';if(m.kind==='image'){const img=document.createElement('img');img.src=m.url;img.alt='Imagem enviada';img.loading='lazy';img.style.cssText='display:block;width:min(280px,72vw);max-height:380px;object-fit:cover;border-radius:12px;cursor:pointer';img.onclick=()=>window.open(m.url,'_blank','noopener');img.onerror=()=>img.replaceWith(fail());b.appendChild(img)}else if(m.kind==='video'){const v=document.createElement('video');v.src=m.url;v.controls=true;v.playsInline=true;v.preload='metadata';v.style.cssText='display:block;width:min(310px,74vw);max-height:400px;border-radius:12px;background:#000';v.onerror=()=>v.replaceWith(fail());b.appendChild(v)}else{const a=document.createElement('audio');a.src=m.url;a.controls=true;a.preload='metadata';a.style.cssText='width:min(290px,76vw);height:44px';a.onerror=()=>a.replaceWith(fail());b.appendChild(a)}if(time)b.appendChild(time)}
 function fail(){const d=document.createElement('div');d.textContent='Não foi possível carregar esta mídia.';d.style.cssText='padding:8px;font-size:13px';return d}
-async function firebase(){const A=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const AU=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');const F=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const app=A.getApps()[0];if(!app)return null;return{app,user:AU.getAuth(app).currentUser,db:F.getFirestore(app),F}}
-async function bind(uid){if(!uid||uid===boundUid)return;boundUid=uid;if(stop){stop();stop=null}currentMedia=[];const x=await firebase();if(!x?.user)return;const cid=[x.user.uid,uid].sort().join('_');const ref=x.F.collection(x.db,'chats',cid,'messages');stop=x.F.onSnapshot(x.F.query(ref,x.F.orderBy('createdAt','asc'),x.F.limit(200)),snap=>{currentMedia=[];snap.forEach(d=>{const media=parse((d.data()||{}).text);if(media)currentMedia.push(media)});setTimeout(paint,0);setTimeout(paint,100);setTimeout(paint,300)},e=>console.debug('Chama media snapshot',e))}
+async function firebase(){const A=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');const AU=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');const F=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');const app=A.getApps()[0];if(!app)return null;const user=AU.getAuth(app).currentUser;if(!user)return null;return{user,db:F.getFirestore(app),F}}
+async function bind(uid){const x=await firebase();if(!x?.user)return false;if(uid===boundUid&&stop)return true;if(stop){stop();stop=null}boundUid=uid;currentMedia=[];const cid=[x.user.uid,uid].sort().join('_');const ref=x.F.collection(x.db,'chats',cid,'messages');stop=x.F.onSnapshot(x.F.query(ref,x.F.orderBy('createdAt','asc'),x.F.limit(200)),snap=>{currentMedia=[];snap.forEach(d=>{const media=parse((d.data()||{}).text);if(media)currentMedia.push(media)});setTimeout(paint,0);setTimeout(paint,80);setTimeout(paint,250);setTimeout(paint,600)},e=>{console.error('Chama media snapshot',e);currentMedia=[]});return true}
 function check(){const active=$('activeChat');if(!active||active.classList.contains('hidden'))return;const uid=String(window.__chamaActiveUid||active.dataset.uid||'').trim();if(uid)bind(uid).catch(()=>{});paint()}
-function start(){const box=$('messages');if(box)new MutationObserver(()=>setTimeout(paint,0)).observe(box,{childList:true,subtree:true});setInterval(check,300);check()}
+function start(){const box=$('messages');if(box)new MutationObserver(()=>setTimeout(paint,0)).observe(box,{childList:true,subtree:true});setInterval(check,500);check()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
