@@ -57,7 +57,41 @@
   }
   function pick(kind){
     const input=document.createElement('input');input.type='file';input.accept=kind==='image'?'image/*':kind==='video'?'video/*':'audio/*';input.hidden=true;
-    document.body.appendChild(input);input.onchange=async()=>{const f=input.files?.[0];input.remove();if(!f)return;try{await sendFile(f,kind)}catch(e){alert(e.message||'Não foi possível enviar a mídia.')}};input.click();
+    document.body.appendChild(input);
+    input.onchange=()=>{
+      const f=input.files?.[0];input.remove();if(!f)return;
+      try{validateFile(f,kind);showMediaPreview(f,kind)}catch(e){alert(e.message||'Não foi possível selecionar a mídia.')}
+    };
+    input.click();
+  }
+  function validateFile(file,kind){
+    const limits={image:5*1024*1024,video:25*1024*1024,audio:10*1024*1024};
+    const prefixes={image:'image/',video:'video/',audio:'audio/'};
+    if(!file?.type?.startsWith(prefixes[kind]))throw new Error(`Arquivo de ${kind} inválido.`);
+    if(file.size>limits[kind])throw new Error(`${kind==='image'?'Imagem':kind==='video'?'Vídeo':'Áudio'} muito grande. Limite: ${limits[kind]/1024/1024} MB.`);
+  }
+  function showMediaPreview(file,kind){
+    document.querySelector('.chama-media-preview')?.remove();
+    const url=URL.createObjectURL(file),back=document.createElement('div');
+    back.className='chama-media-preview';
+    back.style.cssText='position:fixed;inset:0;background:#0008;z-index:1900;display:grid;place-items:center;padding:18px';
+    const title=kind==='image'?'Confira a imagem antes de enviar':'Confira o vídeo antes de enviar';
+    back.innerHTML='<section style="width:min(480px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:18px;display:grid;gap:14px;font-family:system-ui"><strong class="media-preview-title"></strong><div class="media-preview-content"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button type="button" class="media-del">Excluir</button><button type="button" class="media-send">Enviar</button></div></section>';
+    back.querySelector('.media-preview-title').textContent=title;
+    const content=back.querySelector('.media-preview-content');
+    if(kind==='image'){
+      const img=document.createElement('img');img.src=url;img.alt='Prévia da imagem';img.style.cssText='display:block;width:100%;max-height:60vh;object-fit:contain;border-radius:14px;background:#f4f4f4';content.appendChild(img);
+    }else{
+      const video=document.createElement('video');video.src=url;video.controls=true;video.playsInline=true;video.preload='metadata';video.style.cssText='display:block;width:100%;max-height:60vh;border-radius:14px;background:#000';content.appendChild(video);
+    }
+    const close=()=>{URL.revokeObjectURL(url);back.remove()};
+    back.querySelector('.media-del').onclick=close;
+    back.onclick=e=>{if(e.target===back)close()};
+    back.querySelector('.media-send').onclick=async e=>{
+      const b=e.currentTarget;b.disabled=true;b.textContent='Enviando...';
+      try{await sendFile(file,kind);close()}catch(err){b.disabled=false;b.textContent='Enviar';alert(err.message||'Não foi possível enviar a mídia.')}
+    };
+    document.body.appendChild(back);
   }
   async function startAudio(){
     if(recording?.state==='recording'){recording.stop();return}
@@ -96,7 +130,7 @@
     form.dataset.mediaFixText='1';
     form.onsubmit=async e=>{e.preventDefault();const input=$('messageInput');const text=input?.value.trim();if(!text)return;const ctx=await firebase().catch(err=>{alert(err.message);return null});if(!ctx)return;const other=await receiverUid(ctx).catch(err=>{alert(err.message);return null});if(!other)return;const ids=[ctx.me.uid,other].sort(),cid=chatId(ctx.me.uid,other);input.value='';const msg={from:ctx.me.uid,to:other,senderId:ctx.me.uid,receiverId:other,text,createdAt:ctx.fs.serverTimestamp()};try{await ctx.fs.setDoc(ctx.fs.doc(ctx.db,'chats',cid),{participants:ids,lastMessage:text,lastSenderId:ctx.me.uid,updatedAt:ctx.fs.serverTimestamp()},{merge:true});await ctx.fs.addDoc(ctx.fs.collection(ctx.db,'chats',cid,'messages'),msg)}catch(err){console.error(err);input.value=text;alert('Não foi possível enviar a mensagem. Tente novamente.')}};
   }
-  function style(){if($('chamaMediaFixStyle'))return;const s=document.createElement('style');s.id='chamaMediaFixStyle';s.textContent='.image-send-btn,.video-send-btn{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:50%;font-size:20px;display:grid;place-items:center;cursor:pointer;flex:0 0 42px}.audio-record.recording{background:#ffe5e5!important;color:#b42318!important}.chama-audio-preview button{border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer}.chama-audio-preview .aud-del{background:#fff0f0;color:#b42318}.chama-audio-preview .aud-send{background:#0b7a53;color:#fff}';document.head.appendChild(s)}
+  function style(){if($('chamaMediaFixStyle'))return;const s=document.createElement('style');s.id='chamaMediaFixStyle';s.textContent='.image-send-btn,.video-send-btn{border:0;background:#eef4f1;color:#0b7a53;width:42px;height:42px;border-radius:50%;font-size:20px;display:grid;place-items:center;cursor:pointer;flex:0 0 42px}.audio-record.recording{background:#ffe5e5!important;color:#b42318!important}.chama-audio-preview button,.chama-media-preview button{border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer}.chama-audio-preview .aud-del,.chama-media-preview .media-del{background:#fff0f0;color:#b42318}.chama-audio-preview .aud-send,.chama-media-preview .media-send{background:#0b7a53;color:#fff}';document.head.appendChild(s)}
   function boot(){if(ready)return;ready=addButtons();fastText();style();if(!ready)setTimeout(boot,300)}
   new MutationObserver(boot).observe(document.documentElement,{childList:true,subtree:true});boot();
 })();
