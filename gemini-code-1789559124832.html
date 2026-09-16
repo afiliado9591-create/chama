@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialChat & Store</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js para interatividade -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 h-screen flex flex-col" x-data="app()">
+
+    <!-- App Container -->
+    <div class="flex h-full w-full max-w-7xl mx-auto shadow-2xl bg-white overflow-hidden">
+        
+        <!-- Sidebar / Lista de Conversas -->
+        <div class="w-1/3 border-r border-gray-200 flex flex-col bg-white">
+            <!-- Header do Usuário -->
+            <div class="p-4 bg-gray-50 flex items-center justify-between border-b">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center text-white font-bold justify-center">DM</div>
+                    <span class="font-semibold text-gray-700">Dridalia Store</span>
+                </div>
+                <div class="flex space-x-3 text-gray-600">
+                    <button @click="activeTab = 'chats'" :class="activeTab === 'chats' ? 'text-emerald-600 font-bold' : ''">Chats</button>
+                    <button @click="activeTab = 'feed'" :class="activeTab === 'feed' ? 'text-emerald-600 font-bold' : ''">Feed</button>
+                </div>
+            </div>
+
+            <!-- Busca -->
+            <div class="p-3 bg-white border-b">
+                <div class="flex items-center bg-gray-100 px-3 py-2 rounded-lg">
+                    <i class="fa-solid fa-search text-gray-400 mr-2"></i>
+                    <input type="text" placeholder="Pesquisar conversas ou produtos..." class="bg-transparent w-full focus:outline-none text-sm">
+                </div>
+            </div>
+
+            <!-- Lista baseada na Aba Ativa -->
+            <div class="overflow-y-auto flex-1">
+                <!-- Se aba for Chats -->
+                <template x-if="activeTab === 'chats'">
+                    <div>
+                        <template x-for="chat in chats" :key="chat.id">
+                            <div @click="selectChat(chat)" 
+                                 :class="selectedChat.id === chat.id ? 'bg-gray-100' : 'hover:bg-gray-50'"
+                                 class="flex items-center p-3 cursor-pointer border-b border-gray-100 transition">
+                                <img :src="chat.avatar" class="w-12 h-12 rounded-full object-cover mr-3">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center">
+                                        <h4 class="font-semibold text-gray-800" x-text="chat.name"></h4>
+                                        <span class="text-xs text-gray-400" x-text="chat.time"></span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 truncate" x-text="chat.lastMessage"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Se aba for Feed / Rede Social -->
+                <template x-if="activeTab === 'feed'">
+                    <div class="p-3 space-y-4">
+                        <template x-for="post in feedPosts" :key="post.id">
+                            <div class="bg-white border rounded-xl p-3 shadow-sm">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <img :src="post.avatar" class="w-8 h-8 rounded-full">
+                                        <span class="font-bold text-sm" x-text="post.author"></span>
+                                    </div>
+                                    <button @click="post.following = !post.following" 
+                                            :class="post.following ? 'bg-gray-200 text-gray-700' : 'bg-emerald-600 text-white'"
+                                            class="text-xs px-3 py-1 rounded-full font-semibold transition"
+                                            x-text="post.following ? 'Seguindo' : 'Seguir'">
+                                    </button>
+                                </div>
+                                <img :src="post.image" class="rounded-lg w-full h-48 object-cover mb-2">
+                                <p class="text-sm text-gray-700" x-text="post.caption"></p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Janela Principal de Chat -->
+        <div class="w-2/3 flex flex-col bg-gray-50">
+            <!-- Header do Chat Atual -->
+            <div class="p-4 bg-white border-b flex items-center justify-between shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <img :src="selectedChat.avatar" class="w-10 h-10 rounded-full object-cover">
+                    <div>
+                        <h3 class="font-bold text-gray-800" x-text="selectedChat.name"></h3>
+                        <span class="text-xs text-emerald-600 font-medium" x-text="selectedChat.status"></span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 text-gray-600">
+                    <!-- Botão Seguir no Header -->
+                    <button @click="selectedChat.following = !selectedChat.following" 
+                            :class="selectedChat.following ? 'bg-gray-200 text-gray-800' : 'bg-emerald-600 text-white'"
+                            class="px-4 py-1.5 rounded-lg text-sm font-semibold shadow transition flex items-center space-x-1">
+                        <i :class="selectedChat.following ? 'fa-solid fa-check' : 'fa-solid fa-user-plus'"></i>
+                        <span x-text="selectedChat.following ? 'Seguindo' : 'Seguir'"></span>
+                    </button>
+                    <!-- Abrir Catálogo -->
+                    <button @click="showCatalog = !showCatalog" class="hover:text-emerald-600 transition" title="Abrir Catálogo">
+                        <i class="fa-solid fa-store text-xl"></i>
+                    </button>
+                    <button class="hover:text-emerald-600 transition"><i class="fa-solid fa-ellipsis-vertical text-xl"></i></button>
+                </div>
+            </div>
+
+            <!-- Área de Mensagens -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                <template x-for="msg in selectedChat.messages" :key="msg.id">
+                    <div :class="msg.sender === 'me' ? 'flex justify-end' : 'flex justify-start'">
+                        <div :class="msg.sender === 'me' ? 'bg-emerald-100 text-gray-800' : 'bg-white text-gray-800'"
+                             class="max-w-md p-3 rounded-2xl shadow-sm relative text-sm">
+                            <p x-text="msg.text"></p>
+                            <span class="block text-[10px] text-right text-gray-400 mt-1" x-text="msg.time"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Drawer do Catálogo (Integrado no Chat) -->
+            <div x-show="showCatalog" class="bg-white border-t p-4 transition-all">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold text-gray-700"><i class="fa-solid fa-tags text-emerald-600 mr-2"></i>Catálogo de Produtos</h4>
+                    <button @click="showCatalog = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <template x-for="product in products" :key="product.id">
+                        <div class="border rounded-lg p-2 bg-gray-50 flex flex-col justify-between">
+                            <img :src="product.image" class="h-24 w-full object-cover rounded mb-2">
+                            <span class="text-xs font-semibold text-gray-800 truncate" x-text="product.name"></span>
+                            <span class="text-xs text-emerald-600 font-bold mb-2" x-text="product.price"></span>
+                            <button @click="sendProduct(product)" class="bg-emerald-600 text-white text-xs py-1 rounded hover:bg-emerald-700 transition">
+                                Enviar no Chat
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Caixa de Texto -->
+            <div class="p-3 bg-white border-t flex items-center space-x-2">
+                <button @click="showCatalog = !showCatalog" class="text-gray-500 hover:text-emerald-600 p-2"><i class="fa-solid fa-paperclip text-lg"></i></button>
+                <input type="text" x-model="newMessageText" @keydown.enter="sendMessage()" placeholder="Digite sua mensagem ou envie um produto..." class="flex-1 bg-gray-100 px-4 py-2 rounded-lg focus:outline-none text-sm">
+                <button @click="sendMessage()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Lógica do App -->
+    <script>
+        function app() {
+            return {
+                activeTab: 'chats',
+                showCatalog: false,
+                newMessageText: '',
+                selectedChat: {
+                    id: 1,
+                    name: 'Dridalia Moda Oficial',
+                    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                    status: 'Online • Loja Verificada',
+                    following: true,
+                    messages: [
+                        { id: 1, sender: 'other', text: 'Olá! Seja bem-vindo à nossa vitrine interativa.', time: '09:00' },
+                        { id: 2, sender: 'me', text: 'Gostaria de ver as novidades em moletinho.', time: '09:05' }
+                    ]
+                },
+                chats: [
+                    {
+                        id: 1,
+                        name: 'Dridalia Moda Oficial',
+                        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                        lastMessage: 'Gostaria de ver as novidades em moletinho.',
+                        time: '09:05',
+                        status: 'Online',
+                        following: true,
+                        messages: [
+                            { id: 1, sender: 'other', text: 'Olá! Seja bem-vindo à nossa vitrine interativa.', time: '09:00' },
+                            { id: 2, sender: 'me', text: 'Gostaria de ver as novidades em moletinho.', time: '09:05' }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: 'Camila Cliente VIP',
+                        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                        lastMessage: 'O pedido chegou certinho, amei!',
+                        time: 'Ontem',
+                        status: 'Offline',
+                        following: false,
+                        messages: [
+                            { id: 1, sender: 'other', text: 'O pedido chegou certinho, amei!', time: 'Ontem' }
+                        ]
+                    }
+                ],
+                products: [
+                    { id: 1, name: 'Conjunto Drii Moletinho', price: 'R$ 189,90', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=150' },
+                    { id: 2, name: 'Vestido Midi Casual', price: 'R$ 149,90', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=150' },
+                    { id: 3, name: 'Blazer Alfaiataria', price: 'R$ 229,90', image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=150' }
+                ],
+                feedPosts: [
+                    { id: 1, author: 'Dridalia Oficial', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300', caption: 'Lançamento do nosso novo Conjunto Drii de moletinho! Garanta já o seu.', following: true }
+                ],
+                selectChat(chat) {
+                    this.selectedChat = chat;
+                },
+                sendMessage() {
+                    if(!this.newMessageText.trim()) return;
+                    this.selectedChat.messages.push({
+                        id: Date.now(),
+                        sender: 'me',
+                        text: this.newMessageText,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    this.selectedChat.lastMessage = this.newMessageText;
+                    this.newMessageText = '';
+                },
+                sendProduct(product) {
+                    this.selectedChat.messages.push({
+                        id: Date.now(),
+                        sender: 'me',
+                        text: `📦 [Produto Compartilhado] ${product.name} - ${product.price}`,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    this.selectedChat.lastMessage = `Compartilhou: ${product.name}`;
+                    this.showCatalog = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
