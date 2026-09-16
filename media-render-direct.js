@@ -1,0 +1,86 @@
+(()=>{
+'use strict';
+if(window.__CHAMA_MEDIA_DIRECT__)return;
+window.__CHAMA_MEDIA_DIRECT__=true;
+const PREFIX='__CHAMA_MEDIA__';
+let stop=null,currentMedia=[];
+const $=id=>document.getElementById(id);
+function parse(v){
+  const t=String(v||'');
+  if(!t.startsWith(PREFIX))return null;
+  try{
+    const x=JSON.parse(t.slice(PREFIX.length));
+    const kind=x.kind||x.type;
+    return x.url&&['image','video','audio'].includes(kind)?{...x,kind}:null;
+  }catch{return null}
+}
+function paint(){
+  const box=$('messages');
+  if(!box||!currentMedia.length)return;
+  const bubbles=[...box.querySelectorAll('.bubble')];
+  const targets=bubbles.filter(b=>/^(m[ií]dia)$/i.test((b.dataset.mediaLabel||b.textContent||'').replace(/\s+/g,' ').trim())&&!b.dataset.directMedia);
+  if(!targets.length)return;
+  targets.forEach((b,i)=>{const m=currentMedia[i];if(m)render(b,m)});
+}
+function render(b,m){
+  b.dataset.directMedia='1';
+  const time=b.querySelector('.time');
+  b.innerHTML='';
+  if(m.kind==='image'){
+    const img=document.createElement('img');
+    img.src=m.url;img.alt='Imagem enviada';img.loading='lazy';
+    img.style.cssText='display:block;width:min(280px,72vw);max-height:380px;object-fit:cover;border-radius:12px;cursor:pointer';
+    img.onclick=()=>window.open(m.url,'_blank','noopener');
+    img.onerror=()=>{img.replaceWith(fail())};
+    b.appendChild(img);
+  }else if(m.kind==='video'){
+    const v=document.createElement('video');
+    v.src=m.url;v.controls=true;v.playsInline=true;v.preload='metadata';
+    v.style.cssText='display:block;width:min(310px,74vw);max-height:400px;border-radius:12px;background:#000';
+    v.onerror=()=>v.replaceWith(fail());
+    b.appendChild(v);
+  }else{
+    const a=document.createElement('audio');
+    a.src=m.url;a.controls=true;a.preload='metadata';
+    a.style.cssText='width:min(290px,76vw);height:44px';
+    a.onerror=()=>a.replaceWith(fail());
+    b.appendChild(a);
+  }
+  if(time)b.appendChild(time);
+}
+function fail(){const d=document.createElement('div');d.textContent='Não foi possível carregar esta mídia.';d.style.cssText='padding:8px;font-size:13px';return d}
+async function firebase(){
+  const A=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js');
+  const AU=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js');
+  const F=await import('https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js');
+  const app=A.getApps()[0];if(!app)return null;
+  return {app,user:AU.getAuth(app).currentUser,db:F.getFirestore(app),F};
+}
+async function bind(u){
+  if(stop){stop();stop=null}
+  currentMedia=[];
+  const x=await firebase();
+  if(!x?.user||!u?.id)return;
+  const cid=[x.user.uid,u.id].sort().join('_');
+  const ref=x.F.collection(x.db,'chats',cid,'messages');
+  stop=x.F.onSnapshot(x.F.query(ref,x.F.orderBy('createdAt','asc'),x.F.limit(200)),snap=>{
+    currentMedia=[];
+    snap.forEach(d=>{const m=d.data()||{},media=parse(m.text);if(media)currentMedia.push(media)});
+    setTimeout(paint,0);setTimeout(paint,120);setTimeout(paint,400);
+  },e=>console.debug('Chama media snapshot',e));
+}
+function hook(){
+  if(typeof window.chamaOpenChat!=='function'){setTimeout(hook,250);return}
+  if(window.__CHAMA_MEDIA_DIRECT_HOOKED__)return;
+  window.__CHAMA_MEDIA_DIRECT_HOOKED__=true;
+  const original=window.chamaOpenChat;
+  window.chamaOpenChat=function(u){
+    const r=original.apply(this,arguments);
+    bind(u).catch(()=>{});
+    return r;
+  };
+  const box=$('messages');
+  if(box)new MutationObserver(()=>paint()).observe(box,{childList:true,subtree:true});
+}
+hook();
+})();
