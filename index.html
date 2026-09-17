@@ -3,390 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dridalia Moda & SocialChat (Estilo WhatsApp Business)</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
+    <title>Chama - Aplicativo de Conversa</title>
+    <!-- Importa o arquivo de estilos -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100 h-screen flex flex-col" x-data="app()">
+<body>
 
-    <!-- App Container Principal (Estilo Web WhatsApp) -->
-    <div class="flex h-full w-full max-w-7xl mx-auto shadow-2xl bg-white overflow-hidden relative">
+    <!-- Container Principal -->
+    <div class="app-container" id="appContainer">
         
-        <!-- ================= SIDEBAR (CHATS, CONTATOS E FEED) ================= -->
-        <div class="w-1/3 border-r border-gray-200 flex flex-col bg-white">
-            
-            <!-- Header do Usuário / Perfil Profissional -->
-            <div class="p-3 bg-gray-50 flex items-center justify-between border-b">
-                <div class="flex items-center space-x-3">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-10 h-10 rounded-full object-cover shadow-sm">
-                    <div>
-                        <h2 class="font-bold text-gray-800 text-xs">Dridalia Moda Feminina</h2>
-                        <span class="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full"><i class="fa-solid fa-store mr-1"></i> Conta Profissional</span>
-                    </div>
-                </div>
-                <!-- Alternar abas -->
-                <div class="flex space-x-1 bg-gray-200 p-1 rounded-lg text-xs font-semibold">
-                    <button @click="activeTab = 'chats'" :class="activeTab === 'chats' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600'" class="px-2.5 py-1 rounded-md transition">Chats</button>
-                    <button @click="activeTab = 'feed'" :class="activeTab === 'feed' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600'" class="px-2.5 py-1 rounded-md transition">Feed</button>
-                </div>
+        <!-- Barra Lateral (Busca e Pesquisa) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Chama</h2>
             </div>
-
-            <!-- Barra de Pesquisa -->
-            <div class="p-3 bg-white border-b">
-                <div class="flex items-center bg-gray-100 px-3 py-2 rounded-lg">
-                    <i class="fa-solid fa-search text-gray-400 mr-2 text-xs"></i>
-                    <input type="text" x-model="searchQuery" placeholder="Pesquisar ou começar uma nova conversa..." class="bg-transparent w-full focus:outline-none text-xs text-gray-700">
-                </div>
+            <div class="search-box">
+                <input type="text" placeholder="Pesquisar conversas..." />
             </div>
+            <!-- Lista de conversas ou menus aqui -->
+        </aside>
 
-            <!-- Lista de Conversas -->
-            <div class="overflow-y-auto flex-1">
-                <template x-if="activeTab === 'chats'">
-                    <div>
-                        <template x-for="chat in filteredChats" :key="chat.id">
-                            <div @click="selectChat(chat)" 
-                                 :class="selectedChat.id === chat.id ? 'bg-emerald-50/60 border-r-4 border-emerald-600' : 'hover:bg-gray-50'"
-                                 class="flex items-center p-3 cursor-pointer border-b border-gray-100 transition">
-                                <img :src="chat.avatar" class="w-12 h-12 rounded-full object-cover mr-3 shadow-sm" loading="lazy">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <h4 class="font-semibold text-gray-800 text-sm truncate" x-text="chat.name"></h4>
-                                        <span class="text-[10px] text-gray-400" x-text="chat.time"></span>
-                                    </div>
-                                    <p class="text-xs text-gray-500 truncate" x-text="chat.lastMessage"></p>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </template>
+        <!-- Botão da Seta para Recolher/Expandir a Lateral -->
+        <button id="sidebarToggle" class="sidebar-toggle-btn" title="Alternar menu">
+            ◀
+        </button>
 
-                <!-- Aba Feed Social -->
-                <template x-if="activeTab === 'feed'">
-                    <div class="p-3 space-y-4">
-                        <template x-for="post in feedPosts" :key="post.id">
-                            <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center space-x-2">
-                                        <img :src="post.avatar" class="w-8 h-8 rounded-full object-cover" loading="lazy">
-                                        <span class="font-bold text-xs text-gray-800" x-text="post.author"></span>
-                                    </div>
-                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold">Profissional</span>
-                                </div>
-                                <img :src="post.image" class="rounded-lg w-full h-48 object-cover mb-2 shadow-sm" loading="lazy">
-                                <p class="text-xs text-gray-700 leading-relaxed" x-text="post.caption"></p>
-                            </div>
-                        </template>
-                    </div>
-                </template>
+        <!-- Área Principal do Chat -->
+        <main class="chat-area">
+            <div id="messages" class="messages-container">
+                <!-- As mensagens do chat vão aparecer aqui -->
             </div>
-        </div>
-
-        <!-- ================= JANELA DE CHAT (ESTILO WHATSAPP + BOTÃO CATÁLOGO) ================= -->
-        <div class="w-2/3 flex flex-col bg-[#efeae2] relative">
-            
-            <!-- WhatsApp Header -->
-            <div class="p-3 bg-[#f0f2f5] border-b flex items-center justify-between shadow-sm z-10">
-                <div class="flex items-center space-x-3">
-                    <img :src="selectedChat.avatar" class="w-10 h-10 rounded-full object-cover shadow-sm">
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm" x-text="selectedChat.name"></h3>
-                        <span class="text-[10px] text-gray-500" x-text="selectedChat.status"></span>
-                    </div>
-                </div>
-                
-                <!-- BOTÃO CATÁLOGO (Exclusivo de Contas Profissionais como a Dridalia) -->
-                <div class="flex items-center space-x-2">
-                    <button @click="showCatalog = !showCatalog" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1.5">
-                        <i class="fa-solid fa-store"></i>
-                        <span>Catálogo</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Corpo das Mensagens (Fundo Clássico WhatsApp Chat) -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMessages">
-                <template x-for="msg in selectedChat.messages" :key="msg.id">
-                    <div :class="msg.sender === 'me' ? 'flex justify-end' : 'flex justify-start'">
-                        <div :class="msg.sender === 'me' ? 'bg-[#d9fdd3] text-gray-800 rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none'"
-                             class="max-w-md p-3 rounded-2xl shadow-sm relative text-xs">
-                            
-                            <!-- Imagem Enviada -->
-                            <template x-if="msg.type === 'image'">
-                                <img :src="msg.content" class="rounded-lg max-h-48 w-full object-cover mb-1 shadow-sm cursor-pointer" @click="openMediaViewer(msg.content, 'image')" loading="lazy">
-                            </template>
-
-                            <!-- Vídeo Enviado -->
-                            <template x-if="msg.type === 'video'">
-                                <video controls class="rounded-lg max-h-48 w-full object-cover mb-1 shadow-sm">
-                                    <source :src="msg.content" type="video/mp4">
-                                </video>
-                            </template>
-
-                            <!-- Áudio Enviado -->
-                            <template x-if="msg.type === 'audio'">
-                                <div class="mb-1">
-                                    <audio controls class="w-48 h-8">
-                                        <source :src="msg.content" type="audio/mp3">
-                                    </audio>
-                                </div>
-                            </template>
-                            
-                            <!-- Texto -->
-                            <template x-if="msg.type === 'text'">
-                                <p class="leading-relaxed" x-text="msg.content"></p>
-                            </template>
-
-                            <span class="block text-[9px] text-right mt-1 text-gray-400" x-text="msg.time"></span>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-            <!-- ================= PAINEL DO CATÁLOGO PROFISSIONAL (ABRE AO CLICAR NO BOTÃO CATÁLOGO) ================= -->
-            <div x-show="showCatalog" class="absolute bottom-16 right-4 left-4 bg-white border border-gray-200 rounded-2xl p-4 shadow-2xl z-20 max-h-[380px] overflow-y-auto transition-all" x-cloak>
-                <div class="flex justify-between items-center mb-3 border-b pb-2">
-                    <h4 class="font-bold text-gray-800 text-xs flex items-center">
-                        <i class="fa-solid fa-store text-emerald-600 mr-2 text-sm"></i> Catálogo de Produtos - Dridalia Moda Feminina
-                    </h4>
-                    <button @click="showCatalog = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-base"></i></button>
-                </div>
-                <!-- Grid de Produtos da Loja -->
-                <div class="grid grid-cols-3 gap-3">
-                    <template x-for="product in products" :key="product.id">
-                        <div class="border border-gray-100 rounded-xl p-2 bg-gray-50 flex flex-col justify-between shadow-sm hover:shadow transition">
-                            <img :src="product.image" class="h-24 w-full object-cover rounded-lg mb-2 shadow-sm" loading="lazy">
-                            <span class="text-xs font-semibold text-gray-800 truncate" x-text="product.name"></span>
-                            <span class="text-xs text-emerald-600 font-bold mb-2" x-text="product.price"></span>
-                            <button @click="sendProduct(product)" class="bg-emerald-600 text-white text-[10px] py-1.5 rounded-lg hover:bg-emerald-700 transition font-medium">
-                                Enviar no Chat
-                            </button>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Rodapé de Envio WhatsApp (Anexos + Input + Áudio/Vídeo) -->
-            <div class="p-3 bg-[#f0f2f5] border-t border-gray-200 flex items-center space-x-2">
-                
-                <!-- Botão Anexar Mídia -->
-                <label class="text-gray-600 hover:text-emerald-600 p-2 cursor-pointer transition" title="Enviar Foto, Vídeo ou Áudio">
-                    <i class="fa-solid fa-paperclip text-lg"></i>
-                    <input type="file" accept="image/*,video/*,audio/*" class="hidden" @change="handleFileSelect($event)">
-                </label>
-
-                <input type="text" x-model="newMessageText" @keydown.enter="sendMessage()" placeholder="Digite uma mensagem..." class="flex-1 bg-white px-4 py-2.5 rounded-xl focus:outline-none text-xs text-gray-700 shadow-sm">
-                
-                <button @click="sendMessage()" class="bg-emerald-600 text-white w-10 h-10 rounded-xl hover:bg-emerald-700 transition shadow flex items-center justify-center">
-                    <i class="fa-solid fa-paper-plane text-xs"></i>
-                </button>
-            </div>
-
-        </div>
-
-        <!-- ================= MODAL DE PRÉ-VISUALIZAÇÃO DE MÍDIA COM BARRA VERDE ================= -->
-        <div x-show="showPreviewModal" class="absolute inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" x-cloak>
-            <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl flex flex-col space-y-4">
-                
-                <div class="flex justify-between items-center border-b pb-3">
-                    <h3 class="font-bold text-gray-800 text-xs flex items-center">
-                        <i class="fa-solid fa-cloud-arrow-up text-emerald-600 mr-2"></i> Pré-visualizar Mídia (Cloudflare R2)
-                    </h3>
-                    <button @click="cancelPreview()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-
-                <!-- Barra de Progresso Verde -->
-                <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                    <div class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" :style="`width: ${uploadProgress}%`"></div>
-                </div>
-                <div class="flex justify-between text-[10px] text-gray-500 -mt-2">
-                    <span x-text="uploadingStatusText"></span>
-                    <span x-text="uploadProgress + '%'"></span>
-                </div>
-
-                <!-- Preview Visualizador -->
-                <div class="bg-gray-900 rounded-xl overflow-hidden flex items-center justify-center p-2 min-h-[200px] max-h-[300px] relative">
-                    <template x-if="previewType === 'image'">
-                        <img :src="previewUrl" class="max-h-[280px] object-contain rounded-lg">
-                    </template>
-                    <template x-if="previewType === 'video'">
-                        <video controls class="max-h-[280px] w-full rounded-lg">
-                            <source :src="previewUrl" :type="previewMime">
-                        </video>
-                    </template>
-                    <template x-if="previewType === 'audio'">
-                        <div class="flex flex-col items-center space-y-3 w-full p-6">
-                            <div class="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
-                                <i class="fa-solid fa-microphone-lines"></i>
-                            </div>
-                            <audio controls class="w-full">
-                                <source :src="previewUrl" :type="previewMime">
-                            </audio>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Botões Excluir ou Enviar -->
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button @click="cancelPreview()" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition flex items-center space-x-1">
-                        <i class="fa-solid fa-trash text-red-500 mr-1"></i> Excluir
-                    </button>
-                    <button @click="confirmSendMedia()" :disabled="uploadProgress < 100" :class="uploadProgress < 100 ? 'opacity-50 cursor-not-allowed bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'" class="px-5 py-2 rounded-xl text-white text-xs font-semibold transition flex items-center space-x-1 shadow">
-                        <i class="fa-solid fa-paper-plane mr-1"></i> Enviar
-                    </button>
-                </div>
-
-            </div>
-        </div>
-
+        </main>
+        
     </div>
 
-    <!-- Script da Aplicação -->
-    <script>
-        function app() {
-            return {
-                activeTab: 'chats',
-                showCatalog: false,
-                newMessageText: '',
-                searchQuery: '',
-                
-                showPreviewModal: false,
-                previewUrl: '',
-                previewType: 'image',
-                previewMime: '',
-                uploadProgress: 0,
-                uploadingStatusText: 'Processando...',
-                selectedFileToUpload: null,
-
-                selectedChat: {
-                    id: 1,
-                    name: 'Cliente Interessada (Conjunto Drii)',
-                    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-                    status: 'Online • Clique no botão Catálogo acima',
-                    messages: [
-                        { id: 1, sender: 'other', type: 'text', content: 'Olá! Gostaria de ver o catálogo do Conjunto Drii de moletinho.', time: '09:00' }
-                    ]
-                },
-                chats: [
-                    {
-                        id: 1,
-                        name: 'Cliente Interessada (Conjunto Drii)',
-                        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-                        lastMessage: 'Gostaria de ver o catálogo do Conjunto Drii...',
-                        time: '09:00',
-                        status: 'Online',
-                        messages: [
-                            { id: 1, sender: 'other', type: 'text', content: 'Olá! Gostaria de ver o catálogo do Conjunto Drii de moletinho.', time: '09:00' }
-                        ]
-                    }
-                ],
-                // Catálogo profissional da loja
-                products: [
-                    { id: 1, name: 'Conjunto Drii Moletinho', price: 'R$ 189,90', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300' },
-                    { id: 2, name: 'Vestido Midi Casual', price: 'R$ 149,90', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=300' },
-                    { id: 3, name: 'Blazer Alfaiataria', price: 'R$ 229,90', image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=300' }
-                ],
-                feedPosts: [
-                    { id: 1, author: 'Dridalia Moda Feminina', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600', caption: 'Novo Conjunto Drii de moletinho já disponível em nosso catálogo profissional!' }
-                ],
-                get filteredChats() {
-                    if (!this.searchQuery) return this.chats;
-                    const q = this.searchQuery.toLowerCase();
-                    return this.chats.filter(c => c.name.toLowerCase().includes(q) || c.lastMessage.toLowerCase().includes(q));
-                },
-                selectChat(chat) {
-                    this.selectedChat = chat;
-                },
-                sendMessage() {
-                    if(!this.newMessageText.trim()) return;
-                    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    this.selectedChat.messages.push({
-                        id: Date.now(),
-                        sender: 'me',
-                        type: 'text',
-                        content: this.newMessageText,
-                        time: timeNow
-                    });
-                    this.selectedChat.lastMessage = this.newMessageText;
-                    this.newMessageText = '';
-                },
-                sendProduct(product) {
-                    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    this.selectedChat.messages.push({
-                        id: Date.now(),
-                        sender: 'me',
-                        type: 'image',
-                        content: product.image,
-                        time: timeNow
-                    });
-                    this.selectedChat.messages.push({
-                        id: Date.now() + 1,
-                        sender: 'me',
-                        type: 'text',
-                        content: `📦 *${product.name}*\nPreço: ${product.price}\n\nClique no nosso perfil profissional para garantir o seu!`,
-                        time: timeNow
-                    });
-                    this.selectedChat.lastMessage = `Enviou do Catálogo: ${product.name}`;
-                    this.showCatalog = false;
-                },
-                handleFileSelect(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-
-                    this.selectedFileToUpload = file;
-                    this.previewMime = file.type;
-                    this.previewUrl = URL.createObjectURL(file);
-
-                    if (file.type.startsWith('image/')) this.previewType = 'image';
-                    else if (file.type.startsWith('video/')) this.previewType = 'video';
-                    else if (file.type.startsWith('audio/')) this.previewType = 'audio';
-                    else { alert('Formato não suportado.'); return; }
-
-                    this.showPreviewModal = true;
-                    this.uploadProgress = 10;
-                    this.uploadingStatusText = 'Carregando arquivo (Cloudflare R2)...';
-
-                    let interval = setInterval(() => {
-                        if (this.uploadProgress < 100) {
-                            this.uploadProgress += 25;
-                            if (this.uploadProgress >= 100) {
-                                this.uploadProgress = 100;
-                                this.uploadingStatusText = 'Pronto para enviar!';
-                                clearInterval(interval);
-                            }
-                        }
-                    }, 300);
-                    event.target.value = '';
-                },
-                cancelPreview() {
-                    this.showPreviewModal = false;
-                    this.previewUrl = '';
-                    this.selectedFileToUpload = null;
-                    this.uploadProgress = 0;
-                },
-                confirmSendMedia() {
-                    if (this.uploadProgress < 100) return;
-                    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    
-                    this.selectedChat.messages.push({
-                        id: Date.now(),
-                        sender: 'me',
-                        type: this.previewType,
-                        content: this.previewUrl,
-                        time: timeNow
-                    });
-
-                    this.selectedChat.lastMessage = `[${this.previewType.toUpperCase()} enviado]`;
-                    this.cancelPreview();
-                }
-            }
-        }
-    </script>
+    <!-- Importa o arquivo de lógica e vídeos -->
+    <script src="script.js"></script>
 </body>
 </html>
