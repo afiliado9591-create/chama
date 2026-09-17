@@ -9,44 +9,46 @@ body, html {
   width: 100%;
   height: 100%;
   background-color: #111b21;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .whatsapp-container {
   width: 100%;
   max-width: 480px;
   height: 100vh;
-  margin: 0 auto;
   background: #efeae2;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 25px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
 }
 
 @media(min-width: 481px) {
   .whatsapp-container {
     height: 95vh;
-    margin-top: 2.5vh;
     border-radius: 12px;
   }
 }
 
-.screen {
+/* Telas do Aplicativo (Ocultas por padrão, exibidas via classe .active) */
+.app-screen {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: #efeae2;
-  display: flex;
+  display: none; /* Oculto por padrão para evitar sobreposição */
   flex-direction: column;
-  transition: transform 0.3s ease;
-  transform: translateX(100%);
   z-index: 1;
 }
 
-.screen.active {
-  transform: translateX(0);
-  z-index: 2;
+.app-screen.active {
+  display: flex; /* Exibe apenas a tela ativa */
+  z-index: 10;
 }
 
 /* TELA DE LOGIN */
@@ -55,6 +57,7 @@ body, html {
   justify-content: center;
   align-items: center;
   padding: 30px;
+  z-index: 20; /* Fica por cima de tudo enquanto não logado */
 }
 
 .login-box {
@@ -64,7 +67,7 @@ body, html {
 }
 
 .login-box h2 {
-  font-size: 28px;
+  font-size: 32px;
   color: #00a884;
   margin-bottom: 8px;
 }
@@ -94,6 +97,7 @@ body, html {
   align-items: center;
   justify-content: space-between;
   height: 60px;
+  flex-shrink: 0;
 }
 
 .brand-area {
@@ -133,6 +137,11 @@ body, html {
 }
 
 /* Alerta de Perfil Incompleto (Vermelho) */
+.user-profile-trigger.incomplete {
+  border: 2px solid #ff4d4d;
+  background-color: rgba(255, 77, 77, 0.2);
+}
+
 .alert-badge {
   background: #ff4d4d;
   color: white;
@@ -240,6 +249,7 @@ body, html {
   padding: 8px 12px;
   background: #fff;
   border-bottom: 1px solid #f0f2f5;
+  flex-shrink: 0;
 }
 
 .wa-search-bar input {
@@ -300,7 +310,7 @@ body, html {
   max-width: 240px;
 }
 
-/* MENSAGENS E FOOTER */
+/* MENSAGENS E FOOTER (Área de chat fixa embaixo perfeitamente) */
 .messages-container {
   flex: 1;
   padding: 16px;
@@ -308,6 +318,7 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  background: #efeae2;
 }
 
 .bubble {
@@ -327,6 +338,8 @@ body, html {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+  border-top: 1px solid #ddd;
 }
 
 .wa-chat-footer input {
@@ -336,6 +349,7 @@ body, html {
   border-radius: 8px;
   outline: none;
   font-size: 14px;
+  background: #ffffff;
 }
 
 .wa-send-btn {
@@ -350,6 +364,7 @@ body, html {
   align-items: center;
   justify-content: center;
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 /* MODAIS */
@@ -444,12 +459,6 @@ body, html {
   display: none;
 }
 
-/* Estado de alerta vermelho no botão caso perfil esteja vazio */
-.user-profile-trigger.incomplete {
-  border: 2px solid #ff4d4d;
-  background-color: rgba(255, 77, 77, 0.2);
-}
-
 .admin-body input, .admin-body textarea {
   width: 100%;
   padding: 10px;
@@ -463,11 +472,12 @@ body, html {
   background: #00a884;
   color: white;
   border: none;
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
+  font-size: 15px;
 }
 
 .admin-prod-list, .catalog-body {
