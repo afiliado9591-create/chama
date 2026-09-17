@@ -1,110 +1,359 @@
-/* Reset básico */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Container principal */
-.app-container {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Barra lateral */
-.sidebar {
-  width: 300px;
-  background-color: #f8f9fa;
-  border-right: 1px solid #e5e5e5;
+body, html {
+  width: 100%;
   height: 100%;
-  transition: transform 0.3s ease, width 0.3s ease;
-  flex-shrink: 0;
-  z-index: 10;
+  background-color: #f0f2f5;
+}
+
+.whatsapp-container {
+  width: 100%;
+  max-width: 480px; /* Mantém proporção de celular no desktop, tela cheia no mobile */
+  height: 100vh;
+  margin: 0 auto;
+  background: #efeae2;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+@media(min-width: 481px) {
+  .whatsapp-container {
+    height: 95vh;
+    margin-top: 2.5vh;
+    border-radius: 12px;
+  }
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #efeae2;
   display: flex;
   flex-direction: column;
-  position: relative;
+  transition: transform 0.3s ease;
+  transform: translateX(100%);
+  z-index: 1;
 }
 
-.sidebar-header {
-  padding: 20px;
+.screen.active {
+  transform: translateX(0);
+  z-index: 2;
+}
+
+/* --- CABEÇALHOS DO WHATSAPP --- */
+.wa-header {
+  background-color: #00a884;
+  color: #ffffff;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.wa-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.wa-header-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.wa-icon-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+/* Cabeçalho da conversa aberta */
+.chat-room-header {
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+.chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #dfe2e5;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
-  font-size: 18px;
-  color: #315345;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
-.search-box {
-  padding: 0 20px 20px 20px;
+.chat-avatar.small {
+  width: 35px;
+  height: 35px;
+  font-size: 12px;
 }
 
-.search-box input {
+.room-user-details {
+  flex: 1;
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-user-details h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111;
+}
+
+/* Botão de Catálogo em cima do nome */
+.catalog-badge-btn {
+  background: #00a884;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  width: max-content;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.catalog-badge-btn:hover {
+  background: #01755c;
+}
+
+/* --- TELA DE LISTA DE CONVERSAS --- */
+.wa-search-bar {
+  padding: 8px 12px;
+  background: #fff;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.wa-search-bar input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #d1d5db;
+  padding: 8px 14px;
+  background: #f0f2f5;
+  border: none;
   border-radius: 8px;
   outline: none;
+  font-size: 14px;
 }
 
-/* Área do chat */
-.chat-area {
+.chats-list {
   flex: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  background-color: #ffffff;
-}
-
-.messages-container {
-  flex: 1;
-  padding: 20px;
+  background: #ffffff;
   overflow-y: auto;
 }
 
-/* --- BOTÃO DA SETA PERFEITO E VISÍVEL --- */
-.sidebar-toggle-btn {
-  position: absolute;
-  top: 20px;
-  right: -20px; /* Joga o botão totalmente para fora da lateral, evitando que fique cortado */
-  z-index: 999;
-  width: 36px;
-  height: 36px;
+.chat-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+}
+
+.chat-item:hover {
+  background: #f5f6f6;
+}
+
+.chat-info {
+  flex: 1;
+  margin-left: 15px;
+}
+
+.chat-title-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.chat-title-row h4 {
+  font-size: 16px;
+  color: #111;
+}
+
+.chat-time {
+  font-size: 11px;
+  color: #667781;
+}
+
+.chat-snippet {
+  font-size: 13px;
+  color: #667781;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+/* --- ÁREA DE MENSAGENS E FOOTER --- */
+.messages-container {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bubble {
   background: #ffffff;
-  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 80%;
+  font-size: 14px;
+  box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+  align-self: flex-start;
+  word-break: break-word;
+}
+
+.wa-chat-footer {
+  background: #f0f2f5;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wa-chat-footer input {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+}
+
+.wa-send-btn {
+  background: #00a884;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-  transition: transform 0.3s ease, right 0.3s ease;
+  font-size: 16px;
+}
+
+/* --- MODAIS (CATÁLOGO E ADMIN) --- */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  background: #00a884;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.catalog-body, .admin-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.admin-body input, .admin-body textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   font-size: 14px;
 }
 
-.sidebar-toggle-btn:hover {
-  background: #f3f4f6;
+.admin-body textarea {
+  resize: vertical;
+  height: 80px;
 }
 
-/* --- ESTADO RECOLHIDO --- */
-.app-container.collapsed .sidebar {
-  transform: translateX(-100%);
-  width: 0;
-  border-right: none;
+.wa-primary-btn {
+  background: #00a884;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-/* Quando recolhido, o botão vai para o canto esquerdo da tela, bem visível */
-.app-container.collapsed .sidebar-toggle-btn {
-  right: -50px; /* Mantém ele visível na bordinha da tela quando a lateral some */
-  transform: rotate(180deg);
+.admin-prod-list, .catalog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.catalog-card, .admin-card {
+  background: #f8f9fa;
+  border: 1px solid #e5e5e5;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.catalog-card h4, .admin-card h4 {
+  color: #00a884;
+  margin-bottom: 4px;
 }
 
 /* --- ESTILOS DE VÍDEOS EMBARCADOS --- */
 .ch-video-embed {
   margin-top: 8px;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   background: #000;
   max-width: 100%;
@@ -118,15 +367,14 @@
   background: #000;
 }
 .ch-video-note {
-  margin-top: 7px;
-  padding: 9px 10px;
-  border-radius: 10px;
+  margin-top: 6px;
+  padding: 8px;
+  border-radius: 8px;
   background: #eef3f0;
   color: #315345;
   font-size: 12px;
-  line-height: 1.35;
 }
 .ch-video-note a {
-  font-weight: 800;
+  font-weight: bold;
   color: inherit;
 }
