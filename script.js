@@ -4,6 +4,7 @@
   // REFERÊNCIAS DE ELEMENTOS
   const loginScreen = document.getElementById('loginScreen');
   const chatListScreen = document.getElementById('chatListScreen');
+  const chatRoomScreen = document.getElementById('chatRoomScreen');
   const loginForm = document.getElementById('loginForm');
   
   const visitorCounter = document.getElementById('visitorCounter');
@@ -25,21 +26,39 @@
     
     if (!profile || !profile.name || !profile.name.trim()) {
       // Perfil incompleto: fica em vermelho piscando e exige preenchimento
-      openProfileFromHeader.classList.add('incomplete');
-      profileAlertBadge.classList.remove('hidden');
-      profileWarningBanner.classList.remove('hidden');
+      if (openProfileFromHeader) openProfileFromHeader.classList.add('incomplete');
+      if (profileAlertBadge) profileAlertBadge.classList.remove('hidden');
+      if (profileWarningBanner) profileWarningBanner.classList.remove('hidden');
       return false;
     } else {
       // Perfil preenchido corretamente
-      openProfileFromHeader.classList.remove('incomplete');
-      profileAlertBadge.classList.add('hidden');
-      profileWarningBanner.classList.add('hidden');
-      headerUsernameText.textContent = profile.name;
+      if (openProfileFromHeader) openProfileFromHeader.classList.remove('incomplete');
+      if (profileAlertBadge) profileAlertBadge.classList.add('hidden');
+      if (profileWarningBanner) profileWarningBanner.classList.add('hidden');
+      if (headerUsernameText) headerUsernameText.textContent = profile.name;
       return true;
     }
   }
 
-  // FLUXO DE LOGIN
+  // FLUXO DE LOGIN / VERIFICAÇÃO INICIAL
+  window.addEventListener('DOMContentLoaded', () => {
+    const loggedEmail = localStorage.getItem('chama_logged_email');
+    if (loggedEmail) {
+      // Se já estava logado, pula a tela de login direto pra lista de chats
+      if (loginScreen) loginScreen.classList.remove('active');
+      if (chatListScreen) chatListScreen.classList.add('active');
+      
+      let visits = parseInt(localStorage.getItem('chama_visits') || '1482', 10);
+      if (visitorCounter) visitorCounter.textContent = `👁️ ${visits.toLocaleString('pt-BR')} visitas`;
+      checkProfileStatus();
+    } else {
+      // Força a tela de login aparecer limpa na frente de tudo
+      if (loginScreen) loginScreen.classList.add('active');
+      if (chatListScreen) chatListScreen.classList.remove('active');
+      if (chatRoomScreen) chatRoomScreen.classList.remove('active');
+    }
+  });
+
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -47,8 +66,8 @@
       if (!email) return;
 
       localStorage.setItem('chama_logged_email', email);
-      loginScreen.classList.remove('active');
-      chatListScreen.classList.add('active');
+      if (loginScreen) loginScreen.classList.remove('active');
+      if (chatListScreen) chatListScreen.classList.add('active');
 
       // Incrementa e exibe contador de visitas
       let visits = parseInt(localStorage.getItem('chama_visits') || '1482', 10);
@@ -58,7 +77,7 @@
 
       // Verifica se o perfil está preenchido. Se não estiver, abre o modal de perfil obrigatoriamente
       if (!checkProfileStatus()) {
-        profileModal.classList.add('open');
+        if (profileModal) profileModal.classList.add('open');
       }
     });
   }
@@ -67,12 +86,12 @@
   if (openProfileFromHeader) {
     openProfileFromHeader.addEventListener('click', () => {
       const profile = JSON.parse(localStorage.getItem('chama_user_profile') || '{}');
-      profileNameInput.value = profile.name || '';
-      profilePhoneInput.value = profile.phone || '';
-      profileBioInput.value = profile.bio || '';
+      if (profileNameInput) profileNameInput.value = profile.name || '';
+      if (profilePhoneInput) profilePhoneInput.value = profile.phone || '';
+      if (profileBioInput) profileBioInput.value = profile.bio || '';
       
       checkProfileStatus();
-      profileModal.classList.add('open');
+      if (profileModal) profileModal.classList.add('open');
     });
   }
 
@@ -82,16 +101,16 @@
         alert('Você precisa preencher o seu perfil para poder utilizar o aplicativo!');
         return;
       }
-      profileModal.classList.remove('open');
+      if (profileModal) profileModal.classList.remove('open');
     });
   }
 
   // SALVAR PERFIL
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', () => {
-      const name = profileNameInput.value.trim();
-      const phone = profilePhoneInput.value.trim();
-      const bio = profileBioInput.value.trim();
+      const name = profileNameInput ? profileNameInput.value.trim() : '';
+      const phone = profilePhoneInput ? profilePhoneInput.value.trim() : '';
+      const bio = profileBioInput ? profileBioInput.value.trim() : '';
 
       if (!name) {
         alert('O nome de usuário é obrigatório!');
@@ -102,27 +121,26 @@
       localStorage.setItem('chama_user_profile', JSON.stringify(profile));
 
       checkProfileStatus();
-      profileModal.classList.remove('open');
+      if (profileModal) profileModal.classList.remove('open');
       alert('Perfil atualizado com sucesso!');
     });
   }
 
   // NAVEGAÇÃO DE CONVERSAS (Lista -> Chat)
-  const chatRoomScreen = document.getElementById('chatRoomScreen');
   const chatItem = document.querySelector('.chat-item');
   const backBtn = document.getElementById('backBtn');
 
   if (chatItem) {
     chatItem.addEventListener('click', () => {
-      chatListScreen.classList.remove('active');
-      chatRoomScreen.classList.add('active');
+      if (chatListScreen) chatListScreen.classList.remove('active');
+      if (chatRoomScreen) chatRoomScreen.classList.add('active');
     });
   }
 
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      chatRoomScreen.classList.remove('active');
-      chatListScreen.classList.add('active');
+      if (chatRoomScreen) chatRoomScreen.classList.remove('active');
+      if (chatListScreen) chatListScreen.classList.add('active');
     });
   }
 
@@ -133,6 +151,7 @@
   const catalogBodyList = document.getElementById('catalogBodyList');
 
   function renderCatalog() {
+    if (!catalogBodyList) return;
     const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
     if (products.length === 0) {
       catalogBodyList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Nenhum produto cadastrado no catálogo.</p>';
@@ -150,11 +169,13 @@
   if (catalogBtn) {
     catalogBtn.addEventListener('click', () => {
       renderCatalog();
-      catalogModal.classList.add('open');
+      if (catalogModal) catalogModal.classList.add('open');
     });
   }
   if (closeCatalog) {
-    closeCatalog.addEventListener('click', () => catalogModal.classList.remove('open'));
+    closeCatalog.addEventListener('click', () => {
+      if (catalogModal) catalogModal.classList.remove('open');
+    });
   }
 
   // MODAL DE ADMINISTRAÇÃO (Criar Catálogo)
@@ -165,6 +186,7 @@
   const adminProductsList = document.getElementById('adminProductsList');
 
   function renderAdminProducts() {
+    if (!adminProductsList) return;
     const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
     if (products.length === 0) {
       adminProductsList.innerHTML = '<p style="font-size: 13px; color: #666;">Nenhum produto criado.</p>';
@@ -189,18 +211,24 @@
   if (adminBtn) {
     adminBtn.addEventListener('click', () => {
       renderAdminProducts();
-      adminModal.classList.add('open');
+      if (adminModal) adminModal.classList.add('open');
     });
   }
   if (closeAdmin) {
-    closeAdmin.addEventListener('click', () => adminModal.classList.remove('open'));
+    closeAdmin.addEventListener('click', () => {
+      if (adminModal) adminModal.classList.remove('open');
+    });
   }
 
   if (saveProductBtn) {
     saveProductBtn.addEventListener('click', () => {
-      const name = document.getElementById('prodName').value.trim();
-      const price = document.getElementById('prodPrice').value.trim();
-      const desc = document.getElementById('prodDesc').value.trim();
+      const nameEl = document.getElementById('prodName');
+      const priceEl = document.getElementById('prodPrice');
+      const descEl = document.getElementById('prodDesc');
+
+      const name = nameEl ? nameEl.value.trim() : '';
+      const price = priceEl ? priceEl.value.trim() : '';
+      const desc = descEl ? descEl.value.trim() : '';
 
       if (!name || !price) {
         alert('Informe pelo menos o nome e o preço!');
@@ -211,9 +239,9 @@
       products.push({ name, price, desc });
       localStorage.setItem('chama_catalog', JSON.stringify(products));
 
-      document.getElementById('prodName').value = '';
-      document.getElementById('prodPrice').value = '';
-      document.getElementById('prodDesc').value = '';
+      if (nameEl) nameEl.value = '';
+      if (priceEl) priceEl.value = '';
+      if (descEl) descEl.value = '';
 
       renderAdminProducts();
       alert('Produto adicionado com sucesso!');
@@ -226,6 +254,7 @@
   const messagesContainer = document.getElementById('messages');
 
   function sendMessage() {
+    if (!messageInput || !messagesContainer) return;
     const text = messageInput.value.trim();
     if (!text) return;
 
