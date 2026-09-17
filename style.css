@@ -6,7 +6,7 @@
   font-family: sans-serif;
 }
 
-/* Container principal dividindo o layout */
+/* Container principal */
 .app-container {
   display: flex;
   height: 100vh;
@@ -15,7 +15,7 @@
   position: relative;
 }
 
-/* Estilo da barra lateral */
+/* Barra lateral */
 .sidebar {
   width: 300px;
   background-color: #f8f9fa;
@@ -26,6 +26,7 @@
   z-index: 10;
   display: flex;
   flex-direction: column;
+  position: relative; /* Importante para segurar o botão */
 }
 
 .sidebar-header {
@@ -47,7 +48,7 @@
   outline: none;
 }
 
-/* Área do chat ocupando o restante */
+/* Área do chat */
 .chat-area {
   flex: 1;
   height: 100%;
@@ -63,11 +64,11 @@
   overflow-y: auto;
 }
 
-/* Botão da seta */
+/* --- BOTÃO DA SETA CORRIGIDO --- */
 .sidebar-toggle-btn {
   position: absolute;
   top: 20px;
-  left: 285px; /* Fica na bordinha interna da lateral */
+  right: -16px; /* Fica exatamente na bordinha direita da lateral, para fora */
   z-index: 100;
   width: 32px;
   height: 32px;
@@ -78,8 +79,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: left 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
   font-size: 12px;
 }
 
@@ -94,9 +95,10 @@
   border-right: none;
 }
 
-/* Quando recolhido, o botão vai para o canto esquerdo da tela e a seta inverte */
+/* Quando recolhido, como o botão está dentro da sidebar, 
+   nós o movemos para aparecer fixo no canto esquerdo da tela */
 .app-container.collapsed .sidebar-toggle-btn {
-  left: 15px;
+  right: -45px; /* Joga o botão para fora da lateral escondida, aparecendo na tela limpa */
   transform: rotate(180deg);
 }
 
