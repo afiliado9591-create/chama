@@ -4,40 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chama - Aplicativo de Conversa</title>
-    <!-- Importa o arquivo de estilos -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Container Principal -->
-    <div class="app-container" id="appContainer">
+    <div class="whatsapp-container">
         
-        <!-- Barra Lateral (Busca e Pesquisa) -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
+        <!-- TELA PRINCIPAL: Lista de Conversas (Estilo WhatsApp) -->
+        <section id="chatListScreen" class="screen active">
+            <header class="wa-header">
                 <h2>Chama</h2>
+                <div class="wa-header-actions">
+                    <button id="adminBtn" class="wa-icon-btn" title="Painel Admin / Criar Catálogo">⚙️</button>
+                </div>
+            </header>
+            
+            <div class="wa-search-bar">
+                <input type="text" id="searchInput" placeholder="Pesquisar ou começar uma nova conversa">
             </div>
-            <div class="search-box">
-                <input type="text" placeholder="Pesquisar conversas..." />
+
+            <div class="chats-list" id="chatsList">
+                <!-- Exemplo de Conversa -->
+                <div class="chat-item" data-chat="1" data-name="João Silva">
+                    <div class="chat-avatar">JS</div>
+                    <div class="chat-info">
+                        <div class="chat-title-row">
+                            <h4>João Silva</h4>
+                            <span class="chat-time">12:45</span>
+                        </div>
+                        <p class="chat-snippet">Olá! Deu uma olhada no catálogo?</p>
+                    </div>
+                </div>
             </div>
-            <!-- Lista de conversas ou menus aqui -->
-        </aside>
+        </section>
 
-        <!-- Botão da Seta para Recolher/Expandir a Lateral -->
-        <button id="sidebarToggle" class="sidebar-toggle-btn" title="Alternar menu">
-            ◀
-        </button>
+        <!-- TELA DA CONVERSA ABERTA (Estilo WhatsApp) -->
+        <section id="chatRoomScreen" class="screen">
+            <header class="wa-header chat-room-header">
+                <button id="backBtn" class="wa-icon-btn">⬅</button>
+                <div class="chat-avatar small" id="roomAvatar">JS</div>
+                <div class="room-user-details">
+                    <h3 id="roomTitle">João Silva</h3>
+                    <button id="catalogBtn" class="catalog-badge-btn">🛍️ Catálogo</button>
+                </div>
+            </header>
 
-        <!-- Área Principal do Chat -->
-        <main class="chat-area">
             <div id="messages" class="messages-container">
-                <!-- As mensagens do chat vão aparecer aqui -->
+                <!-- Mensagens e Vídeos automáticos aparecem aqui -->
+                <div class="bubble">Olá! Dá uma olhada nesse vídeo https://www.youtube.com/watch?v=dQw4w9WgXcQ</div>
             </div>
-        </main>
-        
+
+            <footer class="wa-chat-footer">
+                <input type="text" id="messageInput" placeholder="Digite uma mensagem...">
+                <button id="sendBtn" class="wa-send-btn">➤</button>
+            </footer>
+        </section>
+
     </div>
 
-    <!-- Importa o arquivo de lógica e vídeos -->
+    <!-- MODAL DO CATÁLOGO -->
+    <div id="catalogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🛍️ Catálogo de Produtos</h3>
+                <button id="closeCatalog" class="close-btn">&times;</button>
+            </div>
+            <div class="catalog-body" id="catalogBodyList">
+                <!-- Os produtos cadastrados aparecem aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ADMINISTRAÇÃO (Criar Catálogo) -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Painel Admin - Criar Catálogo</h3>
+                <button id="closeAdmin" class="close-btn">&times;</button>
+            </div>
+            <div class="admin-body">
+                <p class="admin-desc">Cadastre produtos para o seu catálogo comercial:</p>
+                <input type="text" id="prodName" placeholder="Nome do Produto/Serviço">
+                <input type="text" id="prodPrice" placeholder="Preço (Ex: R$ 50,00)">
+                <textarea id="prodDesc" placeholder="Descrição do produto..."></textarea>
+                <button id="saveProductBtn" class="wa-primary-btn">Adicionar ao Catálogo</button>
+                
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+                <h4>Produtos Cadastrados:</h4>
+                <div id="adminProductsList" class="admin-prod-list"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
