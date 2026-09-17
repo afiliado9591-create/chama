@@ -1,24 +1,418 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b7a53"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg"><title>Chama</title><style>
-:root{--green:#0b7a53;--bg:#f3f5f4;--line:#e6e9e7;--text:#14221c;--muted:#6a756f}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}button,input{font:inherit}.hidden{display:none!important}.shell{min-height:100dvh;max-width:900px;margin:auto;background:#fff}.auth{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,#e9fff6,#f7faf8)}.auth-card{width:min(430px,100%);background:#fff;padding:28px;border-radius:24px;box-shadow:0 18px 60px #0b7a5322}.brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.logo{width:52px;height:52px;border-radius:17px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800}h1{margin:0;font-size:30px}.sub{color:var(--muted);margin:4px 0 22px}.field{display:grid;gap:7px;margin:13px 0}.field label{font-size:14px;font-weight:650}.field input{border:1px solid #ccd4d0;border-radius:14px;padding:14px 15px;outline:none}.field input:focus{border-color:var(--green)}.primary{width:100%;border:0;background:var(--green);color:#fff;padding:14px 16px;border-radius:14px;font-weight:750;cursor:pointer}.secondary{width:100%;border:1px solid #c9d4cf;background:#fff;color:var(--green);padding:13px 16px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:9px}.msg{min-height:22px;margin-top:10px;font-size:14px;color:#b42318}.topbar{height:66px;background:var(--green);color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:5}.topbar h2{margin:0;font-size:21px;flex:1}.iconbtn{border:0;background:#ffffff18;color:#fff;border-radius:12px;padding:10px 12px;cursor:pointer}.layout{display:grid;grid-template-columns:330px 1fr;min-height:calc(100dvh - 66px)}.sidebar{border-right:1px solid var(--line);background:#fff}.me{padding:16px;border-bottom:1px solid var(--line)}.me small{color:var(--muted)}.section-title{font-size:13px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:14px 16px 8px}.user{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f0f2f1;cursor:pointer}.user:hover{background:#f6faf8}.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#dff4ea;color:var(--green);font-weight:800}.user-main{min-width:0}.user-name{font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-email{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chat{display:flex;flex-direction:column;background:#eef2ef;min-width:0}.empty{margin:auto;text-align:center;color:var(--muted);padding:30px}.chat-head{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 14px}.chat-head strong{display:block}.chat-head small{color:var(--muted)}.messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:8px}.bubble{max-width:min(78%,520px);padding:10px 12px;border-radius:16px;box-shadow:0 1px 1px #0000000b;word-break:break-word}.mine{align-self:flex-end;background:#d7f7e7;border-bottom-right-radius:5px}.theirs{align-self:flex-start;background:#fff;border-bottom-left-radius:5px}.time{display:block;text-align:right;font-size:10px;color:#6d7772;margin-top:4px}.composer{display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--line);padding-bottom:max(10px,env(safe-area-inset-bottom));align-items:center}.composer input{flex:1;border:1px solid #d5ddd9;border-radius:999px;padding:12px 16px;outline:none;min-width:0}.send{border:0;background:var(--green);color:#fff;width:46px;height:46px;border-radius:50%;font-size:20px;flex:0 0 46px}.audio-record{border:0;background:#eef4f1;color:var(--green);width:42px;height:42px;border-radius:50%;font-size:20px;flex:0 0 42px;cursor:pointer}.audio-record.recording{background:#ffe5e5;color:#b42318}.install{background:#fff;color:var(--green);border:1px solid #ffffff80}.back{display:none}.chat-media{display:block}.chat-media img{width:min(280px,72vw);max-height:380px;object-fit:cover;border-radius:12px;cursor:pointer}.chat-media video{display:block;width:min(310px,74vw);max-height:400px;border-radius:12px;background:#000}.chat-media audio{display:block;width:min(290px,76vw);height:44px}@media(max-width:700px){.layout{grid-template-columns:1fr}.sidebar{border-right:0}.chat{position:fixed;inset:66px 0 0 0;z-index:4}.chat.hidden-mobile{display:none}.back{display:inline-block!important}}
-</style></head><body>
-<div id="authView" class="auth"><div class="auth-card"><div class="brand"><div class="logo">C</div><div><h1>Chama</h1><div class="sub">Converse em tempo real.</div></div></div><div class="field"><label>Nome</label><input id="name" placeholder="Seu nome" autocomplete="name"></div><div class="field"><label>E-mail</label><input id="email" type="email" placeholder="voce@email.com" autocomplete="email"></div><div class="field"><label>Senha</label><input id="password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="current-password"></div><button id="loginBtn" class="primary">Entrar</button><button id="signupBtn" class="secondary">Criar minha conta</button><div id="authMsg" class="msg"></div></div></div>
-<div id="appView" class="shell hidden"><header class="topbar"><h2>Chama</h2><button id="installBtn" class="iconbtn install hidden">Instalar Chama</button><button id="logoutBtn" class="iconbtn">Sair</button></header><main class="layout"><aside class="sidebar"><div class="me"><strong id="meName">Você</strong><br><small id="meEmail"></small></div><div class="section-title">Pessoas</div><div id="usersList"></div></aside><section id="chatPanel" class="chat hidden-mobile"><div id="emptyState" class="empty"><h3>Escolha uma pessoa</h3><p>Toque em um contato para começar a conversar.</p></div><div id="activeChat" class="hidden" style="display:flex;flex-direction:column;min-height:calc(100dvh - 66px)"><div class="chat-head"><button id="backBtn" class="iconbtn back" style="background:#eef4f1;color:#0b7a53">←</button><div class="avatar" id="chatAvatar">C</div><div><strong id="chatName"></strong><small id="chatEmail"></small></div></div><div id="messages" class="messages"></div><form id="composer" class="composer"><button id="audioBtn" class="audio-record" type="button" title="Gravar áudio">🎤</button><input id="messageInput" maxlength="1500" placeholder="Digite uma mensagem..." autocomplete="off"><button class="send" type="submit">➤</button></form></div></section></main></div>
-<script src="./groups-force-ui.js?v=5" defer></script><script src="./topbar-menu-v2.js?v=6" defer></script><script src="./media-fix.js?v=2" defer></script>
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";import{getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,updateProfile}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";import{getFirestore,doc,setDoc,getDoc,getDocs,collection,query,onSnapshot,serverTimestamp,addDoc,orderBy,limit,increment}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyCcAVkmLUKPcEMZ5erDswbOQ8eO493pl2I",authDomain:"chama-cfc28.firebaseapp.com",projectId:"chama-cfc28",storageBucket:"chama-cfc28.firebasestorage.app",messagingSenderId:"680045231088",appId:"1:680045231088:web:8db35684e4b56a320ebb35"};const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),MEDIA_PREFIX="__CHAMA_MEDIA__";const $=id=>document.getElementById(id);const authView=$("authView"),appView=$("appView"),authMsg=$("authMsg");let me=null,activeUser=null,stopMessages=null,usersLoadToken=0,installPrompt=null;
-function friendlyError(e){const c=e?.code||"";if(c.includes("invalid-credential"))return"E-mail ou senha incorretos.";if(c.includes("api-key-not-valid"))return"Erro de configuração do Firebase. Atualizando o aplicativo...";if(c.includes("email-already-in-use"))return"Este e-mail já está cadastrado.";if(c.includes("weak-password"))return"Use uma senha com pelo menos 6 caracteres.";if(c.includes("invalid-email"))return"Digite um e-mail válido.";return e?.message||"Não foi possível concluir."}
-async function ensureProfile(user,requestedName=""){const ref=doc(db,"users",user.uid),snap=await getDoc(ref),fallback=(requestedName||user.displayName||user.email?.split("@")[0]||"Usuário").trim();if(!snap.exists())await setDoc(ref,{uid:user.uid,nome:fallback,email:user.email||"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});else if(!snap.data().uid||!snap.data().email)await setDoc(ref,{uid:user.uid,nome:snap.data().nome||fallback,email:user.email||"",updatedAt:serverTimestamp()},{merge:true})}
-$("signupBtn").onclick=async()=>{authMsg.textContent="";try{const nome=$("name").value.trim();if(!nome)throw new Error("Digite seu nome.");const email=$("email").value.trim();if(!email)throw new Error("Digite um e-mail válido.");const cred=await createUserWithEmailAndPassword(auth,email,$("password").value);await updateProfile(cred.user,{displayName:nome});await ensureProfile(cred.user,nome)}catch(e){authMsg.textContent=friendlyError(e)}};
-$("loginBtn").onclick=async()=>{authMsg.textContent="";try{const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);await ensureProfile(cred.user,$("name").value.trim())}catch(e){authMsg.textContent=friendlyError(e)}};$("logoutBtn").onclick=()=>signOut(auth);$("backBtn").onclick=()=>$("chatPanel").classList.add("hidden-mobile");
-onAuthStateChanged(auth,async user=>{if(!user){me=null;activeUser=null;if(stopMessages){stopMessages();stopMessages=null}authView.classList.remove("hidden");appView.classList.add("hidden");return}me=user;try{await ensureProfile(user)}catch(e){console.error(e)}$("meName").textContent=user.displayName||user.email?.split("@")[0]||"Você";$("meEmail").textContent=user.email||"";authView.classList.add("hidden");appView.classList.remove("hidden");listenUsers();});
-async function listenUsers(){const token=++usersLoadToken,list=$("usersList");if(!list)return;list.innerHTML='<div style="padding:16px;color:#6a756f">Carregando pessoas...</div>';try{const snap=await getDocs(query(collection(db,"users"),limit(20)));if(token!==usersLoadToken)return;const arr=snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.id!==me?.uid);list.innerHTML="";if(!arr.length){list.innerHTML='<div style="padding:16px;color:#6a756f">Nenhuma outra pessoa encontrada.</div>';return}for(const u of arr){const row=document.createElement("div");row.className="user";row.dataset.uid=u.id;row.innerHTML='<div class="avatar">'+String(u.nome||"U").slice(0,1).toUpperCase()+'</div><div class="user-main"><div class="user-name">'+escapeHtml(u.nome||"Usuário")+'</div><div class="user-email">'+escapeHtml(u.email||"")+'</div></div>';row.onclick=()=>openChat(u);list.appendChild(row)}}catch(e){console.error(e);list.innerHTML='<div style="padding:16px;color:#b42318">Não foi possível carregar as pessoas.</div>'}}
-function escapeHtml(v){return String(v??"").replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function chatId(a,b){return[a,b].sort().join("_")}
-function parseMedia(v){const s=String(v||"");if(!s.startsWith(MEDIA_PREFIX))return null;try{const x=JSON.parse(s.slice(MEDIA_PREFIX.length)),kind=x.kind||x.type;if(!x.url||!['image','video','audio'].includes(kind))return null;return{...x,kind}}catch{return null}}
-function renderMedia(b,m){b.dataset.directMedia="1";b.classList.add("chat-media");const t=b.querySelector(".time");b.innerHTML="";if(m.kind==="image"){const el=document.createElement("img");el.src=m.url;el.alt="Imagem enviada";el.loading="lazy";el.onclick=()=>window.open(m.url,"_blank","noopener");el.onerror=()=>{el.replaceWith(document.createTextNode("Não foi possível carregar a imagem."))};b.appendChild(el)}else if(m.kind==="video"){const el=document.createElement("video");el.src=m.url;el.controls=true;el.playsInline=true;el.preload="metadata";el.onerror=()=>{el.replaceWith(document.createTextNode("Não foi possível carregar o vídeo."))};b.appendChild(el)}else{const el=document.createElement("audio");el.src=m.url;el.controls=true;el.preload="metadata";el.onerror=()=>{el.replaceWith(document.createTextNode("Não foi possível carregar o áudio."))};b.appendChild(el)}if(t)b.appendChild(t)}
-function openChat(u){activeUser=u;window.__chamaActiveUid=u.id;$("emptyState").classList.add("hidden");$("activeChat").classList.remove("hidden");$("chatName").textContent=u.nome||"Usuário";$("chatEmail").textContent=u.email||"";$("chatAvatar").textContent=String(u.nome||"U").slice(0,1).toUpperCase();$("chatPanel").classList.remove("hidden-mobile");if(stopMessages)stopMessages();const ref=collection(db,"chats",chatId(me.uid,u.id),"messages");stopMessages=onSnapshot(query(ref,orderBy("createdAt","asc"),limit(200)),snap=>{const box=$("messages");box.innerHTML="";snap.forEach(d=>{const m=d.data(),b=document.createElement("div");b.className="bubble "+(m.from===me.uid?"mine":"theirs");const media=parseMedia(m.text);if(media)renderMedia(b,media);else b.textContent=m.text||"";const t=b.querySelector(".time")||document.createElement("span");t.className="time";t.textContent=m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"";if(!t.parentNode)b.appendChild(t);box.appendChild(b)});box.scrollTop=box.scrollHeight},e=>console.error("Chama mensagens",e))}
-window.chamaOpenChat=openChat;
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn")?.classList.remove("hidden")});$("installBtn").onclick=async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn")?.classList.add("hidden")};if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=197").catch(console.error));
-</script><script src="./forgot-password.js?v=3" defer></script></body></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dridalia Moda & SocialChat</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col" x-data="app()">
+
+    <!-- App Container Principal -->
+    <div class="flex h-full w-full max-w-7xl mx-auto shadow-2xl bg-white overflow-hidden relative">
+        
+        <!-- ================= SIDEBAR (CHATS & FEED) ================= -->
+        <div class="w-1/3 border-r border-gray-200 flex flex-col bg-white">
+            
+            <!-- Header do Perfil / Navegação -->
+            <div class="p-4 bg-gray-50 flex items-center justify-between border-b">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center text-white font-bold justify-center shadow">DM</div>
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-sm">Dridalia Moda</h2>
+                        <span class="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">R2 + Firebase Ready</span>
+                    </div>
+                </div>
+                <div class="flex space-x-2 bg-gray-200 p-1 rounded-lg text-xs font-semibold">
+                    <button @click="activeTab = 'chats'" :class="activeTab === 'chats' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600'" class="px-3 py-1 rounded-md transition">Chats</button>
+                    <button @click="activeTab = 'feed'" :class="activeTab === 'feed' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600'" class="px-3 py-1 rounded-md transition">Feed</button>
+                </div>
+            </div>
+
+            <!-- Barra de Pesquisa (Filtro local = 0 leituras extras no banco) -->
+            <div class="p-3 bg-white border-b">
+                <div class="flex items-center bg-gray-100 px-3 py-2 rounded-lg">
+                    <i class="fa-solid fa-search text-gray-400 mr-2 text-sm"></i>
+                    <input type="text" x-model="searchQuery" placeholder="Pesquisar conversas ou produtos..." class="bg-transparent w-full focus:outline-none text-sm text-gray-700">
+                </div>
+            </div>
+
+            <!-- Conteúdo da Sidebar -->
+            <div class="overflow-y-auto flex-1">
+                <!-- ABA CHATS -->
+                <template x-if="activeTab === 'chats'">
+                    <div>
+                        <template x-for="chat in filteredChats" :key="chat.id">
+                            <div @click="selectChat(chat)" 
+                                 :class="selectedChat.id === chat.id ? 'bg-emerald-50/50 border-r-4 border-emerald-600' : 'hover:bg-gray-50'"
+                                 class="flex items-center p-3 cursor-pointer border-b border-gray-100 transition">
+                                <img :src="chat.avatar" class="w-12 h-12 rounded-full object-cover mr-3 shadow-sm" loading="lazy">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <h4 class="font-semibold text-gray-800 text-sm truncate" x-text="chat.name"></h4>
+                                        <span class="text-[10px] text-gray-400" x-text="chat.time"></span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 truncate" x-text="chat.lastMessage"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ABA FEED SOCIAL -->
+                <template x-if="activeTab === 'feed'">
+                    <div class="p-3 space-y-4">
+                        <template x-for="post in feedPosts" :key="post.id">
+                            <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <img :src="post.avatar" class="w-8 h-8 rounded-full object-cover" loading="lazy">
+                                        <span class="font-bold text-xs text-gray-800" x-text="post.author"></span>
+                                    </div>
+                                    <button @click="post.following = !post.following" 
+                                            :class="post.following ? 'bg-gray-100 text-gray-700' : 'bg-emerald-600 text-white'"
+                                            class="text-[10px] px-3 py-1 rounded-full font-semibold transition"
+                                            x-text="post.following ? 'Seguindo' : 'Seguir'">
+                                    </button>
+                                </div>
+                                <img :src="post.image" class="rounded-lg w-full h-48 object-cover mb-2 shadow-sm" loading="lazy">
+                                <p class="text-xs text-gray-700 leading-relaxed" x-text="post.caption"></p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- ================= JANELA PRINCIPAL DE CHAT ================= -->
+        <div class="w-2/3 flex flex-col bg-gray-50">
+            
+            <!-- Header do Chat Ativo -->
+            <div class="p-4 bg-white border-b flex items-center justify-between shadow-sm">
+                <div class="flex items-center space-x-3">
+                    <img :src="selectedChat.avatar" class="w-10 h-10 rounded-full object-cover shadow-sm">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm" x-text="selectedChat.name"></h3>
+                        <span class="text-[10px] text-emerald-600 font-medium flex items-center">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span> 
+                            <span x-text="selectedChat.status"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button @click="selectedChat.following = !selectedChat.following" 
+                            :class="selectedChat.following ? 'bg-gray-100 text-gray-700' : 'bg-emerald-600 text-white'"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition flex items-center space-x-1">
+                        <i :class="selectedChat.following ? 'fa-solid fa-check' : 'fa-solid fa-user-plus'"></i>
+                        <span x-text="selectedChat.following ? 'Seguindo' : 'Seguir'"></span>
+                    </button>
+                    <button @click="showCatalog = !showCatalog" class="bg-emerald-50 text-emerald-700 p-2 rounded-lg hover:bg-emerald-100 transition shadow-sm" title="Abrir Vitrine / Catálogo R2">
+                        <i class="fa-solid fa-store text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corpo das Mensagens -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMessages">
+                <template x-for="msg in selectedChat.messages" :key="msg.id">
+                    <div :class="msg.sender === 'me' ? 'flex justify-end' : 'flex justify-start'">
+                        <div :class="msg.sender === 'me' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'"
+                             class="max-w-md p-3 rounded-2xl shadow-sm relative text-xs">
+                            
+                            <!-- Imagem Enviada -->
+                            <template x-if="msg.type === 'image'">
+                                <img :src="msg.content" class="rounded-lg max-h-48 w-full object-cover mb-1 shadow-sm cursor-pointer" @click="openMediaViewer(msg.content, 'image')" loading="lazy">
+                            </template>
+
+                            <!-- Vídeo Enviado -->
+                            <template x-if="msg.type === 'video'">
+                                <video controls class="rounded-lg max-h-48 w-full object-cover mb-1 shadow-sm">
+                                    <source :src="msg.content" type="video/mp4">
+                                    Seu navegador não suporta vídeos.
+                                </video>
+                            </template>
+
+                            <!-- Áudio Enviado -->
+                            <template x-if="msg.type === 'audio'">
+                                <div class="mb-1">
+                                    <audio controls class="w-48 h-8">
+                                        <source :src="msg.content" type="audio/mp3">
+                                        Seu navegador não suporta áudio.
+                                    </audio>
+                                </div>
+                            </template>
+                            
+                            <!-- Texto -->
+                            <template x-if="msg.type === 'text'">
+                                <p class="leading-relaxed" x-text="msg.content"></p>
+                            </template>
+
+                            <span class="block text-[9px] text-right mt-1 opacity-70" x-text="msg.time"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Drawer do Catálogo R2 Integrado -->
+            <div x-show="showCatalog" class="bg-white border-t border-gray-200 p-4 transition-all shadow-lg" x-cloak>
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-bold text-gray-800 text-xs flex items-center">
+                        <i class="fa-solid fa-tags text-emerald-600 mr-2"></i> Vitrine Dridalia Moda (Cloudflare R2)
+                    </h4>
+                    <button @click="showCatalog = false" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-sm"></i></button>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <template x-for="product in products" :key="product.id">
+                        <div class="border border-gray-100 rounded-xl p-2 bg-gray-50 flex flex-col justify-between shadow-sm hover:shadow transition">
+                            <img :src="product.image" class="h-28 w-full object-cover rounded-lg mb-2 shadow-sm" loading="lazy">
+                            <span class="text-xs font-semibold text-gray-800 truncate" x-text="product.name"></span>
+                            <span class="text-xs text-emerald-600 font-bold mb-2" x-text="product.price"></span>
+                            <button @click="sendProduct(product)" class="bg-emerald-600 text-white text-[10px] py-1.5 rounded-lg hover:bg-emerald-700 transition font-medium">
+                                Enviar no Chat
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Rodapé de Envio -->
+            <div class="p-3 bg-white border-t border-gray-200 flex items-center space-x-2">
+                <button @click="showCatalog = !showCatalog" class="text-gray-500 hover:text-emerald-600 p-2 transition" title="Abrir Catálogo"><i class="fa-solid fa-paperclip text-base"></i></button>
+                
+                <!-- Input para Imagem, Vídeo ou Áudio com Pré-visualização -->
+                <label class="text-gray-500 hover:text-emerald-600 p-2 cursor-pointer transition" title="Enviar Mídia (Foto, Vídeo ou Áudio)">
+                    <i class="fa-solid fa-photo-film text-base"></i>
+                    <input type="file" accept="image/*,video/*,audio/*" class="hidden" @change="handleFileSelect($event)">
+                </label>
+
+                <input type="text" x-model="newMessageText" @keydown.enter="sendMessage()" placeholder="Digite sua mensagem..." class="flex-1 bg-gray-100 px-4 py-2 rounded-xl focus:outline-none text-xs text-gray-700">
+                
+                <button @click="sendMessage()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl hover:bg-emerald-700 transition shadow-sm text-xs font-semibold">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ================= MODAL DE PRÉ-VISUALIZAÇÃO DE MÍDIA (COM BARRA VERDE E BOTÕES) ================= -->
+        <div x-show="showPreviewModal" class="absolute inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" x-cloak>
+            <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl flex flex-col space-y-4">
+                
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="font-bold text-gray-800 text-sm flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-up text-emerald-600 mr-2"></i> Pré-visualizar Mídia antes de Enviar
+                    </h3>
+                    <button @click="cancelPreview()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+
+                <!-- Barra de Progresso Verde (Simulando Upload/Processamento R2) -->
+                <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" :style="`width: ${uploadProgress}%`"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-gray-500 -mt-2">
+                    <span x-text="uploadingStatusText"></span>
+                    <span x-text="uploadProgress + '%'"></span>
+                </div>
+
+                <!-- Container do Conteúdo (Imagem, Vídeo ou Áudio) -->
+                <div class="bg-gray-900 rounded-xl overflow-hidden flex items-center justify-center p-2 min-h-[220px] max-h-[320px] relative">
+                    <!-- Preview Imagem -->
+                    <template x-if="previewType === 'image'">
+                        <img :src="previewUrl" class="max-h-[300px] object-contain rounded-lg">
+                    </template>
+
+                    <!-- Preview Vídeo -->
+                    <template x-if="previewType === 'video'">
+                        <video controls class="max-h-[300px] w-full rounded-lg">
+                            <source :src="previewUrl" :type="previewMime">
+                            Seu navegador não suporta visualização de vídeo.
+                        </video>
+                    </template>
+
+                    <!-- Preview Áudio -->
+                    <template x-if="previewType === 'audio'">
+                        <div class="flex flex-col items-center space-y-3 w-full p-6">
+                            <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl">
+                                <i class="fa-solid fa-microphone-lines"></i>
+                            </div>
+                            <audio controls class="w-full">
+                                <source :src="previewUrl" :type="previewMime">
+                                Seu navegador não suporta áudio.
+                            </audio>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Botões de Ação (Excluir/Cancelar ou Enviar) -->
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button @click="cancelPreview()" class="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition flex items-center space-x-1">
+                        <i class="fa-solid fa-trash text-red-500 mr-1"></i> Excluir / Cancelar
+                    </button>
+                    <button @click="confirmSendMedia()" :disabled="uploadProgress < 100" :class="uploadProgress < 100 ? 'opacity-50 cursor-not-allowed bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'" class="px-5 py-2 rounded-xl text-white text-xs font-semibold transition flex items-center space-x-1 shadow">
+                        <i class="fa-solid fa-paper-plane mr-1"></i> Enviar Mídia
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script de Gerenciamento da Aplicação -->
+    <script>
+        function app() {
+            return {
+                activeTab: 'chats',
+                showCatalog: false,
+                newMessageText: '',
+                searchQuery: '',
+                
+                // Estados da Pré-visualização de Mídia
+                showPreviewModal: false,
+                previewUrl: '',
+                previewType: 'image', // 'image', 'video', 'audio'
+                previewMime: '',
+                uploadProgress: 0,
+                uploadingStatusText: 'Processando arquivo...',
+                selectedFileToUpload: null,
+
+                selectedChat: {
+                    id: 1,
+                    name: 'Conjunto Drii Oficial - Suporte',
+                    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                    status: 'Online • Loja Verificada',
+                    following: true,
+                    messages: [
+                        { id: 1, sender: 'other', type: 'text', content: 'Olá! Envie fotos, vídeos ou áudios para testar a pré-visualização com barra verde.', time: '09:00' }
+                    ]
+                },
+                chats: [
+                    {
+                        id: 1,
+                        name: 'Conjunto Drii Oficial - Suporte',
+                        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                        lastMessage: 'Olá! Envie fotos, vídeos ou áudios...',
+                        time: '09:00',
+                        status: 'Online',
+                        following: true,
+                        messages: [
+                            { id: 1, sender: 'other', type: 'text', content: 'Olá! Envie fotos, vídeos ou áudios para testar a pré-visualização com barra verde.', time: '09:00' }
+                        ]
+                    }
+                ],
+                products: [
+                    { id: 1, name: 'Conjunto Drii Moletinho', price: 'R$ 189,90', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300' },
+                    { id: 2, name: 'Vestido Midi Casual', price: 'R$ 149,90', image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=300' },
+                    { id: 3, name: 'Blazer Alfaiataria', price: 'R$ 229,90', image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=300' }
+                ],
+                feedPosts: [
+                    { id: 1, author: 'Dridalia Moda Feminina', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600', caption: 'Conjunto Drii de moletinho disponível em novas cores!', following: true }
+                ],
+                get filteredChats() {
+                    if (!this.searchQuery) return this.chats;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.chats.filter(c => c.name.toLowerCase().includes(q) || c.lastMessage.toLowerCase().includes(q));
+                },
+                selectChat(chat) {
+                    this.selectedChat = chat;
+                },
+                sendMessage() {
+                    if(!this.newMessageText.trim()) return;
+                    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    this.selectedChat.messages.push({
+                        id: Date.now(),
+                        sender: 'me',
+                        type: 'text',
+                        content: this.newMessageText,
+                        time: timeNow
+                    });
+                    this.selectedChat.lastMessage = this.newMessageText;
+                    this.newMessageText = '';
+                },
+                sendProduct(product) {
+                    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    this.selectedChat.messages.push({
+                        id: Date.now(),
+                        sender: 'me',
+                        type: 'text',
+                        content: `📦 [Produto Sugerido]: ${product.name} - ${product.price}`,
+                        time: timeNow
+                    });
+                    this.selectedChat.lastMessage = `Compartilhou: ${product.name}`;
+                    this.showCatalog = false;
+                },
+                
+                // Disparado ao selecionar o arquivo
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    this.selectedFileToUpload = file;
+                    this.previewMime = file.type;
+                    this.previewUrl = URL.createObjectURL(file);
+
+                    if (file.type.startsWith('image/')) {
+                        this.previewType = 'image';
+                    } else if (file.type.startsWith('video/')) {
+                        this.previewType = 'video';
+                    } else if (file.type.startsWith('audio/')) {
+                        this.previewType = 'audio';
+                    } else {
+                        alert('Formato não suportado.');
+                        return;
+                    }
+
+                    // Abre o modal de preview e simula a barra de progresso verde
+                    this.showPreviewModal = true;
+                    this.uploadProgress = 10;
+                    this.uploadingStatusText = 'Carregando arquivo...';
+
+                    let interval = setInterval(() => {
+                        if (this.uploadProgress < 100) {
+                            this.uploadProgress += 30;
+                            if (this.uploadProgress >= 100) {
+                                this.uploadProgress = 100;
+                                this.uploadingStatusText = 'Pronto para enviar!';
+                                clearInterval(interval);
+                            }
+                        }
+                    }, 400);
+                    
+                    event.target.value = ''; // Limpa input
+                },
+
+                cancelPreview() {
+                    this.showPreviewModal = false;
+                    this.previewUrl = '';
+                    this.selectedFileToUpload = null;
+                    this.uploadProgress = 0;
+                },
+
+                confirmSendMedia() {
+                    if (this.uploadProgress < 100) return;
+                    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    this.selectedChat.messages.push({
+                        id: Date.now(),
+                        sender: 'me',
+                        type: this.previewType,
+                        content: this.previewUrl,
+                        time: timeNow
+                    });
+
+                    this.selectedChat.lastMessage = `[${this.previewType.toUpperCase()} enviado]`;
+                    this.cancelPreview();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
