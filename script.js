@@ -1,7 +1,16 @@
 (function() {
   'use strict';
 
-  // --- NAVEGAÇÃO ENTRE TELAS (ESTILO WHATSAPP) ---
+  // CONTADOR DE VISITAS (Simulado/Incrementado no armazenamento)
+  const visitorCounter = document.getElementById('visitorCounter');
+  if (visitorCounter) {
+    let visits = parseInt(localStorage.getItem('chama_visits') || '1482', 10);
+    visits += 1; // Incrementa a cada acesso real
+    localStorage.setItem('chama_visits', visits);
+    visitorCounter.textContent = `👁️ ${visits.toLocaleString('pt-BR')} visitas`;
+  }
+
+  // NAVEGAÇÃO DE TELAS
   const chatListScreen = document.getElementById('chatListScreen');
   const chatRoomScreen = document.getElementById('chatRoomScreen');
   const chatItem = document.querySelector('.chat-item');
@@ -21,7 +30,23 @@
     });
   }
 
-  // --- MODAL DE CATÁLOGO ---
+  // MODAL DE PERFIL DO USUÁRIO (Ao clicar no nome)
+  const roomTitle = document.getElementById('roomTitle');
+  const profileModal = document.getElementById('profileModal');
+  const closeProfile = document.getElementById('closeProfile');
+
+  if (roomTitle) {
+    roomTitle.addEventListener('click', () => {
+      profileModal.classList.add('open');
+    });
+  }
+  if (closeProfile) {
+    closeProfile.addEventListener('click', () => {
+      profileModal.classList.remove('open');
+    });
+  }
+
+  // MODAL DE CATÁLOGO
   const catalogBtn = document.getElementById('catalogBtn');
   const catalogModal = document.getElementById('catalogModal');
   const closeCatalog = document.getElementById('closeCatalog');
@@ -30,7 +55,7 @@
   function renderCatalog() {
     const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
     if (products.length === 0) {
-      catalogBodyList.innerHTML = '<p style="color: #666; text-align: center;">Nenhum produto cadastrado no catálogo ainda.</p>';
+      catalogBodyList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Nenhum produto cadastrado no catálogo.</p>';
       return;
     }
     catalogBodyList.innerHTML = products.map(p => `
@@ -48,12 +73,11 @@
       catalogModal.classList.add('open');
     });
   }
-
   if (closeCatalog) {
     closeCatalog.addEventListener('click', () => catalogModal.classList.remove('open'));
   }
 
-  // --- MODAL DE ADMINISTRAÇÃO ---
+  // MODAL DE ADMINISTRAÇÃO
   const adminBtn = document.getElementById('adminBtn');
   const adminModal = document.getElementById('adminModal');
   const closeAdmin = document.getElementById('closeAdmin');
@@ -63,14 +87,14 @@
   function renderAdminProducts() {
     const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
     if (products.length === 0) {
-      adminProductsList.innerHTML = '<p style="font-size: 13px; color: #666;">Nenhum produto criado.</p>';
+      adminProductsList.innerHTML = '<p style="font-size: 13px; color: #666;">Nenhum produto criado por você ainda.</p>';
       return;
     }
     adminProductsList.innerHTML = products.map((p, index) => `
       <div class="admin-card">
         <h4>${p.name} - ${p.price}</h4>
-        <p style="font-size: 12px; color: #666;">${p.desc}</p>
-        <button onclick="window.deleteProduct(${index})" style="background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 6px; cursor: pointer;">Excluir</button>
+        <p style="font-size: 12px; color: #666; margin-bottom: 6px;">${p.desc}</p>
+        <button onclick="window.deleteProduct(${index})" style="background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Excluir</button>
       </div>
     `).join('');
   }
@@ -88,7 +112,6 @@
       adminModal.classList.add('open');
     });
   }
-
   if (closeAdmin) {
     closeAdmin.addEventListener('click', () => adminModal.classList.remove('open'));
   }
@@ -100,7 +123,7 @@
       const desc = document.getElementById('prodDesc').value.trim();
 
       if (!name || !price) {
-        alert('Preencha pelo menos o nome e o preço do produto!');
+        alert('Informe pelo menos o nome e o preço!');
         return;
       }
 
@@ -113,11 +136,11 @@
       document.getElementById('prodDesc').value = '';
 
       renderAdminProducts();
-      alert('Produto adicionado ao catálogo com sucesso!');
+      alert('Produto salvo com sucesso!');
     });
   }
 
-  // --- ENVIO DE MENSAGENS E DETECÇÃO DE VÍDEOS ---
+  // MENSAGENS E VÍDEOS
   const messageInput = document.getElementById('messageInput');
   const sendBtn = document.getElementById('sendBtn');
   const messagesContainer = document.getElementById('messages');
@@ -143,7 +166,6 @@
     });
   }
 
-  // --- LÓGICA DE VÍDEOS (YouTube, TikTok, Shopee) ---
   const RE = /(https?:\/\/[^\s<]+)/gi;
 
   function youtube(u) {
@@ -244,6 +266,5 @@
     b.dataset.videoReady = '1';
   }
 
-  // Processa mensagens iniciais ao carregar
   document.querySelectorAll('#messages .bubble').forEach(processBubble);
 })();
