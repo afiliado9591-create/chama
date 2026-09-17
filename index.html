@@ -4,14 +4,542 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chama - Aplicativo</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+          width: 100%;
+          height: 100%;
+          background-color: #111b21;
+        }
+
+        .whatsapp-container {
+          width: 100%;
+          max-width: 480px;
+          height: 100vh;
+          margin: 0 auto;
+          background: #efeae2;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        @media(min-width: 481px) {
+          .whatsapp-container {
+            height: 95vh;
+            margin-top: 2.5vh;
+            border-radius: 12px;
+          }
+        }
+
+        .screen {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: #efeae2;
+          display: flex;
+          flex-direction: column;
+          z-index: 1;
+          visibility: hidden;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+
+        .screen.active {
+          visibility: visible;
+          opacity: 1;
+          z-index: 10;
+        }
+
+        /* TELA DE LOGIN */
+        #loginScreen {
+          background: #ffffff;
+          justify-content: center;
+          align-items: center;
+          padding: 30px;
+        }
+
+        .login-box {
+          width: 100%;
+          max-width: 320px;
+          text-align: center;
+        }
+
+        .login-box h2 {
+          font-size: 28px;
+          color: #00a884;
+          margin-bottom: 8px;
+        }
+
+        .login-box p {
+          color: #667781;
+          font-size: 14px;
+          margin-bottom: 24px;
+        }
+
+        .login-box input {
+          width: 100%;
+          padding: 12px;
+          margin-bottom: 14px;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          font-size: 14px;
+          outline: none;
+        }
+
+        /* CABEÇALHOS (Ajustados para não ficarem escondidos) */
+        .wa-header {
+          background-color: #00a884;
+          color: #ffffff;
+          padding: 12px 14px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          min-height: 65px;
+          padding-top: max(12px, env(safe-area-inset-top));
+          box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+          flex-shrink: 0;
+        }
+
+        .brand-area {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .wa-header h2 {
+          font-size: 18px;
+          font-weight: 600;
+          line-height: 1.1;
+        }
+
+        .visitor-counter {
+          font-size: 10px;
+          color: #e0f2f1;
+          margin-top: 2px;
+        }
+
+        .user-profile-trigger {
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 500;
+          background: rgba(0,0,0,0.1);
+          padding: 6px 12px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          max-width: 140px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .user-profile-trigger:hover {
+          background: rgba(0,0,0,0.2);
+        }
+
+        /* Alerta de Perfil Incompleto (Vermelho) */
+        .alert-badge {
+          background: #ff4d4d;
+          color: white;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          font-size: 11px;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: pulseRed 1.5s infinite;
+        }
+
+        .alert-badge.hidden {
+          display: none;
+        }
+
+        @keyframes pulseRed {
+          0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 77, 77, 0); }
+          100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+        }
+
+        .wa-header-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .wa-icon-btn {
+          background: none;
+          border: none;
+          color: white;
+          font-size: 18px;
+          cursor: pointer;
+          padding: 4px;
+        }
+
+        /* Chat Room Header */
+        .chat-room-header {
+          background-color: #f0f2f5;
+          color: #333;
+        }
+
+        .chat-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: #dfe2e5;
+          color: #555;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 14px;
+          flex-shrink: 0;
+        }
+
+        .chat-avatar.small {
+          width: 35px;
+          height: 35px;
+          font-size: 12px;
+        }
+
+        .room-user-details {
+          flex: 1;
+          margin-left: 12px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .clickable-profile {
+          font-size: 15px;
+          font-weight: 600;
+          color: #111;
+          cursor: pointer;
+        }
+
+        .room-sub-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 2px;
+        }
+
+        .user-status-text {
+          font-size: 11px;
+          color: #667781;
+        }
+
+        .catalog-badge-btn {
+          background: #00a884;
+          color: white;
+          border: none;
+          border-radius: 10px;
+          padding: 2px 8px;
+          font-size: 10px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        /* LISTA DE CONTATOS */
+        .wa-search-bar {
+          padding: 8px 12px;
+          background: #fff;
+          border-bottom: 1px solid #f0f2f5;
+          flex-shrink: 0;
+        }
+
+        .wa-search-bar input {
+          width: 100%;
+          padding: 8px 14px;
+          background: #f0f2f5;
+          border: none;
+          border-radius: 8px;
+          outline: none;
+          font-size: 14px;
+        }
+
+        .chats-list {
+          flex: 1;
+          background: #ffffff;
+          overflow-y: auto;
+        }
+
+        .chat-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 16px;
+          border-bottom: 1px solid #f0f2f5;
+          cursor: pointer;
+        }
+
+        .chat-item:hover {
+          background: #f5f6f6;
+        }
+
+        .chat-info {
+          flex: 1;
+          margin-left: 15px;
+        }
+
+        .chat-title-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 3px;
+        }
+
+        .chat-title-row h4 {
+          font-size: 16px;
+          color: #111;
+        }
+
+        .chat-time {
+          font-size: 11px;
+          color: #667781;
+        }
+
+        .chat-snippet {
+          font-size: 13px;
+          color: #667781;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 240px;
+        }
+
+        /* MENSAGENS E FOOTER FIXO EMBAIXO */
+        .messages-container {
+          flex: 1;
+          padding: 16px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          background: #efeae2;
+        }
+
+        .bubble {
+          background: #ffffff;
+          padding: 8px 12px;
+          border-radius: 8px;
+          max-width: 80%;
+          font-size: 14px;
+          box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+          align-self: flex-start;
+          word-break: break-word;
+        }
+
+        .wa-chat-footer {
+          background: #f0f2f5;
+          padding: 10px 16px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-shrink: 0;
+          border-top: 1px solid #e2e8f0;
+        }
+
+        .wa-chat-footer input {
+          flex: 1;
+          padding: 10px 14px;
+          border: none;
+          border-radius: 8px;
+          outline: none;
+          font-size: 14px;
+          background: #ffffff;
+        }
+
+        .wa-send-btn {
+          background: #00a884;
+          color: white;
+          border: none;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          flex-shrink: 0;
+        }
+
+        /* MODAIS */
+        .modal {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.5);
+          z-index: 999;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .modal.open {
+          display: flex;
+        }
+
+        .modal-content {
+          background: white;
+          width: 90%;
+          max-width: 400px;
+          max-height: 85vh;
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+          background: #00a884;
+          color: white;
+          padding: 15px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          color: white;
+          font-size: 24px;
+          cursor: pointer;
+        }
+
+        .catalog-body, .admin-body, .profile-body {
+          padding: 20px;
+          overflow-y: auto;
+          flex: 1;
+        }
+
+        .profile-body label {
+          font-size: 13px;
+          font-weight: bold;
+          color: #333;
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .profile-body input, .profile-body textarea {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 14px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 14px;
+        }
+
+        .profile-body textarea {
+          height: 70px;
+          resize: vertical;
+        }
+
+        .profile-warning-banner {
+          background: #ffe6e6;
+          color: #cc0000;
+          border: 1px solid #ff4d4d;
+          padding: 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: bold;
+          margin-bottom: 15px;
+          text-align: center;
+        }
+
+        .profile-warning-banner.hidden {
+          display: none;
+        }
+
+        .user-profile-trigger.incomplete {
+          border: 2px solid #ff4d4d;
+          background-color: rgba(255, 77, 77, 0.2);
+        }
+
+        .admin-body input, .admin-body textarea {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 12px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 14px;
+        }
+
+        .wa-primary-btn {
+          background: #00a884;
+          color: white;
+          border: none;
+          padding: 10px;
+          width: 100%;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        .admin-prod-list, .catalog-body {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .catalog-card, .admin-card {
+          background: #f8f9fa;
+          border: 1px solid #e5e5e5;
+          padding: 12px;
+          border-radius: 8px;
+        }
+
+        .catalog-card h4, .admin-card h4 {
+          color: #00a884;
+          margin-bottom: 4px;
+        }
+
+        .ch-video-embed {
+          margin-top: 8px;
+          border-radius: 8px;
+          overflow: hidden;
+          background: #000;
+          max-width: 100%;
+        }
+        .ch-video-embed iframe, 
+        .ch-video-embed video {
+          display: block;
+          width: 100%;
+          aspect-ratio: 16/9;
+          border: 0;
+          background: #000;
+        }
+        .ch-video-note {
+          margin-top: 6px;
+          padding: 8px;
+          border-radius: 8px;
+          background: #eef3f0;
+          color: #315345;
+          font-size: 12px;
+        }
+        .ch-video-note a {
+          font-weight: bold;
+          color: inherit;
+        }
+    </style>
 </head>
 <body>
 
     <div class="whatsapp-container">
         
-        <!-- TELA DE LOGIN (Visível por padrão se não logado) -->
-        <section id="loginScreen" class="app-screen active">
+        <!-- TELA DE LOGIN -->
+        <section id="loginScreen" class="screen">
             <div class="login-box">
                 <h2>🔥 Chama</h2>
                 <p>Faça login para acessar sua conta</p>
@@ -23,8 +551,8 @@
             </div>
         </section>
 
-        <!-- TELA PRINCIPAL (Lista de Contatos) -->
-        <section id="chatListScreen" class="app-screen">
+        <!-- TELA PRINCIPAL (Lista de Contatos + Topo Chama + Usuário) -->
+        <section id="chatListScreen" class="screen">
             <header class="wa-header">
                 <div class="brand-area">
                     <h2>Chama</h2>
@@ -68,9 +596,9 @@
         </section>
 
         <!-- TELA DA CONVERSA ABERTA -->
-        <section id="chatRoomScreen" class="app-screen">
+        <section id="chatRoomScreen" class="screen">
             <header class="wa-header chat-room-header">
-                <button id="backBtn" class="wa-icon-btn">⬅</button>
+                <button id="backBtn" class="wa-icon-btn" style="color: #333;">⬅</button>
                 <div class="chat-avatar small" id="roomAvatar">CS</div>
                 <div class="room-user-details">
                     <h3 id="roomTitle" class="clickable-profile">Carlos Silva</h3>
@@ -93,7 +621,7 @@
 
     </div>
 
-    <!-- MODAL DE PERFIL DO USUÁRIO -->
+    <!-- MODAL DE PERFIL DO USUÁRIO (Obrigatório preencher se vazio) -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -150,6 +678,369 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+      (function() {
+        'use strict';
+
+        const loginScreen = document.getElementById('loginScreen');
+        const chatListScreen = document.getElementById('chatListScreen');
+        const chatRoomScreen = document.getElementById('chatRoomScreen');
+        const loginForm = document.getElementById('loginForm');
+        
+        const visitorCounter = document.getElementById('visitorCounter');
+        const headerUsernameText = document.getElementById('headerUsernameText');
+        const openProfileFromHeader = document.getElementById('openProfileFromHeader');
+        const profileAlertBadge = document.getElementById('profileAlertBadge');
+
+        const profileModal = document.getElementById('profileModal');
+        const closeProfile = document.getElementById('closeProfile');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const profileNameInput = document.getElementById('profileNameInput');
+        const profilePhoneInput = document.getElementById('profilePhoneInput');
+        const profileBioInput = document.getElementById('profileBioInput');
+        const profileWarningBanner = document.getElementById('profileWarningBanner');
+
+        function checkProfileStatus() {
+          const profile = JSON.parse(localStorage.getItem('chama_user_profile') || 'null');
+          
+          if (!profile || !profile.name || !profile.name.trim()) {
+            if (openProfileFromHeader) openProfileFromHeader.classList.add('incomplete');
+            if (profileAlertBadge) profileAlertBadge.classList.remove('hidden');
+            if (profileWarningBanner) profileWarningBanner.classList.remove('hidden');
+            return false;
+          } else {
+            if (openProfileFromHeader) openProfileFromHeader.classList.remove('incomplete');
+            if (profileAlertBadge) profileAlertBadge.classList.add('hidden');
+            if (profileWarningBanner) profileWarningBanner.classList.add('hidden');
+            if (headerUsernameText) headerUsernameText.textContent = profile.name;
+            return true;
+          }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+          const loggedEmail = localStorage.getItem('chama_logged_email');
+          if (loggedEmail) {
+            if (loginScreen) loginScreen.classList.remove('active');
+            if (chatListScreen) chatListScreen.classList.add('active');
+            
+            let visits = parseInt(localStorage.getItem('chama_visits') || '1482', 10);
+            if (visitorCounter) visitorCounter.textContent = `👁️ ${visits.toLocaleString('pt-BR')} visitas`;
+            checkProfileStatus();
+          } else {
+            if (loginScreen) loginScreen.classList.add('active');
+            if (chatListScreen) chatListScreen.classList.remove('active');
+            if (chatRoomScreen) chatRoomScreen.classList.remove('active');
+          }
+        });
+
+        if (loginForm) {
+          loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) return;
+
+            localStorage.setItem('chama_logged_email', email);
+            if (loginScreen) loginScreen.classList.remove('active');
+            if (chatListScreen) chatListScreen.classList.add('active');
+
+            let visits = parseInt(localStorage.getItem('chama_visits') || '1482', 10);
+            visits += 1;
+            localStorage.setItem('chama_visits', visits);
+            if (visitorCounter) visitorCounter.textContent = `👁️ ${visits.toLocaleString('pt-BR')} visitas`;
+
+            if (!checkProfileStatus()) {
+              if (profileModal) profileModal.classList.add('open');
+            }
+          });
+        }
+
+        if (openProfileFromHeader) {
+          openProfileFromHeader.addEventListener('click', () => {
+            const profile = JSON.parse(localStorage.getItem('chama_user_profile') || '{}');
+            if (profileNameInput) profileNameInput.value = profile.name || '';
+            if (profilePhoneInput) profilePhoneInput.value = profile.phone || '';
+            if (profileBioInput) profileBioInput.value = profile.bio || '';
+            
+            checkProfileStatus();
+            if (profileModal) profileModal.classList.add('open');
+          });
+        }
+
+        if (closeProfile) {
+          closeProfile.addEventListener('click', () => {
+            if (!checkProfileStatus()) {
+              alert('Você precisa preencher o seu perfil para poder utilizar o aplicativo!');
+              return;
+            }
+            if (profileModal) profileModal.classList.remove('open');
+          });
+        }
+
+        if (saveProfileBtn) {
+          saveProfileBtn.addEventListener('click', () => {
+            const name = profileNameInput ? profileNameInput.value.trim() : '';
+            const phone = profilePhoneInput ? profilePhoneInput.value.trim() : '';
+            const bio = profileBioInput ? profileBioInput.value.trim() : '';
+
+            if (!name) {
+              alert('O nome de usuário é obrigatório!');
+              return;
+            }
+
+            const profile = { name, phone, bio };
+            localStorage.setItem('chama_user_profile', JSON.stringify(profile));
+
+            checkProfileStatus();
+            if (profileModal) profileModal.classList.remove('open');
+            alert('Perfil atualizado com sucesso!');
+          });
+        }
+
+        const chatItem = document.querySelector('.chat-item');
+        const backBtn = document.getElementById('backBtn');
+
+        if (chatItem) {
+          chatItem.addEventListener('click', () => {
+            if (chatListScreen) chatListScreen.classList.remove('active');
+            if (chatRoomScreen) chatRoomScreen.classList.add('active');
+          });
+        }
+
+        if (backBtn) {
+          backBtn.addEventListener('click', () => {
+            if (chatRoomScreen) chatRoomScreen.classList.remove('active');
+            if (chatListScreen) chatListScreen.classList.add('active');
+          });
+        }
+
+        const catalogBtn = document.getElementById('catalogBtn');
+        const catalogModal = document.getElementById('catalogModal');
+        const closeCatalog = document.getElementById('closeCatalog');
+        const catalogBodyList = document.getElementById('catalogBodyList');
+
+        function renderCatalog() {
+          if (!catalogBodyList) return;
+          const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+          if (products.length === 0) {
+            catalogBodyList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Nenhum produto cadastrado no catálogo.</p>';
+            return;
+          }
+          catalogBodyList.innerHTML = products.map(p => `
+            <div class="catalog-card">
+              <h4>${p.name}</h4>
+              <p style="font-weight: bold; color: #333; margin-bottom: 4px;">${p.price}</p>
+              <p style="font-size: 13px; color: #666;">${p.desc}</p>
+            </div>
+          `).join('');
+        }
+
+        if (catalogBtn) {
+          catalogBtn.addEventListener('click', () => {
+            renderCatalog();
+            if (catalogModal) catalogModal.classList.add('open');
+          });
+        }
+        if (closeCatalog) {
+          closeCatalog.addEventListener('click', () => {
+            if (catalogModal) catalogModal.classList.remove('open');
+          });
+        }
+
+        const adminBtn = document.getElementById('adminBtn');
+        const adminModal = document.getElementById('adminModal');
+        const closeAdmin = document.getElementById('closeAdmin');
+        const saveProductBtn = document.getElementById('saveProductBtn');
+        const adminProductsList = document.getElementById('adminProductsList');
+
+        function renderAdminProducts() {
+          if (!adminProductsList) return;
+          const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+          if (products.length === 0) {
+            adminProductsList.innerHTML = '<p style="font-size: 13px; color: #666;">Nenhum produto criado.</p>';
+            return;
+          }
+          adminProductsList.innerHTML = products.map((p, index) => `
+            <div class="admin-card">
+              <h4>${p.name} - ${p.price}</h4>
+              <p style="font-size: 12px; color: #666; margin-bottom: 6px;">${p.desc}</p>
+              <button onclick="window.deleteProduct(${index})" style="background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Excluir</button>
+            </div>
+          `).join('');
+        }
+
+        window.deleteProduct = function(index) {
+          let products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+          products.splice(index, 1);
+          localStorage.setItem('chama_catalog', JSON.stringify(products));
+          renderAdminProducts();
+        };
+
+        if (adminBtn) {
+          adminBtn.addEventListener('click', () => {
+            renderAdminProducts();
+            if (adminModal) adminModal.classList.add('open');
+          });
+        }
+        if (closeAdmin) {
+          closeAdmin.addEventListener('click', () => {
+            if (adminModal) adminModal.classList.remove('open');
+          });
+        }
+
+        if (saveProductBtn) {
+          saveProductBtn.addEventListener('click', () => {
+            const nameEl = document.getElementById('prodName');
+            const priceEl = document.getElementById('prodPrice');
+            const descEl = document.getElementById('prodDesc');
+
+            const name = nameEl ? nameEl.value.trim() : '';
+            const price = priceEl ? priceEl.value.trim() : '';
+            const desc = descEl ? descEl.value.trim() : '';
+
+            if (!name || !price) {
+              alert('Informe pelo menos o nome e o preço!');
+              return;
+            }
+
+            const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+            products.push({ name, price, desc });
+            localStorage.setItem('chama_catalog', JSON.stringify(products));
+
+            if (nameEl) nameEl.value = '';
+            if (priceEl) priceEl.value = '';
+            if (descEl) descEl.value = '';
+
+            renderAdminProducts();
+            alert('Produto adicionado com sucesso!');
+          });
+        }
+
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const messagesContainer = document.getElementById('messages');
+
+        function sendMessage() {
+          if (!messageInput || !messagesContainer) return;
+          const text = messageInput.value.trim();
+          if (!text) return;
+
+          const bubble = document.createElement('div');
+          bubble.className = 'bubble';
+          bubble.textContent = text;
+          messagesContainer.appendChild(bubble);
+          messageInput.value = '';
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+          processBubble(bubble);
+        }
+
+        if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+        if (messageInput) {
+          messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+          });
+        }
+
+        const RE = /(https?:\/\/[^\s<]+)/gi;
+
+        function youtube(u) {
+          try {
+            const x = new URL(u), h = x.hostname.replace(/^www\./, '');
+            let id = '';
+            if (h === 'youtu.be') id = x.pathname.split('/')[1] || '';
+            else if (h.endsWith('youtube.com')) {
+              if (x.pathname === '/watch') id = x.searchParams.get('v') || '';
+              else {
+                const p = x.pathname.split('/').filter(Boolean);
+                if (['shorts', 'embed', 'live'].includes(p[0])) id = p[1] || '';
+              }
+            }
+            return /^[\w-]{6,20}$/.test(id) ? `https://www.youtube.com/embed/${id}` : null;
+          } catch { return null; }
+        }
+
+        function tiktok(u) {
+          try {
+            const x = new URL(u), h = x.hostname.replace(/^www\./, '');
+            if (!h.endsWith('tiktok.com')) return null;
+            const m = x.pathname.match(/\/video\/(\d+)/);
+            return m ? `https://www.tiktok.com/player/v1/${m[1]}?autoplay=0` : null;
+          } catch { return null; }
+        }
+
+        function facebook(u) {
+          try {
+            const x = new URL(u), h = x.hostname.replace(/^www\./, '');
+            if (!(h === 'facebook.com' || h === 'fb.watch' || h.endsWith('.facebook.com'))) return null;
+            return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(u)}&show_text=false&width=560`;
+          } catch { return null; }
+        }
+
+        function directVideo(u) {
+          try {
+            const x = new URL(u);
+            return /\.(mp4|webm|ogg)(?:$|\?)/i.test(x.pathname + x.search) ? u : null;
+          } catch { return null; }
+        }
+
+        function shopee(u) {
+          try {
+            const x = new URL(u), h = x.hostname.replace(/^www\./, '');
+            return h === 'shopee.com.br' || h.endsWith('.shopee.com.br') || h === 's.shopee.com.br';
+          } catch { return false; }
+        }
+
+        function addEmbed(bubble, url) {
+          if (bubble.querySelector(`.ch-video-embed[data-url="${CSS.escape(url)}"]`)) return;
+          const src = youtube(url) || tiktok(url) || facebook(url);
+          const direct = directVideo(url);
+
+          if (src) {
+            const wrap = document.createElement('div');
+            wrap.className = 'ch-video-embed';
+            wrap.dataset.url = url;
+            const f = document.createElement('iframe');
+            f.src = src;
+            f.loading = 'lazy';
+            f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+            f.allowFullscreen = true;
+            wrap.appendChild(f);
+            bubble.appendChild(wrap);
+            return;
+          }
+
+          if (direct) {
+            const wrap = document.createElement('div');
+            wrap.className = 'ch-video-embed';
+            wrap.dataset.url = url;
+            const v = document.createElement('video');
+            v.src = direct;
+            v.controls = true;
+            v.preload = 'metadata';
+            wrap.appendChild(v);
+            bubble.appendChild(wrap);
+            return;
+          }
+
+          if (shopee(url)) {
+            const n = document.createElement('div');
+            n.className = 'ch-video-embed';
+            n.innerHTML = '🛍️ Link da Shopee detectado.';
+            bubble.appendChild(n);
+          }
+        }
+
+        function processBubble(b) {
+          if (!b || b.dataset.videoReady === '1') return;
+          const raw = (b.textContent || '').trim();
+          if (!raw) return;
+          const urls = raw.match(RE) || [];
+          [...new Set(urls)].slice(0, 3).forEach(u => addEmbed(b, u.replace(/[.,!?;:)]+$/, '')));
+          b.dataset.videoReady = '1';
+        }
+
+        document.querySelectorAll('#messages .bubble').forEach(processBubble);
+      })();
+    </script>
 </body>
 </html>
