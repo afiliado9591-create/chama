@@ -10,8 +10,8 @@
 
     <div class="whatsapp-container">
         
-        <!-- TELA DE LOGIN -->
-        <section id="loginScreen" class="screen active">
+        <!-- TELA DE LOGIN (Visível por padrão se não logado) -->
+        <section id="loginScreen" class="app-screen active">
             <div class="login-box">
                 <h2>🔥 Chama</h2>
                 <p>Faça login para acessar sua conta</p>
@@ -23,8 +23,8 @@
             </div>
         </section>
 
-        <!-- TELA PRINCIPAL (Lista de Contatos + Topo Chama + Usuário) -->
-        <section id="chatListScreen" class="screen">
+        <!-- TELA PRINCIPAL (Lista de Contatos) -->
+        <section id="chatListScreen" class="app-screen">
             <header class="wa-header">
                 <div class="brand-area">
                     <h2>Chama</h2>
@@ -68,7 +68,7 @@
         </section>
 
         <!-- TELA DA CONVERSA ABERTA -->
-        <section id="chatRoomScreen" class="screen">
+        <section id="chatRoomScreen" class="app-screen">
             <header class="wa-header chat-room-header">
                 <button id="backBtn" class="wa-icon-btn">⬅</button>
                 <div class="chat-avatar small" id="roomAvatar">CS</div>
@@ -93,7 +93,7 @@
 
     </div>
 
-    <!-- MODAL DE PERFIL DO USUÁRIO (Obrigatório preencher se vazio) -->
+    <!-- MODAL DE PERFIL DO USUÁRIO -->
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
