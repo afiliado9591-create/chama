@@ -3,54 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chama - Aplicativo de Conversa</title>
+    <title>Chama - Aplicativo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="whatsapp-container">
         
-        <!-- TELA PRINCIPAL: Lista de Conversas (Estilo WhatsApp) -->
-        <section id="chatListScreen" class="screen active">
+        <!-- TELA DE LOGIN -->
+        <section id="loginScreen" class="screen active">
+            <div class="login-box">
+                <h2>🔥 Chama</h2>
+                <p>Faça login para acessar sua conta</p>
+                <form id="loginForm">
+                    <input type="email" id="loginEmail" placeholder="Seu e-mail" required>
+                    <input type="password" id="loginPassword" placeholder="Sua senha" required>
+                    <button type="submit" class="wa-primary-btn">Entrar</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- TELA PRINCIPAL (Lista de Contatos + Topo Chama + Usuário) -->
+        <section id="chatListScreen" class="screen">
             <header class="wa-header">
-                <h2>Chama</h2>
+                <div class="brand-area">
+                    <h2>Chama</h2>
+                    <span class="visitor-counter" id="visitorCounter">👁️ 1.482 visitas</span>
+                </div>
+                <div class="user-profile-trigger" id="openProfileFromHeader" title="Meu Perfil">
+                    <span id="headerUsernameText">Meu Perfil</span>
+                    <div id="profileAlertBadge" class="alert-badge hidden" title="Perfil incompleto!">!</div>
+                </div>
                 <div class="wa-header-actions">
-                    <button id="adminBtn" class="wa-icon-btn" title="Painel Admin / Criar Catálogo">⚙️</button>
+                    <button id="adminBtn" class="wa-icon-btn" title="Painel Admin / Catálogo">⚙️</button>
                 </div>
             </header>
             
             <div class="wa-search-bar">
-                <input type="text" id="searchInput" placeholder="Pesquisar ou começar uma nova conversa">
+                <input type="text" id="searchInput" placeholder="Pesquisar contatos...">
             </div>
 
             <div class="chats-list" id="chatsList">
-                <!-- Exemplo de Conversa -->
-                <div class="chat-item" data-chat="1" data-name="João Silva">
-                    <div class="chat-avatar">JS</div>
+                <div class="chat-item" data-chat="1" data-name="Carlos Silva">
+                    <div class="chat-avatar">CS</div>
                     <div class="chat-info">
                         <div class="chat-title-row">
-                            <h4>João Silva</h4>
-                            <span class="chat-time">12:45</span>
+                            <h4>Carlos Silva</h4>
+                            <span class="chat-time">13:10</span>
                         </div>
-                        <p class="chat-snippet">Olá! Deu uma olhada no catálogo?</p>
+                        <p class="chat-snippet">Olá! Confira os novos produtos.</p>
+                    </div>
+                </div>
+                <div class="chat-item" data-chat="2" data-name="Mariana Souza">
+                    <div class="chat-avatar" style="background: #025e73;">MS</div>
+                    <div class="chat-info">
+                        <div class="chat-title-row">
+                            <h4>Mariana Souza</h4>
+                            <span class="chat-time">Ontem</span>
+                        </div>
+                        <p class="chat-snippet">Pedido confirmado!</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- TELA DA CONVERSA ABERTA (Estilo WhatsApp) -->
+        <!-- TELA DA CONVERSA ABERTA -->
         <section id="chatRoomScreen" class="screen">
             <header class="wa-header chat-room-header">
                 <button id="backBtn" class="wa-icon-btn">⬅</button>
-                <div class="chat-avatar small" id="roomAvatar">JS</div>
+                <div class="chat-avatar small" id="roomAvatar">CS</div>
                 <div class="room-user-details">
-                    <h3 id="roomTitle">João Silva</h3>
-                    <button id="catalogBtn" class="catalog-badge-btn">🛍️ Catálogo</button>
+                    <h3 id="roomTitle" class="clickable-profile">Carlos Silva</h3>
+                    <div class="room-sub-actions">
+                        <span class="user-status-text">Online</span>
+                        <button id="catalogBtn" class="catalog-badge-btn">🛍️ Catálogo</button>
+                    </div>
                 </div>
             </header>
 
             <div id="messages" class="messages-container">
-                <!-- Mensagens e Vídeos automáticos aparecem aqui -->
                 <div class="bubble">Olá! Dá uma olhada nesse vídeo https://www.youtube.com/watch?v=dQw4w9WgXcQ</div>
             </div>
 
@@ -62,20 +93,43 @@
 
     </div>
 
-    <!-- MODAL DO CATÁLOGO -->
+    <!-- MODAL DE PERFIL DO USUÁRIO (Obrigatório preencher se vazio) -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Meu Perfil</h3>
+                <button id="closeProfile" class="close-btn">&times;</button>
+            </div>
+            <div class="profile-body">
+                <div id="profileWarningBanner" class="profile-warning-banner hidden">
+                    ⚠️ Atenção: Você precisa preencher seu perfil para continuar!
+                </div>
+                <label>Nome de Usuário:</label>
+                <input type="text" id="profileNameInput" placeholder="Ex: João Moda Feminina">
+                
+                <label>Telefone / WhatsApp:</label>
+                <input type="text" id="profilePhoneInput" placeholder="Ex: (11) 99999-9999">
+                
+                <label>Recado / Bio:</label>
+                <textarea id="profileBioInput" placeholder="Escreva algo sobre sua loja ou negócio..."></textarea>
+                
+                <button id="saveProfileBtn" class="wa-primary-btn">Salvar Perfil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CATÁLOGO -->
     <div id="catalogModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>🛍️ Catálogo de Produtos</h3>
                 <button id="closeCatalog" class="close-btn">&times;</button>
             </div>
-            <div class="catalog-body" id="catalogBodyList">
-                <!-- Os produtos cadastrados aparecem aqui -->
-            </div>
+            <div class="catalog-body" id="catalogBodyList"></div>
         </div>
     </div>
 
-    <!-- MODAL DE ADMINISTRAÇÃO (Criar Catálogo) -->
+    <!-- MODAL DE ADMINISTRAÇÃO -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -83,14 +137,14 @@
                 <button id="closeAdmin" class="close-btn">&times;</button>
             </div>
             <div class="admin-body">
-                <p class="admin-desc">Cadastre produtos para o seu catálogo comercial:</p>
-                <input type="text" id="prodName" placeholder="Nome do Produto/Serviço">
-                <input type="text" id="prodPrice" placeholder="Preço (Ex: R$ 50,00)">
-                <textarea id="prodDesc" placeholder="Descrição do produto..."></textarea>
-                <button id="saveProductBtn" class="wa-primary-btn">Adicionar ao Catálogo</button>
+                <p class="admin-desc">Adicione produtos para o seu catálogo:</p>
+                <input type="text" id="prodName" placeholder="Nome do Produto">
+                <input type="text" id="prodPrice" placeholder="Preço (Ex: R$ 89,90)">
+                <textarea id="prodDesc" placeholder="Descrição..."></textarea>
+                <button id="saveProductBtn" class="wa-primary-btn">Adicionar Produto</button>
                 
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
-                <h4>Produtos Cadastrados:</h4>
+                <h4>Meus Produtos:</h4>
                 <div id="adminProductsList" class="admin-prod-list"></div>
             </div>
         </div>
