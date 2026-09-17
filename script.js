@@ -1,17 +1,113 @@
 (function() {
   'use strict';
 
-  // CONTADOR DE VISITAS (Simulado/Incrementado no armazenamento)
+  // REFERÊNCIAS DE ELEMENTOS
+  const loginScreen = document.getElementById('loginScreen');
+  const chatListScreen = document.getElementById('chatListScreen');
+  const loginForm = document.getElementById('loginForm');
+  
   const visitorCounter = document.getElementById('visitorCounter');
-  if (visitorCounter) {
-    let visits = parseInt(localStorage.getItem('chama_visits') || '1482', 10);
-    visits += 1; // Incrementa a cada acesso real
-    localStorage.setItem('chama_visits', visits);
-    visitorCounter.textContent = `👁️ ${visits.toLocaleString('pt-BR')} visitas`;
+  const headerUsernameText = document.getElementById('headerUsernameText');
+  const openProfileFromHeader = document.getElementById('openProfileFromHeader');
+  const profileAlertBadge = document.getElementById('profileAlertBadge');
+
+  const profileModal = document.getElementById('profileModal');
+  const closeProfile = document.getElementById('closeProfile');
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  const profileNameInput = document.getElementById('profileNameInput');
+  const profilePhoneInput = document.getElementById('profilePhoneInput');
+  const profileBioInput = document.getElementById('profileBioInput');
+  const profileWarningBanner = document.getElementById('profileWarningBanner');
+
+  // VERIFICAÇÃO DE ESTADO DE LOGIN E PERFIL
+  function checkProfileStatus() {
+    const profile = JSON.parse(localStorage.getItem('chama_user_profile') || 'null');
+    
+    if (!profile || !profile.name || !profile.name.trim()) {
+      // Perfil incompleto: fica em vermelho piscando e exige preenchimento
+      openProfileFromHeader.classList.add('incomplete');
+      profileAlertBadge.classList.remove('hidden');
+      profileWarningBanner.classList.remove('hidden');
+      return false;
+    } else {
+      // Perfil preenchido corretamente
+      openProfileFromHeader.classList.remove('incomplete');
+      profileAlertBadge.classList.add('hidden');
+      profileWarningBanner.classList.add('hidden');
+      headerUsernameText.textContent = profile.name;
+      return true;
+    }
   }
 
-  // NAVEGAÇÃO DE TELAS
-  const chatListScreen = document.getElementById('chatListScreen');
+  // FLUXO DE LOGIN
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      if (!email) return;
+
+      localStorage.setItem('chama_logged_email', email);
+      loginScreen.classList.remove('active');
+      chatListScreen.classList.add('active');
+
+      // Incrementa e exibe contador de visitas
+      let visits = parseInt(localStorage.getItem('chama_visits') || '1482', 10);
+      visits += 1;
+      localStorage.setItem('chama_visits', visits);
+      if (visitorCounter) visitorCounter.textContent = `👁️ ${visits.toLocaleString('pt-BR')} visitas`;
+
+      // Verifica se o perfil está preenchido. Se não estiver, abre o modal de perfil obrigatoriamente
+      if (!checkProfileStatus()) {
+        profileModal.classList.add('open');
+      }
+    });
+  }
+
+  // ABRIR PERFIL AO CLICAR NO NOME NO TOPO
+  if (openProfileFromHeader) {
+    openProfileFromHeader.addEventListener('click', () => {
+      const profile = JSON.parse(localStorage.getItem('chama_user_profile') || '{}');
+      profileNameInput.value = profile.name || '';
+      profilePhoneInput.value = profile.phone || '';
+      profileBioInput.value = profile.bio || '';
+      
+      checkProfileStatus();
+      profileModal.classList.add('open');
+    });
+  }
+
+  if (closeProfile) {
+    closeProfile.addEventListener('click', () => {
+      if (!checkProfileStatus()) {
+        alert('Você precisa preencher o seu perfil para poder utilizar o aplicativo!');
+        return;
+      }
+      profileModal.classList.remove('open');
+    });
+  }
+
+  // SALVAR PERFIL
+  if (saveProfileBtn) {
+    saveProfileBtn.addEventListener('click', () => {
+      const name = profileNameInput.value.trim();
+      const phone = profilePhoneInput.value.trim();
+      const bio = profileBioInput.value.trim();
+
+      if (!name) {
+        alert('O nome de usuário é obrigatório!');
+        return;
+      }
+
+      const profile = { name, phone, bio };
+      localStorage.setItem('chama_user_profile', JSON.stringify(profile));
+
+      checkProfileStatus();
+      profileModal.classList.remove('open');
+      alert('Perfil atualizado com sucesso!');
+    });
+  }
+
+  // NAVEGAÇÃO DE CONVERSAS (Lista -> Chat)
   const chatRoomScreen = document.getElementById('chatRoomScreen');
   const chatItem = document.querySelector('.chat-item');
   const backBtn = document.getElementById('backBtn');
@@ -30,23 +126,7 @@
     });
   }
 
-  // MODAL DE PERFIL DO USUÁRIO (Ao clicar no nome)
-  const roomTitle = document.getElementById('roomTitle');
-  const profileModal = document.getElementById('profileModal');
-  const closeProfile = document.getElementById('closeProfile');
-
-  if (roomTitle) {
-    roomTitle.addEventListener('click', () => {
-      profileModal.classList.add('open');
-    });
-  }
-  if (closeProfile) {
-    closeProfile.addEventListener('click', () => {
-      profileModal.classList.remove('open');
-    });
-  }
-
-  // MODAL DE CATÁLOGO
+  // MODAL DE CATÁLOGO (Visualizar)
   const catalogBtn = document.getElementById('catalogBtn');
   const catalogModal = document.getElementById('catalogModal');
   const closeCatalog = document.getElementById('closeCatalog');
@@ -77,7 +157,7 @@
     closeCatalog.addEventListener('click', () => catalogModal.classList.remove('open'));
   }
 
-  // MODAL DE ADMINISTRAÇÃO
+  // MODAL DE ADMINISTRAÇÃO (Criar Catálogo)
   const adminBtn = document.getElementById('adminBtn');
   const adminModal = document.getElementById('adminModal');
   const closeAdmin = document.getElementById('closeAdmin');
@@ -87,7 +167,7 @@
   function renderAdminProducts() {
     const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
     if (products.length === 0) {
-      adminProductsList.innerHTML = '<p style="font-size: 13px; color: #666;">Nenhum produto criado por você ainda.</p>';
+      adminProductsList.innerHTML = '<p style="font-size: 13px; color: #666;">Nenhum produto criado.</p>';
       return;
     }
     adminProductsList.innerHTML = products.map((p, index) => `
@@ -136,7 +216,7 @@
       document.getElementById('prodDesc').value = '';
 
       renderAdminProducts();
-      alert('Produto salvo com sucesso!');
+      alert('Produto adicionado com sucesso!');
     });
   }
 
