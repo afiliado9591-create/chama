@@ -1,0 +1,131 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+/* Container principal dividindo o layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Estilo da barra lateral */
+.sidebar {
+  width: 300px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #e5e5e5;
+  height: 100%;
+  transition: transform 0.3s ease, width 0.3s ease;
+  flex-shrink: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 20px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #315345;
+}
+
+.search-box {
+  padding: 0 20px 20px 20px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+}
+
+/* Área do chat ocupando o restante */
+.chat-area {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: #ffffff;
+}
+
+.messages-container {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Botão da seta */
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 20px;
+  left: 285px; /* Fica na bordinha interna da lateral */
+  z-index: 100;
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: left 0.3s ease, transform 0.3s ease;
+  font-size: 12px;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #f3f4f6;
+}
+
+/* --- ESTADO RECOLHIDO --- */
+.app-container.collapsed .sidebar {
+  transform: translateX(-100%);
+  width: 0;
+  border-right: none;
+}
+
+/* Quando recolhido, o botão vai para o canto esquerdo da tela e a seta inverte */
+.app-container.collapsed .sidebar-toggle-btn {
+  left: 15px;
+  transform: rotate(180deg);
+}
+
+/* --- ESTILOS DE VÍDEOS EMBARCADOS --- */
+.ch-video-embed {
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  max-width: 100%;
+}
+.ch-video-embed iframe, 
+.ch-video-embed video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: 0;
+  background: #000;
+}
+.ch-video-note {
+  margin-top: 7px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #eef3f0;
+  color: #315345;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.ch-video-note a {
+  font-weight: 800;
+  color: inherit;
+}
