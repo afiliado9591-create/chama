@@ -1,20 +1,149 @@
 (function() {
   'use strict';
 
-  // --- 1. LÓGICA DO BOTÃO DA SIDEBAR (RECOLHER / EXPANDIR) ---
-  document.addEventListener('DOMContentLoaded', () => {
-    const toggleBtn = document.getElementById('sidebarToggle');
-    const container = document.getElementById('appContainer');
+  // --- NAVEGAÇÃO ENTRE TELAS (ESTILO WHATSAPP) ---
+  const chatListScreen = document.getElementById('chatListScreen');
+  const chatRoomScreen = document.getElementById('chatRoomScreen');
+  const chatItem = document.querySelector('.chat-item');
+  const backBtn = document.getElementById('backBtn');
 
-    if (toggleBtn && container) {
-      toggleBtn.addEventListener('click', () => {
-        container.classList.toggle('collapsed');
-      });
+  if (chatItem) {
+    chatItem.addEventListener('click', () => {
+      chatListScreen.classList.remove('active');
+      chatRoomScreen.classList.add('active');
+    });
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      chatRoomScreen.classList.remove('active');
+      chatListScreen.classList.add('active');
+    });
+  }
+
+  // --- MODAL DE CATÁLOGO ---
+  const catalogBtn = document.getElementById('catalogBtn');
+  const catalogModal = document.getElementById('catalogModal');
+  const closeCatalog = document.getElementById('closeCatalog');
+  const catalogBodyList = document.getElementById('catalogBodyList');
+
+  function renderCatalog() {
+    const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+    if (products.length === 0) {
+      catalogBodyList.innerHTML = '<p style="color: #666; text-align: center;">Nenhum produto cadastrado no catálogo ainda.</p>';
+      return;
     }
-  });
+    catalogBodyList.innerHTML = products.map(p => `
+      <div class="catalog-card">
+        <h4>${p.name}</h4>
+        <p style="font-weight: bold; color: #333; margin-bottom: 4px;">${p.price}</p>
+        <p style="font-size: 13px; color: #666;">${p.desc}</p>
+      </div>
+    `).join('');
+  }
 
-  // --- 2. LÓGICA DE DETECÇÃO DE MÍDIA NAS MENSAGENS ---
-  const MEDIA_PREFIX = '__CHAMA_MEDIA__';
+  if (catalogBtn) {
+    catalogBtn.addEventListener('click', () => {
+      renderCatalog();
+      catalogModal.classList.add('open');
+    });
+  }
+
+  if (closeCatalog) {
+    closeCatalog.addEventListener('click', () => catalogModal.classList.remove('open'));
+  }
+
+  // --- MODAL DE ADMINISTRAÇÃO ---
+  const adminBtn = document.getElementById('adminBtn');
+  const adminModal = document.getElementById('adminModal');
+  const closeAdmin = document.getElementById('closeAdmin');
+  const saveProductBtn = document.getElementById('saveProductBtn');
+  const adminProductsList = document.getElementById('adminProductsList');
+
+  function renderAdminProducts() {
+    const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+    if (products.length === 0) {
+      adminProductsList.innerHTML = '<p style="font-size: 13px; color: #666;">Nenhum produto criado.</p>';
+      return;
+    }
+    adminProductsList.innerHTML = products.map((p, index) => `
+      <div class="admin-card">
+        <h4>${p.name} - ${p.price}</h4>
+        <p style="font-size: 12px; color: #666;">${p.desc}</p>
+        <button onclick="window.deleteProduct(${index})" style="background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 6px; cursor: pointer;">Excluir</button>
+      </div>
+    `).join('');
+  }
+
+  window.deleteProduct = function(index) {
+    let products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+    products.splice(index, 1);
+    localStorage.setItem('chama_catalog', JSON.stringify(products));
+    renderAdminProducts();
+  };
+
+  if (adminBtn) {
+    adminBtn.addEventListener('click', () => {
+      renderAdminProducts();
+      adminModal.classList.add('open');
+    });
+  }
+
+  if (closeAdmin) {
+    closeAdmin.addEventListener('click', () => adminModal.classList.remove('open'));
+  }
+
+  if (saveProductBtn) {
+    saveProductBtn.addEventListener('click', () => {
+      const name = document.getElementById('prodName').value.trim();
+      const price = document.getElementById('prodPrice').value.trim();
+      const desc = document.getElementById('prodDesc').value.trim();
+
+      if (!name || !price) {
+        alert('Preencha pelo menos o nome e o preço do produto!');
+        return;
+      }
+
+      const products = JSON.parse(localStorage.getItem('chama_catalog') || '[]');
+      products.push({ name, price, desc });
+      localStorage.setItem('chama_catalog', JSON.stringify(products));
+
+      document.getElementById('prodName').value = '';
+      document.getElementById('prodPrice').value = '';
+      document.getElementById('prodDesc').value = '';
+
+      renderAdminProducts();
+      alert('Produto adicionado ao catálogo com sucesso!');
+    });
+  }
+
+  // --- ENVIO DE MENSAGENS E DETECÇÃO DE VÍDEOS ---
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const messagesContainer = document.getElementById('messages');
+
+  function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text) return;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+    messagesContainer.appendChild(bubble);
+    messageInput.value = '';
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    processBubble(bubble);
+  }
+
+  if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+  if (messageInput) {
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  }
+
+  // --- LÓGICA DE VÍDEOS (YouTube, TikTok, Shopee) ---
   const RE = /(https?:\/\/[^\s<]+)/gi;
 
   function youtube(u) {
@@ -78,7 +207,6 @@
       f.loading = 'lazy';
       f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       f.allowFullscreen = true;
-      f.referrerPolicy = 'strict-origin-when-cross-origin';
       wrap.appendChild(f);
       bubble.appendChild(wrap);
       return;
@@ -92,7 +220,6 @@
       v.src = direct;
       v.controls = true;
       v.preload = 'metadata';
-      v.playsInline = true;
       wrap.appendChild(v);
       bubble.appendChild(wrap);
       return;
@@ -102,36 +229,21 @@
       const n = document.createElement('div');
       n.className = 'ch-video-note';
       n.dataset.url = url;
-      n.innerHTML = '🛍️ Link da Shopee recebido. A Shopee pode bloquear reprodução incorporada; <a target="_blank" rel="noopener noreferrer">abrir na Shopee</a>.';
+      n.innerHTML = '🛍️ Link da Shopee recebido. <a target="_blank" rel="noopener noreferrer">Abrir na Shopee</a>.';
       n.querySelector('a').href = url;
       bubble.appendChild(n);
     }
   }
 
-  function process(b) {
+  function processBubble(b) {
     if (!b || b.dataset.videoReady === '1') return;
     const raw = (b.textContent || '').trim();
-    if (!raw || raw.startsWith(MEDIA_PREFIX)) return;
+    if (!raw) return;
     const urls = raw.match(RE) || [];
     [...new Set(urls)].slice(0, 3).forEach(u => addEmbed(b, u.replace(/[.,!?;:)]+$/, '')));
     b.dataset.videoReady = '1';
   }
 
-  let scheduled = false;
-  function scan() {
-    scheduled = false;
-    document.querySelectorAll('#messages .bubble').forEach(process);
-  }
-  function schedule() {
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(scan);
-  }
-  function start() {
-    scan();
-    const m = document.getElementById('messages');
-    if (m) new MutationObserver(schedule).observe(m, { childList: true, subtree: true });
-  }
-
-  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
+  // Processa mensagens iniciais ao carregar
+  document.querySelectorAll('#messages .bubble').forEach(processBubble);
 })();
