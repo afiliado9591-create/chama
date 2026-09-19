@@ -305,6 +305,13 @@
           color: #667781;
         }
 
+        .chat-nicho {
+          display: block;
+          margin-top: 3px;
+          font-size: 11px;
+          color: #00a884;
+        }
+
         .chat-snippet {
           font-size: 13px;
           color: #667781;
@@ -446,6 +453,16 @@
           resize: vertical;
         }
 
+        .profile-body select {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 14px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 14px;
+          background: #fff;
+        }
+
         .profile-warning-banner {
           background: #ffe6e6;
           color: #cc0000;
@@ -580,6 +597,7 @@
                             <span class="chat-time">13:10</span>
                         </div>
                         <p class="chat-snippet">Olá! Confira os novos produtos.</p>
+                        <small class="chat-nicho" data-nicho="Negócio">💼 Negócio</small>
                     </div>
                 </div>
                 <div class="chat-item" data-chat="2" data-name="Mariana Souza">
@@ -590,6 +608,7 @@
                             <span class="chat-time">Ontem</span>
                         </div>
                         <p class="chat-snippet">Pedido confirmado!</p>
+                        <small class="chat-nicho" data-nicho="Amizade">🤝 Amizade</small>
                     </div>
                 </div>
             </div>
@@ -640,6 +659,15 @@
                 
                 <label>Recado / Bio:</label>
                 <textarea id="profileBioInput" placeholder="Escreva algo sobre sua loja ou negócio..."></textarea>
+
+                <label>Nicho:</label>
+                <select id="profileNichoInput">
+                  <option value="">Não definido</option>
+                  <option value="Negócio">💼 Negócio</option>
+                  <option value="Amizade">🤝 Amizade</option>
+                  <option value="Namoro">❤️ Namoro</option>
+                  <option value="Religião">⛪ Religião</option>
+                </select>
                 
                 <button id="saveProfileBtn" class="wa-primary-btn">Salvar Perfil</button>
             </div>
@@ -698,6 +726,7 @@
         const profileNameInput = document.getElementById('profileNameInput');
         const profilePhoneInput = document.getElementById('profilePhoneInput');
         const profileBioInput = document.getElementById('profileBioInput');
+        const profileNichoInput = document.getElementById('profileNichoInput');
         const profileWarningBanner = document.getElementById('profileWarningBanner');
 
         function checkProfileStatus() {
@@ -760,6 +789,7 @@
             if (profileNameInput) profileNameInput.value = profile.name || '';
             if (profilePhoneInput) profilePhoneInput.value = profile.phone || '';
             if (profileBioInput) profileBioInput.value = profile.bio || '';
+            if (profileNichoInput) profileNichoInput.value = profile.nicho || '';
             
             checkProfileStatus();
             if (profileModal) profileModal.classList.add('open');
@@ -781,13 +811,14 @@
             const name = profileNameInput ? profileNameInput.value.trim() : '';
             const phone = profilePhoneInput ? profilePhoneInput.value.trim() : '';
             const bio = profileBioInput ? profileBioInput.value.trim() : '';
+            const nicho = profileNichoInput ? profileNichoInput.value : '';
 
             if (!name) {
               alert('O nome de usuário é obrigatório!');
               return;
             }
 
-            const profile = { name, phone, bio };
+            const profile = { name, phone, bio, nicho };
             localStorage.setItem('chama_user_profile', JSON.stringify(profile));
 
             checkProfileStatus();
