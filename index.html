@@ -39,4 +39,28 @@ $("composer").onsubmit=async e=>{e.preventDefault();if(!me||!activeUser)return;c
 $("audioBtn").onclick=async()=>{try{if(recorder?.state==="recording"){recorder.stop();return}if(!navigator.mediaDevices?.getUserMedia)throw new Error("Seu navegador não permite gravação de áudio.");audioStream=await navigator.mediaDevices.getUserMedia({audio:true});audioChunks=[];recorder=new MediaRecorder(audioStream);recorder.ondataavailable=e=>{if(e.data.size)audioChunks.push(e.data)};recorder.onstop=()=>{audioStream?.getTracks().forEach(t=>t.stop());$("audioBtn").classList.remove("recording");showAudioPreview(new Blob(audioChunks,{type:recorder.mimeType||"audio/webm"}))};recorder.start();$("audioBtn").classList.add("recording")}catch(e){console.error(e);alert(e.message||"Não foi possível gravar áudio.")}};
 function showAudioPreview(blob){const url=URL.createObjectURL(blob),back=document.createElement("div");back.className="audio-preview-backdrop";back.innerHTML='<div class="audio-preview-card"><strong>Ouvir áudio antes de enviar</strong><audio controls></audio><div class="audio-preview-actions"><button type="button" class="audio-preview-delete">Excluir</button><button type="button" class="audio-preview-send">Enviar</button></div></div>';back.querySelector("audio").src=url;back.querySelector(".audio-preview-delete").onclick=()=>{URL.revokeObjectURL(url);back.remove()};back.querySelector(".audio-preview-send").onclick=async()=>{const btn=back.querySelector(".audio-preview-send");btn.disabled=true;btn.textContent="Enviando...";try{const fd=new FormData();fd.append("file",blob,"audio.webm");const r=await fetch("/api/media",{method:"POST",body:fd});if(!r.ok)throw new Error("Falha no upload");const j=await r.json();await addDoc(collection(db,"chats",chatId(me.uid,activeUser.id),"messages"),{from:me.uid,to:activeUser.id,text:MEDIA_PREFIX+JSON.stringify({type:"audio",url:j.url,key:j.key||""}),createdAt:serverTimestamp()});URL.revokeObjectURL(url);back.remove()}catch(e){console.error(e);btn.disabled=false;btn.textContent="Enviar";alert("Não foi possível enviar o áudio.")}};document.body.appendChild(back)}
 window.chamaOpenChat=openChat;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn")?.classList.remove("hidden")});$("installBtn").onclick=async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn")?.classList.add("hidden")};if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=197").catch(console.error));
-</script><script src="./forgot-password.js?v=3" defer></script></body></html>
+</script><script src="./forgot-password.js?v=3" defer></script>
+<script>
+// Esconde o menu (☰) da ESQUERDA injetado por groups-force-ui.js / topbar-menu-v2.js,
+// mantendo apenas o da direita. Se o layout desses scripts mudar, este patch pode
+// precisar de ajuste — nesse caso, o ideal é editar o JS de origem diretamente.
+(function () {
+  function hideLeftMenu() {
+    var candidates = Array.prototype.slice
+      .call(document.querySelectorAll('button, div, span, a'))
+      .filter(function (el) {
+        var t = (el.textContent || '').trim();
+        return el.children.length === 0 && (t === '☰' || t === '≡' || t === '=');
+      });
+    if (candidates.length > 1) {
+      candidates[0].style.display = 'none';
+    }
+  }
+  window.addEventListener('load', function () {
+    setTimeout(hideLeftMenu, 300);
+    // roda de novo caso o menu seja recriado dinamicamente depois do login
+    setTimeout(hideLeftMenu, 1200);
+  });
+})();
+</script>
+</body></html>
